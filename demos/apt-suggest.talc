@@ -1,0 +1,23 @@
+#!/usr/bin/talc
+
+# usage: apt-suggest <pattern>
+# outputs available package names matching the given pattern.
+
+list_dir := "/var/lib/apt/lists/";
+cache_file := "/tmp/apt-suggest-cache.txt";
+
+# FIXME: cache!
+#if (FileUtils.uptodate?(cache_file, Dir.entries(list_dir))) {
+#  puts("Using cached package information...");
+#} else
+#{
+  list_size := backquote("du -hs " + list_dir + " | cut -f 1").trim();
+  puts("Examining " + list_size + " of package information. This may take a while...");
+  shell("grep --no-filename --no-messages '^Package:' " + list_dir + "/* > " + cache_file);
+#}
+
+package_count := backquote("wc -l " + cache_file +" | cut -d ' ' -f 1").trim();
+puts(package_count + " packages known.");
+for (arg in ARGS) {
+  shell("grep -i \'" + arg + "\' " + cache_file + " | sort -u");
+}

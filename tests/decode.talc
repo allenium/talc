@@ -1,0 +1,12 @@
+#!/usr/bin/talc
+
+# FIXME: in Ruby, we could add random extra space in the string with no ill effect because of a String#split special case. we don't want that, but we should be able to split on the regexp / +/.
+
+words := "68 65 6c 6c 6f 20 77 6f 72 6c 64 0a".split(" ");
+result := "";
+for (i := 0; i < words.length(); ++i) {
+  # This is deliberately verbose to test more of the compiler!
+  word := words.get(i);
+  result += ("0x" + word).to_i().to_char();
+}
+print(result);

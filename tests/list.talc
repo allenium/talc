@@ -1,0 +1,85 @@
+#!/usr/bin/talc
+
+bools:list<boolean> = [ true, false, false, true ];
+puts(bools);
+puts("bools.contains(false) = ", bools.contains(false));
+
+ints:list<int> = [ 1 ];
+ints.push_back(2);
+ints.push_front(0);
+ints.push_back(3).push_front(-1);
+puts(ints);
+puts("ints.contains(3) = ", ints.contains(3));
+puts("ints.contains(4) = ", ints.contains(4));
+
+reals:list<real> = [ 1.0, 2.0, 3.0 ];
+puts(reals);
+puts("reals.contains(3.0) = ", reals.contains(3.0));
+puts("reals.contains(4.0) = ", reals.contains(4.0));
+
+reals.remove_all([ 1.0, 2.0, 4.0 ]);
+puts(reals);
+reals.add_all([ 1.0, 2.0, 4.0 ]);
+puts(reals);
+
+# type error: rhs is list<object>
+#words:list<string> = [ "hello", "list", "literal", "world", 2 ];
+# okay
+#xs:list<int> = [ 1, 2, 3 ];
+# type error: rhs is list<object>
+#xs:list<int> = [ 1, 2, 3.0 ];
+# okay
+#xs:list<real> = [ 1.0, 2.0, 3.0 ];
+
+words:list<string> = [ "monkey", "list", "literal", "world" ];
+words.put(0, "hello");
+for (i := 0; i < words.length(); ++i) {
+ word := words.get(i);
+ puts(word);
+}
+for (word in words) {
+ puts(word);
+}
+
+puts(words.is_empty());
+puts(words);
+puts("words.contains(\"hello\") = ", words.contains("hello"));
+puts("words.contains(\"goodbye\") = ", words.contains("goodbye"));
+
+puts(["a", "b", "c"].join(":").split(":"));
+
+xs:list<int> = [1,2,3,4,5,1,2,3,4,5];
+puts(xs);
+while (xs.remove_first(2)) {
+ puts(xs);
+}
+
+xss:list<list<int> > = [];
+xss.push_back([1,2]);
+xss.push_back([3,4]);
+xss.push_back([5,6]);
+puts(xss);
+for (xs in xss) {
+ puts(xs);
+}
+
+ls:list<string> = new list<string>();
+ls.push_back("a");
+ls.push_back("b");
+ls.push_back("c");
+o:object = ls;
+puts(o);
+
+unsorted_ints := [4,6,3,2,7,1,5,8];
+puts("                 unsorted =", unsorted_ints);
+puts("          unsorted.sort() =", unsorted_ints.sort());
+puts("unsorted.sort().reverse() =", unsorted_ints.sort().reverse());
+
+unsorted_strs := ["died", "from", "cat", "big", "gout", "a", "early"];
+puts("                 unsorted =", unsorted_strs);
+puts("          unsorted.sort() =", unsorted_strs.sort());
+puts("unsorted.sort().reverse() =", unsorted_strs.sort().reverse());
+
+puts(xs);
+puts(xs.reverse().uniq());
+puts(xs.sort().uniq());

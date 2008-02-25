@@ -1,0 +1,159 @@
+* [easy] documentation!
+ + make sure all errors we can emit are documented.
+ + mini comparisons against Java, Perl, Python, and Ruby.
+ + add some way to doc-comment class, function, and variable definitions. documentation should be available at run-time, and should be available for automatic dumping (like --dump-classes or a  better version of Ruby's ri).
+
+* [easy] better tests/demos.
+
+* [medium] replace "prelude.txt" with some kind of textual "include" system. (note: the prelude is currently broken and disabled.)
+ + add the remaining prelude math functions in "math.talc" as a trivial example.
+ + add "set.talc" as an example, implementing the equivalent of Java's HashSet. (would require user-defined parametric types!)
+
+* [medium] improve Lexer.getLocation so we provide the start and end line/column rather than just the end (even just the start would be better than just the end, as we have at the moment; error messages point to the end of the problem where the start would be more natural).
+
+* [easy] "assert" statements.
+ + fix the "tests" to actually use these, so we get assertion failures if anything goes wrong.
+
+* [medium] should add an "Iterable" interface, change for-each to expect its expression has that type and then invoke "Iterable.iterator()" and use it. (though how does that get us keys as well as values? maybe not "Iterable" so much as "ForEachAble<K,V>"? "has_next() : boolean", "key() : K", and "value() : V"?)
+
+* [medium] warnings about hiding? what kinds are okay and what kinds aren't?
+
+* [easy] FunctionDefinition and VariableDefinition should have a common ancestor so we can treat them more uniformly. This will probably simplify some of the code.
+
+* [medium] improve globals handling.
+ + have the pre-execution constant-folding/constant-propagation ensure that all global constants have been fully inlined?
+ + automate the generation of the globals section in the man page.
+
+* [medium] can we use List<VariableDefinition> (with null initializers?) in AstNode.FunctionDefinition for the parameter list?
+
+* [hard] implement the [] and []= operators.
+ + [] is easy, but i'm less sure about []=.
+ + i think if we do implement them, [] and []= should always be translated to get and put, and any class can have them for free.
+
+* [medium] add map literals.
+
+* [medium] simplifier should know about types other than integers.
+
+* [medium] implement the ? : ternary operator.
+
+* [medium] implement regexp (type, literals (?), and basic operations). (a literal would give us compile-time regexp checking and ahead-of-time/once-off Pattern compilation.) go back over core library and see where we could usefully use regexp instead of string. (overloading might be handy.)
+
+* [medium] finish user-defined classes.
+ + "final" (and make all built-in classes final?)
+ + "extends"
+ + check for inheritance cycles.
+ + "implements"
+ + class methods
+ + class fields (?)
+ + final methods (?)
+
+* [medium] overloaded methods/functions. useful for "system". probably some restriction like "no ambiguous/confusing overloads (ones where compile-time selection of an overload could produce different results than you'd expect if you thought overloads were selected at run-time)". http://www.informit.com/articles/article.aspx?p=31551&seqNum=4&rl=1
+
+* [hard] function types, so we can add something like list<T>.map(function(e:T):T):list<T>.
+ + parallel map.
+
+* [hard] operator overloading?
+
+* [hard] check that you can't drop off the bottom of a non-void function (i.e. must "return").
+
+* [hard] exceptions, try-catch-finally, throw.
+
+* [future] consider "to_b" to make the "match" idiom even more comfortable. too liable to be abused?
+
+* [future] Pike talks about reducing "stutter" in Sawzall, which is certainly a problem in Java (especially since generics), though not yet in Talc thanks to type inference and richer literals:
+  Conversion operators translate values from one type to another, and encapsulate a wide range of conversions. For instance, to extract the ﬂoating point number represented by a string, one simply converts the value:
+    f: float;
+    s: string = "1.234";
+    f = float(s);
+  Some conversions take parameters; for example
+    string(1234, 16)
+  generates the hexadecimal representation of the integer, while
+    string(utf8_bytes, "UTF-8")
+  will interpret the byte array in UTF-8 representation and return a string of the resulting Unicode character values.
+  For convenience, and to avoid the stutter endemic in some languages’ declaration syntaxes, in initializations the appropriate conversion operation (with default parameter values) is supplied implicitly by the compiler. Thus
+    b: bytes = "Hello, world!\n";
+  is equivalent to the more verbose
+    b: bytes = bytes("Hello, world!\n", "UTF-8");
+
+* [future] some kind of equivalent of ObjC's "describe"/Ruby's "inspect"? maybe machine-generated?
+
+* [future] is a "switch" statement sufficiently useful to be worth adding? what kind?
+
+* [future] do we need a "char" primitive type? scripting languages' higher-level string operations make most char-grubbing unnecessary. single-character strings might be sufficient. explicit char support might be clearer/more natural for the target audience. (but if we give them char, will they waste time doing C-like string manipulation instead of learning the higher-level stuff?) or int.to_char():string and string.asc():int (like Perl chr/ord)? we currently have the former but not the latter, and it actually works okay, though the name is a bit awkward.
+
+* [future] if we're going to have varargs "print" and "puts" built-ins, should we offer the same to user-defined functions? note that print and puts are special not only in that they can have any number of arguments, but also in that each argument can have a different type (though we could say they take object... [or whatever our notation is] because we call to_s on each argument; this would be cleaner and simpler). note that C-style varargs have problems compared to passing around a list, so really i'm talking about Java-like syntactic sugar (removing the need for [ and ] around the expression list), though at a loss of expressiveness and increase in complication. i think this is a questionable idea, but so is having magic "print" and "puts", but their functionality is invaluable in easing people into the water.
+
+* [future] should the "for" initialization be as general as in similar languages? how can we do that without the hateful comma operator?
+
+* [future] use Object instead of Value where possible, remove BooleanValue and StringValue in favor of native Boolean and String. probably RealValue -> Double too. (no point throwing away even a little bit of performance unless having our Value classes buys us something. the only thing i can think of that it buys us is somewhere we could put Functions.String_match and so forth. oh, and having Value makes things like type() simpler.)
+
+LIBRARY
+
+http://www.ferite.org/ - quite nice; good documentation. future plans smelled of overcomplexificationing. wonder what it died of? and how Talc can avoid the same fate?
+
+http://blogs.sun.com/chrisoliver/resource/f3.html - "format as" looks interesting. otherwise quite nasty.
+
+C#'s System.IO.File is pretty nice, though i'm unconvinced by the the File/Directory split. note that their File only has static methods that take String pathnames. there's a separate FileInfo class (like "struct stat").
+
+#should "getenv" be generalized to ENV:map<string, string>? probably needs to be a special type with JNI-backed get and put that actually modify the environment. will that upset the JVM?
+
+die(...):void - puts(...);exit(1); # should output to stderr. include source location? warn() too?
+sleep(ms:int):void # what time unit? integer ms? real s?
+
+#should "shell" and "system" use a "status" type instead of "int" for the exit code making it easier to check for signals and the like?
+#should "shell" and "system" actually just be two overloaded "system" methods?
+#what should "backquote" do with the exit code?
+#should we offer an ability to separate stdout and stderr? to run in a specific directory?
+
+object.compareTo # or comparable interface?
+object.equals # have == call "equals", but have the default "equals" be identity? auto-generate field-by-field "equals"?
+object.hashCode # or hashable interface (also requiring "equals")?
+
+int.to_s(base:int) # currently, we don't have overloading, so this is called int.to_base(base:int).
+
+TalcPrimitives: chmod, chown, lstat, stat
+
+shouldn't "file" really be "path"?
+file.chmod(mode:int):bool # plus symbolic constants?
+file.chown(uid:int, gid:int):bool
+file.is_reg():bool # et cetera? or should all this stuff be via stat?
+file.glob(pattern:string):list<string> # should support zsh-like ** patterns.
+file.lstat():stat
+file.stat():stat
+file.readdir():list<stat> # file.children():list<string> or somesuch?
+file.delete():bool
+
+url.read():string # read entire url as one string so people don't have to mess with curl(1)/wget(1).
+
+string.substring(offset:int, length:int):string # or startIndex/endIndex? is this actually useful?
+string.chomp():string # remove trailing newline; do we need this, given trim?
+
+# random class backed by java.util.Random
+random.reset(seed:int):void
+random.nextInt(n:int):int
+random.nextReal():real
+RANDOM:random # convenience instance
+int.random(n:int):int # convenience using global RANDOM
+real.random():real # convenience using global RANDOM
+
+Perl-like pack/unpack?
+Perl/Python/Ruby-like tr/tr_d? sufficiently useful?
+should ARGV0 be of type "File" rather than "string"?
+access to stderr? ability to print/puts to files/sockets/pipes?
+
+how should "printf"-like functionality be implemented? string.format? (int|real|string).format methods?
+
+should list<t>.peek_back and list<T>.peek_front just be "back" and "front"?
+should list<t>.pop_back and list<T>.push_back just be "pop" and "push"?
+should we have list<T>.find(e:T):int ? should it take a start_index:int too, or return list<int>?
+should FILE_SEPARATOR and PATH_SEPARATOR be in class "file"?
+
+make sure all Value subclasses return sensible hashCodes!
+
+* report sensible error (instead of stack overflow in the type inference code) for:
+s : = "x";
+if (x.starts_with("/")) {
+  s := "x" + s;
+}
+
+* report sensible error when global function used before definition. (or cope, as with methods? should global variables also be treated like fields?)

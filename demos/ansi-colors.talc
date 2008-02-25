@@ -1,0 +1,28 @@
+#!/usr/bin/talc
+
+# Prints a color table of 8 background * 8 foreground * 2 states (regular/bold).
+# Based on "colortable16.sh" off the web (with no author given).
+
+puts();
+puts("Table of 16-color terminal escape sequences.");
+puts("Replace ESC with \\e in Bash or Talc.");
+puts();
+puts("Background | Foreground colors");
+puts("---------------------------------------------------------------------");
+for (bg := 40; bg <= 47; ++bg) {
+  for (bold := 0; bold <= 1; ++bold) {
+    print("\e[0m", " ESC[", bg, "m   | ");
+    for (fg := 30; fg <= 37; ++fg) {
+      if (bold == 0) {
+        print("\e[", bg, "m", "\e[", fg, "m [", fg, "m  ");
+      } else {
+        print("\e[", bg, "m", "\e[1;", fg, "m [1;", fg, "m");
+      }
+    }
+    puts("\e[0m");
+  }
+  puts("---------------------------------------------------------------------");
+}
+puts();
+
+exit(0);

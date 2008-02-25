@@ -1,0 +1,30 @@
+#!/usr/bin/talc
+
+if (ARGS.length() != 1) {
+  puts("usage: blogger-backup.rb <blog-name>");
+  exit(1);
+}
+
+blog_name:string = ARGS.peek_front();
+blog_uri := "http://" + blog_name + ".blogspot.com/";
+
+puts("Downloading ", blog_uri, "...");
+
+blog_content := backquote("curl --silent --show-error " + blog_uri);
+
+for (line in blog_content.split("\n")) {
+  if ((m:match = line.match("(" + blog_uri + @"(\d+_\d+_\d+_archive\.html))")) != null) {
+    next_archive_uri := m.group(1);
+    next_filename := m.group(2);
+    puts(" page ", next_archive_uri, "...");
+    shell("curl --silent --show-error -o " + next_filename + " " + next_archive_uri);
+    for (line in new file(next_filename).read().split("<")) {
+      if ((m:match = line.match(@"=""(http:\/\/photos\d+\.blogger\.com\/[^""]+\/([^\/""]+\.(png|jpg)))")) != null) {
+        image_uri := m.group(1);
+        image_filename := m.group(2);
+        puts("      image ", image_uri, "...");
+        shell("curl --silent --show-error -o " + image_filename + " " + image_uri);
+      }
+    }
+  }
+}

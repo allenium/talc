@@ -1,0 +1,34 @@
+#!/usr/bin/talc
+
+# Lists authors of the given files, showing the number of lines (both as a
+# count # and as a percentage of the total) that each is responsible for in
+# the current revision.
+
+# Copyright (C) 2008 Elliott Hughes <enh@jessies.org>.
+
+if (ARGS.length() == 0) {
+  puts("usage: svn-authors FILENAME...");
+  exit(1);
+}
+
+total_line_count := 0;
+authors := new map<string, int>();
+for (filename in ARGS) {
+  blame := backquote("svn blame \"" + filename + "\"");
+  for (line in blame.split("\n")) {
+    m := line.match(@"^\s*\d+\s+(\S+) .*");
+    author := m.group(1);
+    author_line_count := 1;
+    if (authors.has_key(author)) {
+      author_line_count += authors.get(author);
+    }
+    authors.put(author, author_line_count);
+    ++total_line_count;
+  }
+}
+
+for (author in authors.keys().sort()) {
+  author_line_count := authors.get(author);
+  author_percentage := (100.0 * author_line_count.to_r() / total_line_count.to_r());
+  puts(author_line_count, "\t", author_percentage, "\t", author);
+}

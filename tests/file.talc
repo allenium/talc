@@ -1,0 +1,15 @@
+#!/usr/bin/talc
+
+f := new file("/etc/passwd");
+puts(f, " ", f.exists());
+f = new file("/etc/no-such-file");
+puts(f, " ", f.exists());
+
+for (filename in ["/etc/passwd", "/etc/passwd.txt"]) {
+  f := new file(filename);
+  puts(f, " ", f.exists());
+}
+
+for (filename in ["/etc/passwd", "/etc/passwd.txt"]) {
+  puts(filename, " ", new file(filename).exists());
+}

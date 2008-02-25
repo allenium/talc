@@ -1,0 +1,32 @@
+#!/usr/bin/talc
+
+# Tests that we cope when any part of a "for" statement is missing.
+
+i := 0;
+for (; i < 5; ++i) {
+ print(i);
+}
+puts();
+
+for (i := 0; i < 5;) {
+ print(i++);
+}
+puts();
+
+for (i := 0; ; ++i) {
+ if (i >= 5) {
+  break;
+ }
+ print(i);
+}
+puts();
+
+# Tests the for-each functionality.
+
+words:list<string> = ["this", "is", "a", "test"];
+for (word in words) {
+ puts(word);
+}
+for (i, word in words) {
+ puts(i, " : ", word);
+}

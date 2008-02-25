@@ -1,0 +1,34 @@
+#!/usr/bin/talc
+
+function print_row(i:int):void {
+ print(i, "\t", i!, "\n");
+ # error: return expression has type "int" but must be assignable to "void"
+ #return 2;
+ return;
+}
+
+# error: expected "," or ")" next in arguments to call of "print_row", got ";"
+#print_row(0; 3; 4);
+
+for (i := 0; i < 20; ++i) {
+ # error: function "print_row" given wrong number of arguments (expected 1 but got 2)
+ #print_row(i, 2);
+ print_row(i);
+}
+
+for (r := 0.0; r < 20.0; ++r) {
+ print_row(r.to_i());
+}
+
+# error: argument 0 to function "print_row" has type "string" but must be assignable to type "int"
+#print_row("hello");
+
+# error: can't reassign final "j"
+#j: final int = 0; j += 3;
+#j: final = 0; j += 3;
+
+i := 123;
+# error: type "string" cannot be assigned to "int"
+#i = "0";
+i = "0".to_i();
+exit(i);

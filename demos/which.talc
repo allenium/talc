@@ -1,0 +1,18 @@
+#!/usr/bin/talc
+
+# Looks for the first occurrence of program within path.
+# Returns null if not found.
+function which(program:string, path:string) : string {
+  for (directory in path.split(PATH_SEPARATOR)) {
+    file := new file(directory + FILE_SEPARATOR + program);
+    # Avoid /usr/lib/ruby, for example.
+    if (file.exists() && file.is_executable() && file.is_directory() == false) {
+      return file.to_s();
+    }
+  }
+  # This differs from the behavior of which(1), but it makes it easier to find errors.
+  return null;
+}
+for (arg in ARGS) {
+  puts(which(arg, getenv("PATH")));
+}

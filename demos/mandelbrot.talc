@@ -1,0 +1,26 @@
+#!/usr/bin/talc
+
+# Based on C code copyright (C) 2006 Michael Nidermayer (BSD license).
+# Original found at http://guru.multimedia.cx/ascii-mandelbrot-realtime-zoom/
+
+X := -0.105;
+Y := 0.928;
+
+for (p := 1.0; p > 0.003; p *= 0.98) {
+  print("\e[35A");
+  for (y := -1.2; y < 1.2; y += 0.07) {
+    line := "";
+    for (x := -1.6; x < 1.0; x += 0.03) {
+      r := 0.0;
+      i := 0.0;
+      c := 6.0;
+      for (; c < 256.0 && (r*r + i*i) < 4.0; ++c) {
+        tmp := r*r - i*i + x*p + X*(1.0 - p);
+        i = r*i*2.0 + y*p + Y*(1.0 - p);
+        r = tmp;
+      }
+      line += "\e[7;3" + (c.to_i() & 7).to_s() + "m \e[0;37m";
+    }
+    puts(line);
+  }
+}

@@ -1,0 +1,8 @@
+#!/usr/bin/talc
+
+# Prints a table of the first 20 factorials.
+# Demonstrates a C-style "for" loop and arbitrary-precision integers.
+
+for (i := 0; i < 20; ++i) {
+  print(i, "\t", i!, "\n");
+}

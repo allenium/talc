@@ -1,0 +1,28 @@
+#!/usr/bin/talc
+
+o:object = null;
+i:int = null;
+s:string = null;
+strings:list<string> = null;
+
+puts(o);
+o = 1;
+puts(o);
+o = "hello";
+puts(o);
+i = 2;
+
+strings = [ "hello", "world" ];
+
+objects:list<object> = [ 1, 2 ];
+for (i:int = 0; i < objects.length(); ++i) {
+ puts(objects.get(i));
+}
+
+# type error: type list<object> cannot be assigned to list<string>
+#strings = objects;
+
+objects = strings;
+for (i:int = 0; i < objects.length(); ++i) {
+ puts(objects.get(i));
+}

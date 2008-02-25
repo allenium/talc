@@ -1,0 +1,8 @@
+#!/usr/bin/talc
+puts(ARGV0);
+puts(ARGS);
+
+while (ARGS.length() > 0) {
+ arg := ARGS.pop_front();
+ puts(arg);
+}

@@ -1,0 +1,29 @@
+#!/usr/bin/talc
+
+s := "Hello, World!";
+puts("                s = ", s);
+puts("           s.uc() = ", s.uc());
+puts("                s = ", s);
+puts("           s.lc() = ", s.lc());
+puts("     s.lc_first() = ", s.lc_first());
+puts("s.lc().uc_first() = ", s.lc().uc_first());
+
+puts(s.contains("lo"));
+puts(s.contains("ol"));
+puts(s.ends_with("!"));
+puts(s.ends_with("H"));
+puts(s.starts_with("H"));
+puts(s.starts_with("!"));
+puts("  Hello, World!  ".trim());
+
+puts(s.replace("l", "L"));
+puts(s.replace(",", ""));
+
+puts(s.sub("[a-z]", "x"));
+puts(s.gsub("[a-z]", "x"));
+puts(s.gsub("([A-Z])", "<$1>"));
+
+puts(@"\d+");
+puts(@"the windows path is c:\here\there\everywhere\virus.exe");
+puts(@"C:\Foo\Bar\Baz\");
+puts(@"I said, ""Hello there.""");

@@ -1,0 +1,16 @@
+#!/usr/bin/talc
+
+# Given filenames as arguments, outputs HTML "img" tags with appropriate height and width attributes.
+# This lets the web browser reserve enough space in advance rather than make room when the image loads.
+
+if (ARGS.is_empty()) {
+  puts("usage: " + ARGV0 + " <filename...>");
+  exit(1);
+}
+
+for (filename in ARGS) {
+  info := backquote("file " + filename);
+  if ((m := info.match(@"image data, (\d+) x (\d+), ")) != null) {
+    puts("<img src=\"", filename, "\" width=\"" + m.group(1) + "\" height=\"" + m.group(2) + "\">");
+  }
+}

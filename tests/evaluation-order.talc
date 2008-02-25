@@ -1,0 +1,4 @@
+s:string = "one";
+if (s.starts_with(s = "two")) {
+ puts("oops!");
+}

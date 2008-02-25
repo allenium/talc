@@ -1,0 +1,17 @@
+#!/usr/bin/talc
+
+max_count := 35;
+
+# http://en.wikipedia.org/wiki/Fibonacci_number
+function fib(n:int):int {
+  if (n < 2) {
+    return n;
+  } else {
+    return fib(n - 1) + fib(n - 2);
+  }
+}
+
+for (i := 0; i < max_count; ++i) {
+  print(i, "\t", fib(i), "\n");
+}
+exit(0);

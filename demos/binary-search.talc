@@ -1,0 +1,30 @@
+#!/usr/bin/talc
+
+# FIXME: [] should translate to .get automatically.
+# FIXME: should be able to write binarySearch(xs: list<T>, x: T) : int.
+
+function binarySearch(xs: list<int>, x: int) : int {
+  low := 0;
+  high := xs.length() - 1;
+  while (low <= high) {
+    mid := low + ((high - low) / 2);
+    v := xs.get(mid);
+    if (v > x) {
+      high = mid - 1;
+    } else if (v < x) {
+      low = mid + 1;
+    } else {
+      return mid;
+    }
+  }
+  return -1;
+}
+
+puts(binarySearch([], 3) == -1);
+puts(binarySearch([3], 3) == 0);
+puts(binarySearch([4], 3) == -1);
+puts(binarySearch([1,2,3,4,5,6], 3) == 2);
+puts(binarySearch([1,2,3,4,5,6], 4) == 3);
+puts(binarySearch([1,2,3,4,5,6], 14) == -1);
+puts(binarySearch([1,2,3,4,5,6], -4) == -1);
+puts(binarySearch([1,2,4,8,16,32], 16) == 4);

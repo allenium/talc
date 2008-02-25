@@ -1,0 +1,543 @@
+.TH TALC "1" "" "" "User Commands"
+.SH NAME
+talc \- a C-family statically-typed scripting language
+.SH SYNOPSIS
+talc [--dump-class class] [-f file] [-e program]
+.SH DESCRIPTION
+The language Talc is an interpreted scripting language for quick and easy programming. It is simple, straightforward, and aimed at aficionados of the C family, despite its Pascal-inspired declarations. Particularly notable features are static typing, mostly C-like syntax, and the all-important curly braces. (As Dennis Ritchie said, "C's intellectual influence on the semantic design of new languages has been small. On the other hand, it has influenced notation: even pseudo-code these days tends to contain curly braces.")
+
+If you want a convenient language for quick little jobs, love the C family, like static typing, dislike Perl's complexity and obscurity, dislike Python's needless breaks from tradition, have been disappointed by Ruby's irregularities, and most of all don't want to throw the baby of good compile-time error checking out with the bathwater of verbosity of simple tasks, Talc may be the language for you.
+
+Talc is also a calculator, primarily aimed at being useful to programmers, but hopefully useful to a much wider audience.
+It offers broad C, C++, and Java expression compatibility where possible, with a few little extras.
+
+Talc can be used from the command-line or, for more convenient editing, via a GUI.
+Unlike most GUI calculators, it doesn't try to emulate those familiar small plastic real-world devices because that turns out to be a terrible way to input mathematical expressions, and wastes a lot of screen space into the bargain, as we've all experienced.
+.SH FEATURES
+Talc's features are best understood in comparison to other scripting languages:
+.TP
+.B "Interpreted"
+Talc is an interpreted language, so you don't have to recompile programs before executing them.
+.TP
+.B "Variables have types (static typing)"
+Variables (rather than just values) have associated types. Consequently, it has stronger compile time checking, and most errors are found earlier and quicker, and with less need for testing.
+.TP
+.B "Simple syntax"
+Talc has simple syntax similar to the C-family languages, with the exception of declarations, which use a Pascal-inspired syntax.
+.TP
+.B "No manual memory management"
+Talc has automatic memory management. Objects no longer referenced from anywhere are automatically collected by the garbage collector.
+.TP
+.B "Everything is an object"
+Talc is a purely object-oriented language, and was ever so. Even "primitive" types such as integers are seen as objects.
+.TP
+.B "Class, inheritance, and methods"
+As an object-oriented language, Talc has such basic features like classes, inheritance, and methods. (FIXME: not yet implemented.)
+.TP
+.B "Text processing and regular expressions"
+Talc has a bunch of text processing features equivalent to those you'd find in post-Perl scripting languages.
+.TP
+.B "Arbitrary-precision integers"
+All integer arithmetic is performed to arbitrary precision. For example, calculating 400! is trivial.
+.TP
+.B "Direct access to the OS"
+Talc can access most Unix facilities.
+.SH OPTIONS
+With no arguments, interactive mode is entered. Expressions will be read from standard input, evaluated, and their results output on standard output.
+.TP
+\-\-\fBdump\-class \fIclass
+Dumps a synopsis of the given \fIclass\fR to standard output.
+Details include the class name, superclass, and declared member functions and member variables.
+.TP
+\-\-\fBdump\-classes
+Dumps a synopsis for every built-in class, sorted into alphabetical order.
+.TP
+\-\fBe \fIprogram
+Inline mode.
+The \fIprogram\fR is evaluated.
+No special rules apply.
+No output will be produced unless the program calls an output function.
+.TP
+\-\fBf \fIfile
+File mode.
+Program text is read from \fIfile\fR instead of entering interactive mode.
+.SH LEXICAL STRUCTURE
+.SS Comments
+Comments begin with a # and extend to the end of the line.
+.SS Keywords
+The following are all keywords: "break", "class", "continue", "do", "else", "extends", "false", "final", "for", "function", "if", "implements", "in", "new", "null", "return", "true", "void", "while".
+
+In the grand tradition of the C family, not all words reserved as keywords are necessarily in use. Currently "class" is reserved but unused.
+.SS Types
+The basic types are "boolean", "int", "object", "real", "string", and "void". The type "object" is the root of the class hierarchy. All other types have "object" as an ancestor. The type "void" is used as the return type for functions that return no value.
+.SS Null literal
+The null literal is "null".
+.SS Boolean literals
+The boolean literals are "true" and "false".
+.SS Numeric literals
+Various forms of numeric literal are supported. The default base is base 10, but the prefix "0b" can be used for binary literals, "0o" for octal, and "0x" for hexadecimal. Upper-case variants are not supported.
+
+The old-fashioned interpretation of integer literals with a leading zero as octal is deliberately not implemented.
+
+(There is currently no way to select an arbitrary base. Such a feature sounds like a nice idea, but binary is the only base most people ever need that isn't supported by traditional C-family literals, and the generality of any arbitrary-base solution is marred by the fact that it's necessary to support "0x" for the convenience of users pasting in input. Talc's scheme resembles Python, which seems the best thought-out of the existing alternatives.)
+
+Real literals are distinguished from integer literals by the presence of a decimal point (".").
+
+Integer literals are arbitrary precision. Real literals are currently machine precision. (In the current implementation, real literals are represented by Java's "double", which is an IEEE 754 64-bit binary floating point number.)
+.SS String literals
+String literals are surrounded by single quotes 'like this' or double quotes "like this". There is no difference between the two kinds of string: they are provided merely as a convenience. Use ' if your string contains ", use " if your string contains ', and use " if you've no reason to choose between the two.
+
+The common escape characters "\\b", "\\e", "\\f", "\\n", "\\r", and "\\t" are supported and translated into ASCII backspace, ESC, form-feed, newline, carriage return, and tab respectively. The characters ", ', and \\ may also be escaped to stand for themselves. Unicode escapes of the form "\\uXXXX" where each X represents a hex digit are also supported. An attempt to escape any other character is an error.
+
+Raw string literals are prefixed by a commercial at, @'like this' or @"like this". Backslash escape sequences are disabled in raw string literals, allowing convenient writing of otherwise awkward strings:
+.nf
+.sp
+  path := @"c:\\windows\\paths\\";
+
+  pattern := @"regular\\s+expressions";
+
+  hint := @"embed double quotes like ""this""";
+  easier := 'embed double quotes like "this"';
+.sp
+.fi
+Raw string literals are of type "string", the same as normal string literals.
+.SS List literals
+List literals are comma-separated lists of zero or more expressions enclosed in square brackets. They have a type corresponding to a list of the type furthest from object to which all expressions are assignable:
+.nf
+.sp
+  [ 0xcafebabe, 0xdeadbeef ]  # has type list<int>
+
+  [ "monkey", "head" ]        # has type list<string>
+
+  [ 1, "infinite loop" ]      # has type list<object>
+
+  word_bag:list<string> = []; # special case, assignable to any list
+.sp
+.fi
+As shown, the empty list is denoted [].
+.SS Identifiers
+Identifiers are taken from the same set as Java identifiers.
+.SS Separators
+The following are all separators: ":", ";", ",", ".", "(", ")", "{", "}", "[", "]".
+.SS Operators
+The following are all operators: "!" (prefix logical negation, postfix factorial), "-" (unary numeric negation or binary subtraction), "++", "--", "+" (numeric addition or string concatenation), "*", "**" (exponentiation), "/", "%", "<", "<=", "<<", ">", ">=", ">>", "=", "==", "!=", "&", "&&", "|", "||", "^", "~" (unary bitwise negation).
+
+Binary operators require the types of both operands to be the same. The type of the result is the same as the type of the operands, except for relational operators, whose result is always boolean. (So dividing a real by a real, for example, gives a real; dividing an int by an int gives an int, and it's not possible to divide a real by an int or an int by a real without explicitly converting one or the other to disambiguate.)
+
+The operators "%", "<<", ">>", "&", "~", "|", "^", and "!" (postfix factorial) only operate on type int.
+
+The operators "!" (prefix logical negation), "&&", and "||" only operate on type boolean.
+
+There are also the following compound assignment operators: "+=", "-=", "*=", "**=", "/=", "%=", "<<=", ">>=", "&=", "|=", "^=", with the usual C-family interpretation where "a op= b" is equivalent to "a = a op b".
+
+You can create new instances of classes with the "new" operator.
+
+FIXME: detail operator precedence.
+.SH SYNTAX
+.SS Blocks
+A block is a sequence of statements surrounded by braces such as:
+.nf
+.sp
+  {
+    print("hello");
+    print(" ");
+    print("world\\n");
+  }
+.sp
+.fi
+A block is executed by executing each statement in order from first to last, though some statements may terminate the execution of the block.
+
+Many languages treat statements and blocks interchangeably. When this documentation says "block", though, a simple statement is not acceptable. Statements such as "if" and "while", for example, always require blocks.
+.SS Variable definitions
+A variable definition declares one local variable and gives it an initial value:
+.nf
+.sp
+  n: int = 0;
+.sp
+.fi
+If the keyword "final" appears before the type, the variable may not be reassigned:
+.nf
+.sp
+  PI: final real = 3.14;
+  PI = 3.0; # compile-time error
+.sp
+.fi
+Types are either simple types such as "object" or "int", or instantiated parametric types such as "list<string>". There is no separate array type.
+
+As a shorthand, the type may be omitted, in which case the type is taken to be the exact type of the initializer expression. For example:
+.nf
+.sp
+  i := 0;               # implicitly i:int
+  r := 0.0;             # implicitly r:real
+  s := "hello, world!"; # implicitly s:string
+  lines := s.split("\n"); # implicitly lines:list<string>
+.sp
+.fi
+Note that although the ":" and "=" are two separate tokens, it's conventional not to add whitespace between them.
+
+The type inference seen here has nothing to do with the unsafe implicit type conversions you see in other scripting languages.
+
+Although ":=" reduces the amount of keyboarding, the program remains every bit as statically-typed as it would have been with an explicit type. It is recommended that you still use explicit types in cases where the inferred type isn't obvious, or where an explicit type seems to function as documentation. (The most important case is where the initializer is "null", but the inferred type of "object" probably wouldn't be sufficient there anyway.)
+
+As proof that this isn't unsafe, note that the usual case where you can't use the inferred type is when you actually want a *less* specific type than would be inferred, such as "o: object = 123", which would otherwise give "o" type "int".
+.SS Function definitions
+A function definition looks like this:
+.nf
+.sp
+  function nCr(n: int, r: int) : int {
+    return n!/(k! * (n-k)!);
+  }
+.sp
+.fi
+The keyword "function" followed by the function name introduces each definition. A parenthesized comma-separated list of parameter declarations follows. Finally comes a colon and the return type followed by a block for the function's body.
+.SS Function calls
+A function call looks like this:
+.nf
+.sp
+    nCr(5, 6);
+.sp
+.fi
+A call to a member function looks like this:
+.nf
+.sp
+    i.to_s();
+.sp
+.fi
+Note that in the rare case where the variable "i" is replaced by a numeric literal, it is necessary to enclose the literal in parentheses or insert a space before the "." to avoid misinterpretation as a malformed real literal.
+.SS Class definitions
+A class definition looks like this:
+.nf
+.sp
+  class Point {
+    x: int = 0;
+    y: int = 0;
+
+    function Point(x0: int, y0: int) : Point {
+      x = x0;
+      y = y0;
+    }
+
+    function to_s() : string {
+      return "(" + x.to_s() + "," + y.to_s() + ")";
+    }
+  }
+.sp
+.fi
+The body of a class definition contains zero or more variable definitions mixed with zero or more function definitions. A function with the same name and return type as the class is the constructor, invoked by the "new" operator to initialize new instances.
+.SS Empty statements
+The empty statement (";") does nothing.
+.SS Expression statements
+An expression can be converted to a statement by following it with a semicolon (";").
+.SS If statements
+An "if" statement is a sequence of guard expressions with associated blocks. The first guard expression which evaluates to true will have its associated block executed. If no guard expression evaluates to true but an "else" block is present, that block will be executed instead.
+.nf
+.sp
+  if (n == 0) {
+    return "zero";
+  } else if (n == 1) {
+    return "one";
+  } else {
+    return "many";
+  }
+.sp
+.fi
+All guard expressions must be of boolean type or a compile-time error results.
+.SS While loops
+A "while" loop executes an expression and a block repeatedly until the expression evaluates to false. The block will not be executed if the expression is false the first time it is evaluated.
+.nf
+.sp
+  n: int = 0;
+  while (n < 5) {
+    puts(n);
+    ++n;
+  }
+.sp
+.fi
+The expression must be of boolean type or a compile-time error results.
+.SS Do loops
+A "do" loop executes a block and an expression repeatedly until the expression evaluates to false. The block will always be executed at least once.
+.nf
+.sp
+  n: int = 0;
+  do {
+    puts(n);
+    ++n;
+  } while (n < 5);
+.sp
+.fi
+The expression must be of boolean type or a compile-time error results.
+.SS For loops
+A "for" loop initializes a variable local to the statement before executing a continuation expression, a block, and an update expression until the continuation expression evaluates to false. The continuation expression must be of boolean type of a compile-time error results. The update expression can be of any type.
+.nf
+.sp
+  for (n: int = 0; n < 5; ++n) {
+    puts(n);
+  }
+.sp
+.fi
+Note that the initializer is more restricted than in most similar languages, though this restriction may be lifted in future.
+.SS For-each loops
+A for-each loop iterates over a collection, evaluating a block once for each value in the collection. For example:
+.nf
+.sp
+  # Iterate over the values in the collection:
+  for (w in [ "hello", "world" ]) {
+    puts(s);
+  }
+
+  # Iterate over the keys, value pairs in the collection:
+  for (i, w in [ "hello", "world" ]) {
+    puts(i, " : ", s);
+  }
+.sp
+.fi
+The expression must be of a collection type. The for-each loop has one or two loop variable names declared. If it has one, it is given the value type of the collection. If it has two, the first is given the key type of the collection and the second the value type. It is not possible to specify explicit types, nor to reverse the order of declaration.
+
+A more Java-like syntax using a ":" instead of the "in" keyword isn't possible because of the ambiguity with an explicit type declaration. Talc initially used ";" (following the D language) but it looked strange, looked overly similar to the normal for loop, and was surprisingly hard to remember. A "foreach" keyword was considered (both in conjunction with ":" and "in"), but rejected as not being a real word. (Though in some ways that's ideal for a keyword.)
+.SS Break statements
+A "break" statement transfers control out of the innermost enclosing "do", "for", or "while" statement.
+.SS Continue statements
+A "continue" statement transfers control to the loop-continuation test of the innermost enclosing "do", "for", or "while" statement.
+.SS Return statements
+A "return" statement returns control to the invoker of a function. If the enclosing function has return type "void", supplying a non-void expression to the "return" statement will result in a compile-time error. Otherwise, omitting an expression or providing an expression of an inappropriate type will result in compile-time errors.
+.SH "BUILT-IN FUNCTIONALITY"
+Talc has a wide range of built-in functionality.
+.SS Built-in variables
+There are a few global variables:
+.TP
+.B ARGV0: final string
+The name of the invoked script.
+.TP
+.B ARGS: final list<string>
+The arguments to the script. Arguments to the interpreter itself aren't visible to the script.
+.TP
+.B FILE_SEPARATOR: final string
+The underlying platform's native filename component separator. (On Unix, this is "/"; Windows uses "\\".)
+.TP
+.B PATH_SEPARATOR: final string
+The underlying platform's native PATH component separator. (On Unix, this is ":"; Windows uses ";".)
+.SS Built-in functions
+There are a handful of global functions:
+.TP
+.B backquote(command: string) : string
+Captures the output of the given command as a string.
+.TP
+.B exit(status: int) : void
+Exits the interpreter, reporting the given status to the parent process.
+.TP
+.B getenv(name: string) : string
+Returns the value of the given environment variable, or null.
+.TP
+.B gets() : string
+Returns the next line from stdin, or null if there's an error or no more input.
+.TP
+.B print(...) : void
+The "print" function is special; it takes an arbitrary number of arguments of arbitrary types, converts each one to a string and outputs it to stdout. It is not currently possible to write such functions in the language itself.
+
+Note that, although you can use string concatenation to prepare text for output, providing multiple arguments to "print" is an alternative that may be more convenient and/or more efficient. Compare:
+.nf
+.sp
+  print("value" + v.to_s());
+.sp
+.fi
+to:
+.nf
+.sp
+  print("value", v);
+.sp
+.fi
+for example.
+.TP
+.B puts(...) : void
+Like "print", but appends a newline.
+.TP
+.B shell(command: string) : int
+Executes the given command in a subshell. Returns the return status of the command, or -1 if it was unable to start the command.
+.TP
+.B system(command: list<string>) : int
+Executes the given command, specified as a list containing the program name and its arguments. Returns the return status of the command, or -1 if it was unable to start the command.
+.SS Built-in classes
+Talc has relatively few built-in classes. Few enough that we can reasonably comfortably summarize them all here.
+
+boolean : object
+
+file : object
+  append(content: string) : void
+  exists() : boolean
+  file(filename: string) : file
+  is_directory() : boolean
+  is_executable() : boolean
+  mkdir() : boolean
+  mkdir_p() : boolean
+  read() : string
+  read_lines() : list<string>
+  realpath() : file
+  write(content: string) : void
+
+int : object
+  abs() : int
+  signum() : int
+  to_base(base: int) : string
+  to_char() : string
+  to_i() : int
+  to_r() : real
+
+list<T> : object
+  add_all(others: list<T>) : list<T>
+  clear() : list<T>
+  contains(value: T) : boolean
+  get(index: int) : T
+  is_empty() : boolean
+  join(separator: string) : string
+  length() : int
+  list() : list<T>
+  peek_back() : T
+  peek_front() : T
+  pop_back() : T
+  pop_front() : T
+  push_back(value: T) : list<T>
+  push_front(value: T) : list<T>
+  put(index: int, value: T) : void
+  remove_all(others: list<T>) : list<T>
+  remove_at(index: int) : list<T>
+  remove_first(value: T) : boolean
+  reverse() : list<T>
+  sort() : list<T>
+  to_s() : string
+  uniq() : list<T>
+
+map<K,V> : object
+  clear() : map<K,V>
+  get(key: K) : V
+  has_key(key: K) : boolean
+  has_value(value: V) : boolean
+  keys() : list<K>
+  length() : int
+  map() : map<K,V>
+  put(key: K, value: V) : void
+  remove(key: K) : map<K,V>
+  values() : list<V>
+
+match : object
+  group(n: int) : string
+
+object
+  to_s() : string
+
+real : object
+  abs() : real
+  log(base: real) : real
+  log10() : real
+  logE() : real
+  signum() : real
+  sqrt() : real
+  to_i() : int
+  to_r() : real
+
+string : object
+  contains(substring: string) : boolean
+  ends_with(suffix: string) : boolean
+  escape_html() : string
+  gsub(pattern: string, replacement: string) : string
+  lc() : string
+  lc_first() : string
+  length() : int
+  match(pattern: string) : match
+  replace(old: string, new: string) : string
+  split(pattern: string) : list<string>
+  starts_with(prefix: string) : boolean
+  sub(pattern: string, replacement: string) : string
+  to_i() : int
+  to_r() : real
+  trim() : string
+  uc() : string
+  uc_first() : string
+
+This output was produced by the command "talc --dump-classes".
+.SH CONVENTIONS AND IDIOMS
+Talc scripts that are runnable as applications in their own right should have no extension.
+Talc scripts meant for inclusion in other scripts, or not for end-user consumption should use the ".talc" extension.
+
+Class and function names are all lower-case, with _ to separate words.
+
+Two-space indentation is recommended. No space is used between the ":" and "=" in an inferred-type variable definition ("i := 0", for example). The ":" in an explicitly-typed definition or a parameter declaration has no space before it and a single space after it ("i: int", for example).
+
+In a class definition, all fields are listed first, followed by the constructor, followed by all other methods in alphabetical order.
+
+The functions "to_i", "to_r", and "to_s" are provided by all classes that can be converted to "int", "real", and "string" respectively.
+
+The ability to define local variables inside conditional expressions and the shorthand form of variable definition provide the line-matching idiom:
+.nf
+.sp
+for (line:string in lines) {
+  # Most verbose (but not by much).
+  # Necessary if you need access to the match outside of the "if".
+  m:match := null;
+  if ((m = line.match(@"\\s*function\\s+(\\S+)\\s*\\((.*)\\)\\s*")) != null) {
+    name:string = m.group(1);
+    arguments:string = m.group(2);
+  }
+
+  # Less verbose unless you have a lot of patterns to match against.
+  if ((m:match = line.match(@"\\s*function\\s+(\\S+)\\s*\\((.*)\\)\\s*")) != null) {
+    # As before.
+  }
+
+  # Least verbose unless you have a lot of patterns to match against.
+  if ((m := line.match(@"\\s*function\\s+(\\S+)\\s*\\((.*)\\)\\s*")) != null) {
+    # As before.
+  }
+}
+.sp
+.fi
+None of this is enforced (or is likely to be enforced), but will to help keep your code looking like everyone else's.
+.SH PHILOSOPHY
+Talc arose out of dissatisfaction with existing scripting languages, in particular with their lack of adherence to the following principles:
+
+* It's better to catch errors before execution begins. (Hence, static typing is your friend.)
+
+* You shouldn't pay in linguistic complexity for power you don't use. (Hence, dynamism shouldn't be the default.)
+
+* You shouldn't pay in library complexity for power you don't use. (Hence, the core library should be more focused on making common tasks easy than on making uncommon tasks possible.)
+
+* A statically-typed library is a library with fewer places for gotchas to hide; you can look at a method's signature and have a good idea of how it'll behave, without worrying that some inputs will cause results of a completely different type (as in Ruby). (Hence, a library should be statically-typed and avoid special cases.)
+
+* A conservative language can still be a good language, because the parts are well-tested and familiar to users, even if the combination isn't. An ill-conceived feature, or unfortunate combination of features, can become a long-lived albatross. (Hence, think hard before inflicting something truly novel on people.)
+
+* Readability is all-important. Discouraging excessive cleverness/obscurity is helpful when we have to work together, as we often do. (Hence, aim for a small, regular grammar and a small, regular vocabulary.)
+
+* Working with others and collective code ownership is easier if everyone has the same style. It's hard to avoid More Than One Way To Do It, but it's helpful when a language and library favors one style over all others. (Hence, the differences between beginner and expert code should be high-level algorithmic differences, rather than superficial idiomatic differences.)
+
+* The reduced amount of keyboarding is more responsible for the comfortableness of scripting languages than the reduced amount of type information and compile-time checking. Not repeating yourself also improves correctness, readability, and maintainability. (Hence, language features such as ":=" and for-each loops are important in increasing comfort without sacrifice.)
+
+* You can't please all the people all the time. Worse, trying to do so ends up pleasing no-one. (Hence, Perl, Python, and Ruby aren't so much the competition as alternative lifestyle choices, interesting only when they provide useful precedent.)
+.SH BUGS
+Talc is not yet ready for production use.
+
+The GUI should probably be split out into a separate package. It would be nice if the interactive interfaces saved their histories somewhere. Also, we should offer custom tab-completion for functions and variables.
+.SS LANGUAGE CHANGES/EXTENSIONS UNDER CONSIDERATION
+A shorthand "function f() { ... }" for void functions, instead of "function f() : void { ... }".
+
+Losing the "function" keyword completely. As long as you have to write the parentheses for empty formal argument lists, functions and variables aren't ambiguous because at any given scope, only one or the other is valid. "function" is potentially useful for expressing function types, such as the first argument to a functional "map", for example.
+
+Support for // and /* */ comments. The latter would be a particular advantage over most scripting languages, which don't support multi-line comments or comments within lines.
+
+It might also be useful to support both "mod" and and "rem", though the likely confusion inherent in the fact that % is actually "rem" but generally called mod speaks against this. VHDL users report that the "mod"/"rem" distinction isn't very useful, but they're unlikely to be using signed values in the first place.
+.SH "REPORTING BUGS"
+Report bugs to <software@jessies.org>.
+.SH COPYRIGHT
+Copyright \(co 2007-2008 Elliott Hughes.
+.br
+
+Talc is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+Talc is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.

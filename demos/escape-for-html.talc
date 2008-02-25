@@ -1,0 +1,9 @@
+#!/usr/bin/talc
+
+# A simple demonstration of the global "gets" function and "string.escape_html".
+# Filters stdin into a form suitable for pasting into HTML.
+
+while ((s := gets()) != null) {
+  puts(s.escape_html());
+}
+exit(0);

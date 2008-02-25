@@ -1,0 +1,20 @@
+#!/usr/bin/talc
+
+words:list<string> = [];
+words.push_back("hello");
+words.push_back("world");
+puts(words);
+
+nums:list<int> = [];
+nums.push_back(0);
+nums.push_back(1);
+puts(nums);
+
+function f(words:list<string>) : string {
+ puts(words.length());
+ for (i := 0; i < words.length(); ++i) {
+  puts(words.get(i));
+ }
+}
+f(words);
+f([]);
