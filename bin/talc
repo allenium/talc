@@ -1,5 +1,4 @@
 #!/usr/bin/ruby -w
-#!/usr/bin/ruby -rprofile
 
 class Talc
     def initialize()
@@ -19,17 +18,12 @@ class Talc
     
     def launch0()
         invoker = Java.new("Talc", "org/jessies/talc/Talc")
-        type = "Talc"
-        if ARGV.include?("--gui")
-            #ARGV.reject!() { |item| item == "--gui" }
-            invoker.class_name = "org/jessies/talc/GuiCalc"
-        else
-            # If we're going to be running on a tty, GNU Readline would be good.
-            # Ubuntu has libJavaReadline.so in /usr/lib/jni/.
-            # SuSE has it in /usr/lib/.
-            invoker.add_pathnames_property("java.library.path", [ "/usr/lib/jni/", "/usr/lib/" ])
-            invoker.initiate_startup_notification = false
-        end
+        
+        # If we're going to be running on a tty, GNU Readline would be good.
+        # Ubuntu has libJavaReadline.so in /usr/lib/jni/.
+        # SuSE has it in /usr/lib/.
+        invoker.add_pathnames_property("java.library.path", [ "/usr/lib/jni/", "/usr/lib/" ])
+        invoker.initiate_startup_notification = false
         
         invoker.invoke()
     end

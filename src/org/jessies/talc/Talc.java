@@ -158,10 +158,6 @@ public class Talc {
                 String expression = args[++i];
                 parseAndEvaluate(NullValue.NULL, new ListValue(), new Lexer(expression));
                 didSomethingUseful = true;
-            } else if (args[i].equals("--calc")) {
-                String expression = args[++i];
-                System.out.print(expression + " = " + parseAndEvaluate(expression));
-                didSomethingUseful = true;
             } else if (args[i].equals("--")) {
                 inScriptArgs = true;
             } else if (args[i].startsWith("-")) {
