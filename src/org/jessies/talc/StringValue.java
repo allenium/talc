@@ -27,6 +27,10 @@ public class StringValue implements Value {
         this.value = value;
     }
     
+    public StringValue(StringValue lhs, StringValue rhs) {
+        this(lhs.toString() + rhs.toString());
+    }
+    
     public boolean equals(Object o) {
         if (o instanceof StringValue) {
             return value.equals(((StringValue) o).value);
