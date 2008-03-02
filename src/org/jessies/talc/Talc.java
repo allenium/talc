@@ -25,11 +25,13 @@ public class Talc {
     private static final boolean[] debuggingFlags = new boolean[127];
     private static final String[] debuggingFlagNames = new String[127];
     static {
+        debuggingFlagNames['c'] = "turns on the JVM bytecode compiler";
         debuggingFlagNames['i'] = "shows each inferred type as it's fixed up";
         debuggingFlagNames['l'] = "shows each token returned by the lexer";
         debuggingFlagNames['p'] = "shows information about parsing as it progresses, and the AST for each completed parse";
         debuggingFlagNames['t'] = "shows timing information for each phase of compilation/execution";
         debuggingFlagNames['T'] = "shows information helpful when debugging the type checker";
+        debuggingFlagNames['S'] = "shows the generated JVM bytecodes";
     }
     
     public Talc() {
@@ -58,7 +60,7 @@ public class Talc {
     }
     
     private void reportTime(String task, long ns) {
-        if (debugging('t')) {
+        if (Talc.debugging('t')) {
             double s = ns/1000000000.0;
             System.err.println("[talc] " + new java.text.DecimalFormat("#.####").format(s) + "s " + task);
             // GCJ's String.format seems to be broken at the moment, preventing me from using this:
@@ -89,16 +91,35 @@ public class Talc {
         AstSimplifier simplifier = new AstSimplifier(ast);
         reportTime("simplification", System.nanoTime() - simplifier.creationTime());
         
-        // 3. Evaluation.
-        long evaluation0 = System.nanoTime();
-        Environment rho = new Environment();
-        AstEvaluator evaluator = new AstEvaluator(rho);
-        ArrayList<Value> result = new ArrayList<Value>();
-        for (AstNode node : ast) {
-            result.add(node.accept(evaluator));
+        if (Talc.debugging('c') == false) {
+            long execution0 = System.nanoTime();
+            Environment rho = new Environment();
+            AstEvaluator evaluator = new AstEvaluator(rho);
+            ArrayList<Value> result = new ArrayList<Value>();
+            for (AstNode node : ast) {
+                result.add(node.accept(evaluator));
+            }
+            reportTime("interpretation", System.nanoTime() - execution0);
+            return result;
         }
-        reportTime("evaluation", System.nanoTime() - evaluation0);
-        return result;
+        
+        // 3. Byte-code generation.
+        long codeGeneration0 = System.nanoTime();
+        TalcClassLoader loader = new TalcClassLoader();
+        JvmCodeGenerator codeGenerator = new JvmCodeGenerator(loader, ast);
+        reportTime("code generation", System.nanoTime() - codeGeneration0);
+        
+        // 4. Execution.
+        long execution0 = System.nanoTime();
+        try {
+            Class<?> generatedClass = loader.getClass("GeneratedClass");
+            Object program = generatedClass.getConstructor(new Class[0]).newInstance();
+            //generatedClass.getMethod("main").invoke(program);
+        } catch (Throwable th) {
+            th.printStackTrace();
+        }
+        reportTime("execution", System.nanoTime() - execution0);
+        return null;
     }
     
     private void interactiveReadEvaluatePrintLoop() throws IOException {
@@ -134,6 +155,7 @@ public class Talc {
                 scriptArgs.push_back(new StringValue(args[i]));
             } else if (args[i].equals("--copyright")) {
                 System.out.println("talc - Copyright (C) 2007-2008 Elliott Hughes.");
+                System.out.println("ASM bytecode library copyright (C) 2000-2007 INRIA, France Telecom.");
                 didSomethingUseful = true;
             } else if (args[i].equals("-h") || args[i].equals("--help")) {
                 usage();

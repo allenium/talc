@@ -1,6 +1,6 @@
 /*
  * This file is part of Talc.
- * Copyright (C) 2007 Elliott Hughes <enh@jessies.org>.
+ * Copyright (C) 2007-2008 Elliott Hughes <enh@jessies.org>.
  * 
  * Talc is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,6 +29,10 @@ public final class SourceLocation {
         this.file = file;
         this.lineNumber = lineNumber;
         this.columnNumber = columnNumber;
+    }
+    
+    public String getSourceFilename() {
+        return (file != null) ? file.toString() : "-";
     }
     
     public String toString() {

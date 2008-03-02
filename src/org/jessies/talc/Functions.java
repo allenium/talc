@@ -1,6 +1,6 @@
 /*
  * This file is part of Talc.
- * Copyright (C) 2007 Elliott Hughes <enh@jessies.org>.
+ * Copyright (C) 2007-2008 Elliott Hughes <enh@jessies.org>.
  * 
  * Talc is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,48 @@ package org.jessies.talc;
 import java.io.*;
 import java.util.*;
 
-public interface Functions {
+public class Functions {
+    public static void print(Value value) {
+        Object printable = null;
+        if (value == NullValue.NULL) {
+            printable = "null";
+        } else if (value == BooleanValue.TRUE) {
+            // FIXME: we'll need bool.to_s anyway, but maybe this is still a useful optimization?
+            printable = "true";
+        } else if (value == BooleanValue.FALSE) {
+            // FIXME: we'll need bool.to_s anyway, but maybe this is still a useful optimization?
+            printable = "false";
+        } else if (value instanceof StringValue) {
+            printable = value;
+        } else if (value instanceof IntegerValue) {
+            printable = value.toString();
+        } else {
+            // FIXME: invokeVirtual "to_s" on the Value.
+            printable = "<<FIXME: need to call .to_s>>";
+            /*
+            AstNode argumentValueConstant = new AstNode.Constant(null, argumentValue, null);
+            printable = evaluator.visitFunctionCall(new AstNode.FunctionCall(null, "to_s", argumentValueConstant, new AstNode[0]));
+            */
+        }
+        System.out.print(printable);
+    }
+    
+    public static void print(Value[] values) {
+        for (Value value : values) {
+            print(value);
+        }
+    }
+    
+    public static void puts(Value value) {
+        print(value);
+        System.out.println();
+    }
+    
+    public static void puts(Value[] values) {
+        print(values);
+        System.out.println();
+    }
+    
     public static class Object_to_s extends BuiltInFunction {
         public Object_to_s() {
             super("to_s", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.STRING);
