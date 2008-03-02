@@ -38,6 +38,12 @@ public class AstTypeChecker implements AstVisitor<TalcType> {
     }
     
     public TalcType visitBinaryOperator(AstNode.BinaryOperator binOp) {
+        TalcType type = visitBinaryOperator0(binOp);
+        binOp.fixUpType(type);
+        return type;
+    }
+    
+    public TalcType visitBinaryOperator0(AstNode.BinaryOperator binOp) {
         switch (binOp.op()) {
             case NEG:     return checkNumeric(binOp);
             case PLUS:    return visitNumericAddOrStringConcatenation(binOp);

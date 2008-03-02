@@ -42,6 +42,7 @@ public abstract class AstNode {
         private Token op;
         private AstNode lhs;
         private AstNode rhs;
+        private TalcType type;
         
         public BinaryOperator(SourceLocation location, Token op, AstNode lhs, AstNode rhs) {
             this.location = location;
@@ -64,6 +65,14 @@ public abstract class AstNode {
         
         public AstNode rhs() {
             return rhs;
+        }
+        
+        public void fixUpType(TalcType type) {
+            this.type = type;
+        }
+        
+        public TalcType type() {
+            return type;
         }
         
         public String toString() {
