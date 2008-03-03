@@ -18,7 +18,7 @@
 
 package org.jessies.talc;
 
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.*;
 import org.objectweb.asm.*;
 import org.objectweb.asm.commons.GeneratorAdapter;
@@ -33,6 +33,7 @@ import org.objectweb.asm.util.TraceClassVisitor;
  * All the actual class file writing is done by objectweb.org's ASM library.
  */
 public class JvmCodeGenerator implements AstVisitor<Void> {
+    // We use a lot of types repeatedly, so let's try to ask for any given type just once.
     private final Type booleanValueType = Type.getType(BooleanValue.class);
     private final Type integerValueType = Type.getType(IntegerValue.class);
     private final Type listValueType = Type.getType(ListValue.class);
@@ -41,17 +42,41 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     private final Type stringValueType = Type.getType(StringValue.class);
     private final Type valueType = Type.getType(Value.class);
     
-    private TalcClassLoader classLoader;
+    // We need the ability to track active loops to implement "break" and "continue".
+    private static class LoopInfo { Label breakLabel, continueLabel; }
+    private ArrayStack<LoopInfo> activeLoops = new ArrayStack<LoopInfo>();
+    private LoopInfo enterLoop() {
+        LoopInfo loopInfo = new LoopInfo();
+        loopInfo.breakLabel = mg.newLabel();
+        loopInfo.continueLabel = mg.newLabel();
+        activeLoops.push(loopInfo);
+        return loopInfo;
+    }
+    private void leaveLoop() {
+        activeLoops.pop();
+    }
     
+    // The method we're currently emitting code for.
     private GeneratorAdapter mg;
     
     public JvmCodeGenerator(TalcClassLoader classLoader, List<AstNode> ast) {
-        this.classLoader = classLoader;
-        
         ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
         classWriter.visitSource(ast.get(0).location().getSourceFilename(), null);
         compile(ast, classWriter);
-        classLoader.defineClass("GeneratedClass", classWriter.toByteArray());
+        byte[] bytecode = classWriter.toByteArray();
+        
+        // FIXME: use this for caching rather than debugging?
+        /*
+        try {
+            FileOutputStream fos = new FileOutputStream("/tmp/GeneratedClass.class");
+            fos.write(bytecode);
+            fos.close();
+        } catch (Exception ex) {
+            System.err.println("talc: warning: couldn't write generated class file to /tmp.");
+        }
+        */
+        
+        classLoader.defineClass("GeneratedClass", bytecode);
     }
     
     private void compile(List<AstNode> ast, ClassWriter classWriter) {
@@ -107,10 +132,10 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
             
             case FACTORIAL: invokeUnaryOp(binOp, integerValueType, "factorial"); break;
             
-            //case POST_DECREMENT: result = prePostIncrementDecrement(binOp, false, false); break;
-            //case POST_INCREMENT: result = prePostIncrementDecrement(binOp, false, true); break;
-            //case PRE_DECREMENT:  result = prePostIncrementDecrement(binOp, true, false); break;
-            //case PRE_INCREMENT:  result = prePostIncrementDecrement(binOp, true, true); break;
+            case POST_DECREMENT: prePostIncrementDecrement(binOp, false, false); break;
+            case POST_INCREMENT: prePostIncrementDecrement(binOp, false, true); break;
+            case PRE_DECREMENT:  prePostIncrementDecrement(binOp, true, false); break;
+            case PRE_INCREMENT:  prePostIncrementDecrement(binOp, true, true); break;
             
             case EQ:        eq(binOp, "TRUE", "FALSE"); break;
             case NE:        eq(binOp, "FALSE", "TRUE"); break;
@@ -120,6 +145,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
             case GT:        cmp(binOp, GeneratorAdapter.GT); break;
             case LT:        cmp(binOp, GeneratorAdapter.LT); break;
             
+            case ASSIGN:    assign(binOp); break;
             //case ASSIGN:         result = assignTo(lhs, binOp.rhs().accept(this)); break;
             //case PLUS_ASSIGN:    result = assignTo(lhs, visitNumericAddOrStringConcatenation(binOp)); break;
             //case SUB_ASSIGN:     result = assignTo(lhs, lhsNumber(binOp).subtract(rhsNumber(binOp))); break;
@@ -184,6 +210,26 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         mg.mark(doneLabel);
     }
     
+    private void prePostIncrementDecrement(AstNode.BinaryOperator binOp, boolean isPre, boolean isIncrement) {
+        // Get the initial value on the stack.
+        binOp.lhs().accept(this);
+        // For post-increment/decrement, we want to return this.
+        if (isPre == false) {
+            mg.dup();
+        }
+        // Add/subtract 1.
+        Type type = (binOp.type() == TalcType.INT) ? integerValueType : realValueType;
+        mg.getStatic(type, "ONE", type);
+        mg.invokeInterface(numericValueType, new Method(isIncrement ? "add" : "subtract", numericValueType, new Type[] { numericValueType }));
+        // For pre-increment/decrement, we want to return this.
+        if (isPre) {
+            mg.dup();
+        }
+        // Store the new value.
+        AstNode.VariableName variableName = (AstNode.VariableName) binOp.lhs();
+        mg.storeLocal(variableName.definition().local());
+    }
+    
     // Compares binOp.lhs() and binOp.rhs() using Object.equals.
     // Returns the BooleanValue corresponding eqResult if they're equal, and neResult otherwise.
     // Implements == and !=.
@@ -237,15 +283,32 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         }
     }
     
+    private void assign(AstNode.BinaryOperator binOp) {
+        binOp.rhs().accept(this);
+        AstNode.VariableName variableName = (AstNode.VariableName) binOp.lhs();
+        mg.storeLocal(variableName.definition().local());
+    }
+    
     public Void visitBlock(AstNode.Block block) {
         for (AstNode statement : block.statements()) {
             statement.accept(this);
-            // FIXME: if the code we generated for "statement" left a value on the stack, we need to pop it off! how do we know this?
+            popAnythingLeftBy(statement);
         }
         return null;
     }
     
+    private void popAnythingLeftBy(AstNode node) {
+        // If the code we generated for "statement" left a value on the stack, we need to pop it off!
+        // FIXME: is there a cleaner way to do this?
+        // FIXME: what about AstNode.FunctionCall?
+        if (node instanceof AstNode.BinaryOperator || node instanceof AstNode.Constant || node instanceof AstNode.ListLiteral || node instanceof AstNode.VariableName) {
+            mg.pop();
+        }
+    }
+    
     public Void visitBreakStatement(AstNode.BreakStatement breakStatement) {
+        LoopInfo loopInfo = activeLoops.peek();
+        mg.goTo(loopInfo.breakLabel);
         return null;
     }
     
@@ -284,14 +347,57 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     }
     
     public Void visitContinueStatement(AstNode.ContinueStatement continueStatement) {
+        LoopInfo loopInfo = activeLoops.peek();
+        mg.goTo(loopInfo.continueLabel);
         return null;
     }
     
     public Void visitDoStatement(AstNode.DoStatement doStatement) {
+        LoopInfo loopInfo = enterLoop();
+        
+        // continueLabel:
+        mg.mark(loopInfo.continueLabel);
+        // <body>
+        doStatement.body().accept(this);
+        // if (<expression> == false) goto breakLabel;
+        doStatement.expression().accept(this);
+        mg.getStatic(booleanValueType, "FALSE", booleanValueType);
+        mg.ifCmp(booleanValueType, GeneratorAdapter.EQ, loopInfo.breakLabel);
+        // goto continueLabel;
+        mg.goTo(loopInfo.continueLabel);
+        // breakLabel:
+        mg.mark(loopInfo.breakLabel);
+        
+        leaveLoop();
         return null;
     }
     
     public Void visitForStatement(AstNode.ForStatement forStatement) {
+        LoopInfo loopInfo = enterLoop();
+        
+        Label headLabel = mg.newLabel();
+        
+        // <initializer>
+        if (forStatement.initializer() != null) forStatement.initializer().accept(this);
+        // headLabel:
+        mg.mark(headLabel);
+        // if (<condition> == false) goto breakLabel;
+        forStatement.conditionExpression().accept(this);
+        mg.getStatic(booleanValueType, "FALSE", booleanValueType);
+        mg.ifCmp(booleanValueType, GeneratorAdapter.EQ, loopInfo.breakLabel);
+        // <body>
+        forStatement.body().accept(this);
+        // continueLabel:
+        mg.mark(loopInfo.continueLabel);
+        // <update-expression>
+        forStatement.updateExpression().accept(this);
+        popAnythingLeftBy(forStatement.updateExpression());
+        // goto headLabel;
+        mg.goTo(headLabel);
+        // breakLabel:
+        mg.mark(loopInfo.breakLabel);
+        
+        leaveLoop();
         return null;
     }
     
@@ -398,14 +504,37 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     }
     
     public Void visitVariableDefinition(AstNode.VariableDefinition variableDefinition) {
+        // FIXME: we can't assume that all variables are locals!
+        int local = mg.newLocal(valueType);
+        variableDefinition.setLocal(local);
+        variableDefinition.initializer().accept(this);
+        mg.storeLocal(local);
         return null;
     }
     
     public Void visitVariableName(AstNode.VariableName variableName) {
+        // FIXME: we can't assume that all variables are locals!
+        mg.loadLocal(variableName.definition().local());
         return null;
     }
     
     public Void visitWhileStatement(AstNode.WhileStatement whileStatement) {
+        LoopInfo loopInfo = enterLoop();
+        
+        // continueLabel:
+        mg.mark(loopInfo.continueLabel);
+        // if (<expression> == false) goto breakLabel;
+        whileStatement.expression().accept(this);
+        mg.getStatic(booleanValueType, "FALSE", booleanValueType);
+        mg.ifCmp(booleanValueType, GeneratorAdapter.EQ, loopInfo.breakLabel);
+        // <body>
+        whileStatement.body().accept(this);
+        // goto continueLabel;
+        mg.goTo(loopInfo.continueLabel);
+        // breakLabel:
+        mg.mark(loopInfo.breakLabel);
+        
+        leaveLoop();
         return null;
     }
 }

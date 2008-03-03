@@ -666,6 +666,9 @@ public abstract class AstNode {
         // Until the symbol table is built, this is all we have, type-wise.
         private TalcTypeDescriptor typeDescriptor;
         
+        // Used by JvmCodeGenerator to remember local slots.
+        private int local;
+        
         public VariableDefinition(SourceLocation location, String identifier, TalcTypeDescriptor typeDescriptor, AstNode initializer, boolean isFinal) {
             this.location = location;
             this.identifier = identifier;
@@ -730,6 +733,14 @@ public abstract class AstNode {
             return initializer;
         }
         
+        public void setLocal(int local) {
+            this.local = local;
+        }
+        
+        public int local() {
+            return local;
+        }
+        
         public String toString() {
             StringBuilder result = new StringBuilder();
             result.append(identifier);
@@ -751,6 +762,9 @@ public abstract class AstNode {
         private String identifier;
         private boolean isFieldAccess;
         
+        // Points to this variable's definition. Set up by SymbolTable and used by most later phases.
+        private AstNode.VariableDefinition definition;
+        
         public VariableName(SourceLocation location, String identifier) {
             this.location = location;
             this.identifier = identifier;
@@ -771,6 +785,14 @@ public abstract class AstNode {
         
         public void markAsFieldAccess() {
             this.isFieldAccess = true;
+        }
+        
+        public void setDefinition(AstNode.VariableDefinition definition) {
+            this.definition = definition;
+        }
+        
+        public AstNode.VariableDefinition definition() {
+            return definition;
         }
         
         public String toString() {

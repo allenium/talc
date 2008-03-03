@@ -141,3 +141,8 @@ if (true) {
 }
 
 #}
+
+i := (1 + 2);
+s := ("hello" + " " + "world");
+puts(i == 3);
+puts(s == "hello world");

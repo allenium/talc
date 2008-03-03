@@ -247,7 +247,8 @@ public class SymbolTable implements AstVisitor<Void> {
     
     public Void visitVariableName(AstNode.VariableName variableName) {
         setScope(variableName);
-        if (scopes.peek().findVariable(variableName.identifier()) == null) {
+        variableName.setDefinition(scopes.peek().findVariable(variableName.identifier()));
+        if (variableName.definition() == null) {
             throw new TalcError(variableName, "no variable \"" + variableName.identifier() + "\" in scope");
         }
         return null;

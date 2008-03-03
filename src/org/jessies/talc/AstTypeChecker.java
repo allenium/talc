@@ -458,7 +458,7 @@ public class AstTypeChecker implements AstVisitor<TalcType> {
     }
     
     public TalcType visitVariableName(AstNode.VariableName variableName) {
-        AstNode.VariableDefinition variableDefinition = variableName.scope().findVariable(variableName.identifier());
+        AstNode.VariableDefinition variableDefinition = variableName.definition();
         // Ensure we've visited the variable definition and thus fixed up its type descriptor to a type.
         variableDefinition.accept(this);
         // Record whether, during evaluation, we should look for the variable on the stack or as a field of "this".
