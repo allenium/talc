@@ -27,7 +27,7 @@
 * [medium] can we use List<VariableDefinition> (with null initializers?) in AstNode.FunctionDefinition for the parameter list?
 
 * [hard] implement the [] and []= operators.
- + [] is easy, but i'm less sure about []=.
+ + [] is easy, but i'm less sure about []= (maybe i'm just being anxious; why not just look ahead for the '=' token and handle everything in the parser? have some kind of marker on the generated method-call AST node so we can provide better error messages that refer to what the user actually typed).
  + i think if we do implement them, [] and []= should always be translated to get and put, and any class can have them for free.
 
 * [medium] add map literals.
@@ -126,7 +126,7 @@ file.delete():bool
 url.read():string # read entire url as one string so people don't have to mess with curl(1)/wget(1).
 
 string.substring(offset:int, length:int):string # or startIndex/endIndex? is this actually useful?
-string.chomp():string # remove trailing newline; do we need this, given trim?
+string.chomp():string # remove trailing newline; do we need this, given trim? Python doesn't seem to. mad mentions having had to fix a bug in a script relating to chomp ignoring '\r'.
 
 # random class backed by java.util.Random
 random.reset(seed:int):void
@@ -143,6 +143,23 @@ access to stderr? ability to print/puts to files/sockets/pipes?
 
 how should "printf"-like functionality be implemented? string.format? (int|real|string).format methods?
 
+should we use "size" ubiquitously, rather than "length"? or does "size" have too strong a flavor of "byte count"?
+
+# the need for these is demonstrated by "binomial-triangle.talc"...
+list<T>.n_copies(n:int,item:T):list<T> # returns a new list with 'n' copies of 'item'.
+list<T>.copy():list<T> # clone/copy the list. need such a method on all mutable containers.
+string.n_copies(n:int,s:string):string # returns a new string of 'n' concatenated copies of 's', or, better...
+string.dup(n:int):string # returns a new string of 'n' concatenated copies of 'this'
+some kind of "format using" functionality.
+
+time_s() : int # like Unix time(0).
+time_ms() : int # like System.currentTimeMillis.
+time_ns() : int # like System.currentTimeNanos.
+some kind of class like our StopWatch.
+
+something like Basic's ability to turn function-call tracing on? generate suitable byte-code to output something on every method entry/exit, nicely lined-up and with arguments and return values?
+
+should "boolean" be just "bool"?
 should list<t>.peek_back and list<T>.peek_front just be "back" and "front"?
 should list<t>.pop_back and list<T>.push_back just be "pop" and "push"?
 should we have list<T>.find(e:T):int ? should it take a start_index:int too, or return list<int>?
