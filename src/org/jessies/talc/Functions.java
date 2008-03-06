@@ -1049,6 +1049,16 @@ public class Functions {
         }
     }
     
+    public static class time_ms extends BuiltInFunction {
+        public time_ms() {
+            super("time_ms", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.INT);
+        }
+        
+        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+            return new IntegerValue(System.currentTimeMillis());
+        }
+    }
+    
     /*
     private abstract static class SingleRealArgFunction extends BuiltInFunction {
         public Value invoke(AstEvaluator evaluator, AstNode[] arguments) {

@@ -1,0 +1,51 @@
+#!/usr/bin/talc
+
+# Finds solutions to the eight queens puzzle.
+# http://en.wikipedia.org/wiki/Eight_queens_puzzle_solutions
+
+row: list<int> = [ 0, 0, 0, 0, 0, 0, 0, 0 ];
+solution_count := 0;
+
+function is_safe(x: int, y: int) : boolean {
+    for (i := 1; i <= y; ++i) {
+        if (row.get(y - i) == x || row.get(y - i) == x - i || row.get(y - i) == x + i) {
+            return false;
+        }
+    }
+    return true;
+}
+
+function show_solution() : void {
+    puts("Solution #", ++solution_count, ":");
+    puts("---------------------------------");
+    for (y := 0; y < 8; ++y) {
+        for (x := 0; x < 8; ++x) {
+            if (row.get(y) == x) {
+                print("| Q ");
+            } else {
+                print("|   ");
+            }
+        }
+        puts("|");
+        puts("---------------------------------");
+    }
+    puts();
+}
+
+function solve_row(y: int) : void {
+    for (x := 0; x < 8; ++x) {
+        row.put(y - 1, x);
+        if (is_safe(x, y - 1)) {
+            if (y < 8) {
+                solve_row(y + 1);
+            } else {
+                show_solution();
+            }
+        }
+    }
+}
+
+start_time := time_ms();
+solve_row(1);
+puts("Found ", solution_count, " solutions in ", (time_ms() - start_time), "ms.");
+exit(0);

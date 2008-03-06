@@ -138,6 +138,7 @@ public class Scope {
         globalScope.addFunction(new Functions.Puts());
         globalScope.addFunction(new Functions.shell());
         globalScope.addFunction(new Functions.system());
+        globalScope.addFunction(new Functions.time_ms());
         // Global constants.
         globalScope.addVariable(new BuiltInConstant("ARGV0", TalcType.STRING, argv0));
         globalScope.addVariable(new BuiltInConstant("ARGS", TalcType.LIST_OF_STRING, args));

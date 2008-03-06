@@ -1,0 +1,22 @@
+#!/usr/bin/talc
+
+# Solves the "Towers of Hanoi" puzzle.
+# http://en.wikipedia.org/wiki/Tower_of_Hanoi
+
+steps := 0;
+
+function hanoi(from:string, using:string, to:string, n:int) : void {
+ if (n == 0) {
+  return;
+ }
+ hanoi(from, to, using, n - 1);
+ puts("Move disk #", n, " from ", from, " to ", to, ".");
+ ++steps;
+ hanoi(using, from, to, n - 1);
+}
+
+start_time := time_ms();
+disks := 3;
+hanoi("left", "middle", "right", disks);
+puts(steps, " steps in ", (time_ms() - start_time), "ms.");
+exit(0);

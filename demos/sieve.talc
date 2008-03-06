@@ -1,0 +1,41 @@
+#!/usr/bin/talc
+
+# Finds prime numbers using the Sieve of Eratosthenes method.
+# http://en.wikipedia.org/wiki/Sieve_of_Eratosthenes
+
+size := 10000;
+
+# FIXME: list should have something like n_copies(n: int, item: T).
+function n_trues(n: int) : list<boolean> {
+    result: list<boolean> = [];
+    for (i := 0; i < n; ++i) {
+        result.push_back(true);
+    }
+    return result;
+}
+
+# FIXME: this would be clearer (and more space-efficient) if we had a BitSet.
+
+start_time := time_ms();
+flags : list<boolean> = n_trues(size);
+
+prime := 2;
+while (prime*prime < size) {
+    i := prime*prime;
+    while (i < size) {
+        flags.put(i, false);
+        i += prime;
+    }
+    do {
+        ++prime;
+    } while (flags.get(prime) == false);
+}
+
+count := 0;
+for (i := 2; i < size; ++i) {
+    if (flags.get(i)) {
+        ++count;
+    }
+}
+puts("Found ", count, " primes under ", size, " in ", (time_ms() - start_time), "ms.");
+exit(0);
