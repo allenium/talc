@@ -6,7 +6,7 @@ words := "68 65 6c 6c 6f 20 77 6f 72 6c 64 0a".split(" ");
 result := "";
 for (i := 0; i < words.length(); ++i) {
   # This is deliberately verbose to test more of the compiler!
-  word := words.get(i);
+  word := words[i];
   result += ("0x" + word).to_i().to_char();
 }
 print(result);

@@ -16,7 +16,7 @@ strings = [ "hello", "world" ];
 
 objects:list<object> = [ 1, 2 ];
 for (i:int = 0; i < objects.length(); ++i) {
- puts(objects.get(i));
+ puts(objects[i]);
 }
 
 # type error: type list<object> cannot be assigned to list<string>
@@ -24,5 +24,5 @@ for (i:int = 0; i < objects.length(); ++i) {
 
 objects = strings;
 for (i:int = 0; i < objects.length(); ++i) {
- puts(objects.get(i));
+ puts(objects[i]);
 }

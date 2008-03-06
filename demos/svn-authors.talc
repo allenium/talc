@@ -20,7 +20,7 @@ for (filename in ARGS) {
     author := m.group(1);
     author_line_count := 1;
     if (authors.has_key(author)) {
-      author_line_count += authors.get(author);
+      author_line_count += authors[author];
     }
     authors.put(author, author_line_count);
     ++total_line_count;
@@ -28,7 +28,7 @@ for (filename in ARGS) {
 }
 
 for (author in authors.keys().sort()) {
-  author_line_count := authors.get(author);
+  author_line_count := authors[author];
   author_percentage := (100.0 * author_line_count.to_r() / total_line_count.to_r());
   puts(author_line_count, "\t", author_percentage, "\t", author);
 }

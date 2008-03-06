@@ -13,7 +13,7 @@ puts(nums);
 function f(words:list<string>) : string {
  puts(words.length());
  for (i := 0; i < words.length(); ++i) {
-  puts(words.get(i));
+   puts(words[i]);
  }
 }
 f(words);

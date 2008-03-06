@@ -1,6 +1,5 @@
 #!/usr/bin/talc
 
-# FIXME: [] should translate to .get automatically.
 # FIXME: should be able to write binarySearch(xs: list<T>, x: T) : int.
 
 function binarySearch(xs: list<int>, x: int) : int {
@@ -8,7 +7,7 @@ function binarySearch(xs: list<int>, x: int) : int {
   high := xs.length() - 1;
   while (low <= high) {
     mid := low + ((high - low) / 2);
-    v := xs.get(mid);
+    v := xs[mid];
     if (v > x) {
       high = mid - 1;
     } else if (v < x) {

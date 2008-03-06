@@ -696,19 +696,35 @@ public class Parser {
             lexer.nextToken();
         }
         
-        while (lexer.token() == Token.DOT) {
-            // Method call ". <identifier> ( <expression> ... )".
-            expect(Token.DOT);
-            if (lexer.token() != Token.IDENTIFIER) {
-                expectIdentifier("method name");
+        while (lexer.token() == Token.DOT || lexer.token() == Token.OPEN_BRACKET) {
+            if (lexer.token() == Token.DOT) {
+                // Method call ". <identifier> ( <expression> ... )".
+                expect(Token.DOT);
+                if (lexer.token() != Token.IDENTIFIER) {
+                    expectIdentifier("method name");
+                }
+                String identifier = lexer.identifier();
+                lexer.nextToken();
+                if (lexer.token() != Token.OPEN_PARENTHESIS) {
+                    expect(Token.OPEN_PARENTHESIS);
+                }
+                List<AstNode> arguments = parseExpressionList(Token.OPEN_PARENTHESIS, Token.CLOSE_PARENTHESIS, "arguments to call of \"" + identifier + "\"");
+                primary = new AstNode.FunctionCall(location, identifier, primary, arguments.toArray(new AstNode[arguments.size()]));
+            } else {
+                // Handle operator[] and operator[]=.
+                expect(Token.OPEN_BRACKET);
+                AstNode indexExpression = parseExpression();
+                expect(Token.CLOSE_BRACKET);
+                if (lexer.token() == Token.ASSIGN) {
+                    expect(Token.ASSIGN);
+                    AstNode valueExpression = parseExpression();
+                    primary = new AstNode.FunctionCall(location, "put", primary, new AstNode[] { indexExpression, valueExpression });
+                    // You can't index after a set.
+                    break;
+                } else {
+                    primary = new AstNode.FunctionCall(location, "get", primary, new AstNode[] { indexExpression });
+                }
             }
-            String identifier = lexer.identifier();
-            lexer.nextToken();
-            if (lexer.token() != Token.OPEN_PARENTHESIS) {
-                expect(Token.OPEN_PARENTHESIS);
-            }
-            List<AstNode> arguments = parseExpressionList(Token.OPEN_PARENTHESIS, Token.CLOSE_PARENTHESIS, "arguments to call of \"" + identifier + "\"");
-            primary = new AstNode.FunctionCall(location, identifier, primary, arguments.toArray(new AstNode[arguments.size()]));
         }
         
         return primary;

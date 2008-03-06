@@ -126,6 +126,8 @@ The operators "!" (prefix logical negation), "&&", and "||" only operate on type
 
 There are also the following compound assignment operators: "+=", "-=", "*=", "**=", "/=", "%=", "<<=", ">>=", "&=", "|=", "^=", with the usual C-family interpretation where "a op= b" is equivalent to "a = a op b".
 
+There are also the array operators "[]" and "[]=" for array indexing and array assignment respectively. An expression such as "puts(a[i])" is translated into "puts(a.get(i))", while "a[i] = f()" is translated into "a.put(i, f())".
+
 You can create new instances of classes with the "new" operator.
 
 FIXME: detail operator precedence.
