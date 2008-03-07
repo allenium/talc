@@ -83,10 +83,11 @@ public class TalcType {
         INT.members.addFunction(new Functions.Numeric_to_r());
         addClass(INT);
         
+        LIST_OF_T.members.addFunction(new Functions.List___get_item__());
+        LIST_OF_T.members.addFunction(new Functions.List___set_item__());
         LIST_OF_T.members.addFunction(new Functions.List_add_all());
         LIST_OF_T.members.addFunction(new Functions.List_clear());
         LIST_OF_T.members.addFunction(new Functions.List_contains());
-        LIST_OF_T.members.addFunction(new Functions.List_get());
         LIST_OF_T.members.addFunction(new Functions.List_is_empty());
         LIST_OF_T.members.addFunction(new Functions.List_join());
         LIST_OF_T.members.addFunction(new Functions.List_length());
@@ -97,7 +98,6 @@ public class TalcType {
         LIST_OF_T.members.addFunction(new Functions.List_pop_front());
         LIST_OF_T.members.addFunction(new Functions.List_push_back());
         LIST_OF_T.members.addFunction(new Functions.List_push_front());
-        LIST_OF_T.members.addFunction(new Functions.List_put());
         LIST_OF_T.members.addFunction(new Functions.List_remove_all());
         LIST_OF_T.members.addFunction(new Functions.List_remove_at());
         LIST_OF_T.members.addFunction(new Functions.List_remove_first());
@@ -109,14 +109,14 @@ public class TalcType {
         LIST_OF_V = LIST_OF_T.duplicateWithDifferentKeyType(V);
         addClass(LIST_OF_T);
         
+        MAP_OF_K_V.members.addFunction(new Functions.Map___get_item__());
+        MAP_OF_K_V.members.addFunction(new Functions.Map___set_item__());
         MAP_OF_K_V.members.addFunction(new Functions.Map_clear());
-        MAP_OF_K_V.members.addFunction(new Functions.Map_get());
         MAP_OF_K_V.members.addFunction(new Functions.Map_has_key());
         MAP_OF_K_V.members.addFunction(new Functions.Map_has_value());
         MAP_OF_K_V.members.addFunction(new Functions.Map_keys());
         MAP_OF_K_V.members.addFunction(new Functions.Map_length());
         MAP_OF_K_V.members.addFunction(new Functions.Map_map());
-        MAP_OF_K_V.members.addFunction(new Functions.Map_put());
         MAP_OF_K_V.members.addFunction(new Functions.Map_remove());
         MAP_OF_K_V.members.addFunction(new Functions.Map_values());
         addClass(MAP_OF_K_V);

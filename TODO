@@ -155,8 +155,6 @@ some kind of class like our StopWatch.
 
 something like Basic's ability to turn function-call tracing on? generate suitable byte-code to output something on every method entry/exit, nicely lined-up and with arguments and return values?
 
-since "[]" and "[]=" always translate to "get" and "put", should "get" and "put" have more esoteric names like "get_at" and "put_at" so innocent users of method names like "get" and "put" don't automatically gain this functionality. maybe translate to "operator_get" and "operator_put" (sort of like C#) or "__get__" and "__put__" (sort of like Python)? or add a tag interface Indexable? (but that wouldn't let you implement, say, [] but not []= or vice versa. is that an advantage or a problem?) we should probably also improve on errors like 'no instance method "get" in class int' for talc -e '1[23];'.
-
 should "boolean" be just "bool"? (my feeling from using the language is "yes".)
 should list<t>.peek_back and list<T>.peek_front just be "back" and "front"?
 should list<t>.pop_back and list<T>.push_back just be "pop" and "push"?
@@ -164,6 +162,12 @@ should we have list<T>.find(e:T):int ? should it take a start_index:int too, or 
 should FILE_SEPARATOR and PATH_SEPARATOR be in class "file"?
 
 make sure all Value subclasses return sensible hashCodes!
+
+* report better errors than 'no instance method "__get_item__" in class int' for talc -e '1[23];'.
+  how public should those special names be?
+  are we up-front about this, and using it as a mechanism for user-defined classes to support [] and []=?
+  i don't think that's such a bad idea, compared to "operator []" and the like.
+  but we should still talk to the user in terms of what they wrote.
 
 * report sensible error (instead of stack overflow in the type inference code) for:
 s : = "x";

@@ -22,7 +22,7 @@ for (filename in ARGS) {
     if (authors.has_key(author)) {
       author_line_count += authors[author];
     }
-    authors.put(author, author_line_count);
+    authors[author] = author_line_count;
     ++total_line_count;
   }
 }

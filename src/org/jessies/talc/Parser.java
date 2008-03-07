@@ -718,11 +718,11 @@ public class Parser {
                 if (lexer.token() == Token.ASSIGN) {
                     expect(Token.ASSIGN);
                     AstNode valueExpression = parseExpression();
-                    primary = new AstNode.FunctionCall(location, "put", primary, new AstNode[] { indexExpression, valueExpression });
+                    primary = new AstNode.FunctionCall(location, "__set_item__", primary, new AstNode[] { indexExpression, valueExpression });
                     // You can't index after a set.
                     break;
                 } else {
-                    primary = new AstNode.FunctionCall(location, "get", primary, new AstNode[] { indexExpression });
+                    primary = new AstNode.FunctionCall(location, "__get_item__", primary, new AstNode[] { indexExpression });
                 }
             }
         }

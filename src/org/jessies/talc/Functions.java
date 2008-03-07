@@ -265,9 +265,9 @@ public class Functions {
         }
     }
     
-    public static class List_get extends BuiltInFunction {
-        public List_get() {
-            super("get", Arrays.asList("index"), Arrays.asList(TalcType.INT), TalcType.T);
+    public static class List___get_item__ extends BuiltInFunction {
+        public List___get_item__() {
+            super("__get_item__", Arrays.asList("index"), Arrays.asList(TalcType.INT), TalcType.T);
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
@@ -387,9 +387,9 @@ public class Functions {
         }
     }
     
-    public static class List_put extends BuiltInFunction {
-        public List_put() {
-            super("put", Arrays.asList("index", "value"), Arrays.asList(TalcType.INT, TalcType.T), TalcType.VOID);
+    public static class List___set_item__ extends BuiltInFunction {
+        public List___set_item__() {
+            super("__set_item__", Arrays.asList("index", "value"), Arrays.asList(TalcType.INT, TalcType.T), TalcType.VOID);
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
@@ -498,9 +498,9 @@ public class Functions {
         }
     }
     
-    public static class Map_get extends BuiltInFunction {
-        public Map_get() {
-            super("get", Arrays.asList("key"), Arrays.asList(TalcType.K), TalcType.V);
+    public static class Map___get_item__ extends BuiltInFunction {
+        public Map___get_item__() {
+            super("__get_item__", Arrays.asList("key"), Arrays.asList(TalcType.K), TalcType.V);
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
@@ -567,9 +567,9 @@ public class Functions {
         }
     }
     
-    public static class Map_put extends BuiltInFunction {
-        public Map_put() {
-            super("put", Arrays.asList("key", "value"), Arrays.asList(TalcType.K, TalcType.V), TalcType.VOID);
+    public static class Map___set_item__ extends BuiltInFunction {
+        public Map___set_item__() {
+            super("__set_item__", Arrays.asList("key", "value"), Arrays.asList(TalcType.K, TalcType.V), TalcType.VOID);
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
