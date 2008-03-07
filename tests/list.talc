@@ -1,6 +1,6 @@
 #!/usr/bin/talc
 
-bools:list<boolean> = [ true, false, false, true ];
+bools:list<bool> = [ true, false, false, true ];
 puts(bools);
 puts("bools.contains(false) = ", bools.contains(false));
 

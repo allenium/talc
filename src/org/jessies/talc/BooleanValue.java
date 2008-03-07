@@ -42,6 +42,6 @@ public class BooleanValue implements Value {
     }
     
     public TalcType type() {
-        return TalcType.BOOLEAN;
+        return TalcType.BOOL;
     }
 }

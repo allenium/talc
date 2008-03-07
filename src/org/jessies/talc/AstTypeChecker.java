@@ -72,13 +72,13 @@ public class AstTypeChecker implements AstVisitor<TalcType> {
             case PRE_INCREMENT:  return checkNumeric(binOp);
             
             // FIXME: what constraints do we need here?
-            case EQ:             binOp.lhs().accept(this); binOp.rhs().accept(this); return TalcType.BOOLEAN;
-            case NE:             binOp.lhs().accept(this); binOp.rhs().accept(this); return TalcType.BOOLEAN;
+            case EQ:             binOp.lhs().accept(this); binOp.rhs().accept(this); return TalcType.BOOL;
+            case NE:             binOp.lhs().accept(this); binOp.rhs().accept(this); return TalcType.BOOL;
             // FIXME: need a language concept of "comparable" (or just look for a "compareTo" method?)
-            case LE:             checkNumeric(binOp); return TalcType.BOOLEAN;
-            case GE:             checkNumeric(binOp); return TalcType.BOOLEAN;
-            case GT:             checkNumeric(binOp); return TalcType.BOOLEAN;
-            case LT:             checkNumeric(binOp); return TalcType.BOOLEAN;
+            case LE:             checkNumeric(binOp); return TalcType.BOOL;
+            case GE:             checkNumeric(binOp); return TalcType.BOOL;
+            case GT:             checkNumeric(binOp); return TalcType.BOOL;
+            case LT:             checkNumeric(binOp); return TalcType.BOOL;
             
             case ASSIGN:         return checkAssignable(binOp.lhs(), binOp.rhs());
             case PLUS_ASSIGN:    return visitNumericAddOrStringConcatenation(binOp);
@@ -119,7 +119,7 @@ public class AstTypeChecker implements AstVisitor<TalcType> {
     }
     
     private TalcType checkBoolean(AstNode.BinaryOperator binOp) {
-        return checkSingleAcceptableType(binOp, TalcType.BOOLEAN);
+        return checkSingleAcceptableType(binOp, TalcType.BOOL);
     }
     
     private TalcType checkInt(AstNode.BinaryOperator binOp) {
@@ -193,7 +193,7 @@ public class AstTypeChecker implements AstVisitor<TalcType> {
     
     public TalcType visitDoStatement(AstNode.DoStatement doStatement) {
         doStatement.body().accept(this);
-        if (doStatement.expression().accept(this) != TalcType.BOOLEAN) {
+        if (doStatement.expression().accept(this) != TalcType.BOOL) {
             throw new TalcError(doStatement, "\"do\" condition must have boolean type");
         }
         return TalcType.VOID;
@@ -203,7 +203,7 @@ public class AstTypeChecker implements AstVisitor<TalcType> {
         if (forStatement.initializer() != null) {
             forStatement.initializer().accept(this);
         }
-        if (forStatement.conditionExpression().accept(this) != TalcType.BOOLEAN) {
+        if (forStatement.conditionExpression().accept(this) != TalcType.BOOL) {
             throw new TalcError(forStatement, "\"for\" condition must have boolean type");
         }
         forStatement.updateExpression().accept(this);
@@ -351,7 +351,7 @@ public class AstTypeChecker implements AstVisitor<TalcType> {
     
     public TalcType visitIfStatement(AstNode.IfStatement ifStatement) {
         for (AstNode expression : ifStatement.expressions()) {
-            if (expression.accept(this) != TalcType.BOOLEAN) {
+            if (expression.accept(this) != TalcType.BOOL) {
                 throw new TalcError(ifStatement, "\"if\" conditions must have boolean type");
             }
         }
@@ -469,7 +469,7 @@ public class AstTypeChecker implements AstVisitor<TalcType> {
     }
     
     public TalcType visitWhileStatement(AstNode.WhileStatement whileStatement) {
-        if (whileStatement.expression().accept(this) != TalcType.BOOLEAN) {
+        if (whileStatement.expression().accept(this) != TalcType.BOOL) {
             throw new TalcError(whileStatement, "\"while\" condition must have boolean type");
         }
         whileStatement.body().accept(this);

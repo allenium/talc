@@ -6,8 +6,8 @@
 size := 10000;
 
 # FIXME: list should have something like n_copies(n: int, item: T).
-function n_trues(n: int) : list<boolean> {
-    result: list<boolean> = [];
+function n_trues(n: int) : list<bool> {
+    result: list<bool> = [];
     for (i := 0; i < n; ++i) {
         result.push_back(true);
     }
@@ -17,7 +17,7 @@ function n_trues(n: int) : list<boolean> {
 # FIXME: this would be clearer (and more space-efficient) if we had a BitSet.
 
 start_time := time_ms();
-flags : list<boolean> = n_trues(size);
+flags : list<bool> = n_trues(size);
 
 prime := 2;
 while (prime*prime < size) {

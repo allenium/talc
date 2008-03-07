@@ -315,7 +315,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     public Void visitConstant(AstNode.Constant constant) {
         // FIXME: this is all very unfortunate. life would be simpler if we'd use Java's "built-in" Boolean and String types, and do something a bit cleverer for "int", too.
         TalcType constantType = constant.type();
-        if (constantType == TalcType.BOOLEAN) {
+        if (constantType == TalcType.BOOL) {
             mg.getStatic(booleanValueType, (constant.constant() == BooleanValue.TRUE) ? "TRUE" : "FALSE", booleanValueType);
         } else if (constantType == TalcType.INT) {
             mg.newInstance(integerValueType);

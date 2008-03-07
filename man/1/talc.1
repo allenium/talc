@@ -65,11 +65,11 @@ The following are all keywords: "break", "class", "continue", "do", "else", "ext
 
 In the grand tradition of the C family, not all words reserved as keywords are necessarily in use. Currently "class" is reserved but unused.
 .SS Types
-The basic types are "boolean", "int", "object", "real", "string", and "void". The type "object" is the root of the class hierarchy. All other types have "object" as an ancestor. The type "void" is used as the return type for functions that return no value.
+The basic types are "bool", "int", "object", "real", "string", and "void". The type "object" is the root of the class hierarchy. All other types have "object" as an ancestor. The type "void" is used as the return type for functions that return no value.
 .SS Null literal
 The null literal is "null".
-.SS Boolean literals
-The boolean literals are "true" and "false".
+.SS Bool literals
+The bool literals are "true" and "false".
 .SS Numeric literals
 Various forms of numeric literal are supported. The default base is base 10, but the prefix "0b" can be used for binary literals, "0o" for octal, and "0x" for hexadecimal. Upper-case variants are not supported.
 
@@ -118,11 +118,11 @@ The following are all separators: ":", ";", ",", ".", "(", ")", "{", "}", "[", "
 .SS Operators
 The following are all operators: "!" (prefix logical negation, postfix factorial), "-" (unary numeric negation or binary subtraction), "++", "--", "+" (numeric addition or string concatenation), "*", "**" (exponentiation), "/", "%", "<", "<=", "<<", ">", ">=", ">>", "=", "==", "!=", "&", "&&", "|", "||", "^", "~" (unary bitwise negation).
 
-Binary operators require the types of both operands to be the same. The type of the result is the same as the type of the operands, except for relational operators, whose result is always boolean. (So dividing a real by a real, for example, gives a real; dividing an int by an int gives an int, and it's not possible to divide a real by an int or an int by a real without explicitly converting one or the other to disambiguate.)
+Binary operators require the types of both operands to be the same. The type of the result is the same as the type of the operands, except for relational operators, whose result is always bool. (So dividing a real by a real, for example, gives a real; dividing an int by an int gives an int, and it's not possible to divide a real by an int or an int by a real without explicitly converting one or the other to disambiguate.)
 
 The operators "%", "<<", ">>", "&", "~", "|", "^", and "!" (postfix factorial) only operate on type int.
 
-The operators "!" (prefix logical negation), "&&", and "||" only operate on type boolean.
+The operators "!" (prefix logical negation), "&&", and "||" only operate on type bool.
 
 There are also the following compound assignment operators: "+=", "-=", "*=", "**=", "/=", "%=", "<<=", ">>=", "&=", "|=", "^=", with the usual C-family interpretation where "a op= b" is equivalent to "a = a op b".
 
@@ -239,7 +239,7 @@ An "if" statement is a sequence of guard expressions with associated blocks. The
   }
 .sp
 .fi
-All guard expressions must be of boolean type or a compile-time error results.
+All guard expressions must be of type bool or a compile-time error results.
 .SS While loops
 A "while" loop executes an expression and a block repeatedly until the expression evaluates to false. The block will not be executed if the expression is false the first time it is evaluated.
 .nf
@@ -251,7 +251,7 @@ A "while" loop executes an expression and a block repeatedly until the expressio
   }
 .sp
 .fi
-The expression must be of boolean type or a compile-time error results.
+The expression must be of type bool or a compile-time error results.
 .SS Do loops
 A "do" loop executes a block and an expression repeatedly until the expression evaluates to false. The block will always be executed at least once.
 .nf
@@ -263,9 +263,9 @@ A "do" loop executes a block and an expression repeatedly until the expression e
   } while (n < 5);
 .sp
 .fi
-The expression must be of boolean type or a compile-time error results.
+The expression must be of type bool or a compile-time error results.
 .SS For loops
-A "for" loop initializes a variable local to the statement before executing a continuation expression, a block, and an update expression until the continuation expression evaluates to false. The continuation expression must be of boolean type of a compile-time error results. The update expression can be of any type.
+A "for" loop initializes a variable local to the statement before executing a continuation expression, a block, and an update expression until the continuation expression evaluates to false. The continuation expression must be of type bool or a compile-time error results. The update expression can be of any type.
 .nf
 .sp
   for (n: int = 0; n < 5; ++n) {
@@ -357,16 +357,16 @@ Executes the given command, specified as a list containing the program name and 
 .SS Built-in classes
 Talc has relatively few built-in classes. Few enough that we can reasonably comfortably summarize them all here.
 
-boolean : object
+bool : object
 
 file : object
   append(content: string) : void
-  exists() : boolean
+  exists() : bool
   file(filename: string) : file
-  is_directory() : boolean
-  is_executable() : boolean
-  mkdir() : boolean
-  mkdir_p() : boolean
+  is_directory() : bool
+  is_executable() : bool
+  mkdir() : bool
+  mkdir_p() : bool
   read() : string
   read_lines() : list<string>
   realpath() : file
@@ -381,11 +381,12 @@ int : object
   to_r() : real
 
 list<T> : object
+  __get_item__(index: int) : T
+  __set_item__(index: int, value: T) : void
   add_all(others: list<T>) : list<T>
   clear() : list<T>
-  contains(value: T) : boolean
-  get(index: int) : T
-  is_empty() : boolean
+  contains(value: T) : bool
+  is_empty() : bool
   join(separator: string) : string
   length() : int
   list() : list<T>
@@ -395,24 +396,23 @@ list<T> : object
   pop_front() : T
   push_back(value: T) : list<T>
   push_front(value: T) : list<T>
-  put(index: int, value: T) : void
   remove_all(others: list<T>) : list<T>
   remove_at(index: int) : list<T>
-  remove_first(value: T) : boolean
+  remove_first(value: T) : bool
   reverse() : list<T>
   sort() : list<T>
   to_s() : string
   uniq() : list<T>
 
 map<K,V> : object
+  __get_item__(key: K) : V
+  __set_item__(key: K, value: V) : void
   clear() : map<K,V>
-  get(key: K) : V
-  has_key(key: K) : boolean
-  has_value(value: V) : boolean
+  has_key(key: K) : bool
+  has_value(value: V) : bool
   keys() : list<K>
   length() : int
   map() : map<K,V>
-  put(key: K, value: V) : void
   remove(key: K) : map<K,V>
   values() : list<V>
 
@@ -433,8 +433,8 @@ real : object
   to_r() : real
 
 string : object
-  contains(substring: string) : boolean
-  ends_with(suffix: string) : boolean
+  contains(substring: string) : bool
+  ends_with(suffix: string) : bool
   escape_html() : string
   gsub(pattern: string, replacement: string) : string
   lc() : string
@@ -443,7 +443,7 @@ string : object
   match(pattern: string) : match
   replace(old: string, new: string) : string
   split(pattern: string) : list<string>
-  starts_with(prefix: string) : boolean
+  starts_with(prefix: string) : bool
   sub(pattern: string, replacement: string) : string
   to_i() : int
   to_r() : real

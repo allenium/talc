@@ -6,7 +6,7 @@
 row: list<int> = [ 0, 0, 0, 0, 0, 0, 0, 0 ];
 solution_count := 0;
 
-function is_safe(x: int, y: int) : boolean {
+function is_safe(x: int, y: int) : bool {
     for (i := 1; i <= y; ++i) {
         if (row[y - i] == x || row[y - i] == x - i || row[y - i] == x + i) {
             return false;

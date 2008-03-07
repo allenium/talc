@@ -86,7 +86,7 @@ public class Functions {
     
     public static class File_exists extends BuiltInFunction {
         public File_exists() {
-            super("exists", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.BOOLEAN);
+            super("exists", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.BOOL);
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
@@ -107,7 +107,7 @@ public class Functions {
     
     public static class File_is_directory extends BuiltInFunction {
         public File_is_directory() {
-            super("is_directory", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.BOOLEAN);
+            super("is_directory", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.BOOL);
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
@@ -117,7 +117,7 @@ public class Functions {
     
     public static class File_is_executable extends BuiltInFunction {
         public File_is_executable() {
-            super("is_executable", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.BOOLEAN);
+            super("is_executable", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.BOOL);
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
@@ -127,7 +127,7 @@ public class Functions {
     
     public static class File_mkdir extends BuiltInFunction {
         public File_mkdir() {
-            super("mkdir", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.BOOLEAN);
+            super("mkdir", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.BOOL);
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
@@ -137,7 +137,7 @@ public class Functions {
     
     public static class File_mkdir_p extends BuiltInFunction {
         public File_mkdir_p() {
-            super("mkdir_p", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.BOOLEAN);
+            super("mkdir_p", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.BOOL);
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
@@ -255,7 +255,7 @@ public class Functions {
     
     public static class List_contains extends BuiltInFunction {
         public List_contains() {
-            super("contains", Arrays.asList("value"), Arrays.asList(TalcType.T), TalcType.BOOLEAN);
+            super("contains", Arrays.asList("value"), Arrays.asList(TalcType.T), TalcType.BOOL);
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
@@ -278,7 +278,7 @@ public class Functions {
     
     public static class List_is_empty extends BuiltInFunction {
         public List_is_empty() {
-            super("is_empty", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.BOOLEAN);
+            super("is_empty", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.BOOL);
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
@@ -429,7 +429,7 @@ public class Functions {
     
     public static class List_remove_first extends BuiltInFunction {
         public List_remove_first() {
-            super("remove_first", Arrays.asList("value"), Arrays.asList(TalcType.T), TalcType.BOOLEAN);
+            super("remove_first", Arrays.asList("value"), Arrays.asList(TalcType.T), TalcType.BOOL);
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
@@ -512,7 +512,7 @@ public class Functions {
     
     public static class Map_has_key extends BuiltInFunction {
         public Map_has_key() {
-            super("has_key", Arrays.asList("key"), Arrays.asList(TalcType.K), TalcType.BOOLEAN);
+            super("has_key", Arrays.asList("key"), Arrays.asList(TalcType.K), TalcType.BOOL);
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
@@ -524,7 +524,7 @@ public class Functions {
     
     public static class Map_has_value extends BuiltInFunction {
         public Map_has_value() {
-            super("has_value", Arrays.asList("value"), Arrays.asList(TalcType.V), TalcType.BOOLEAN);
+            super("has_value", Arrays.asList("value"), Arrays.asList(TalcType.V), TalcType.BOOL);
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
@@ -698,7 +698,7 @@ public class Functions {
     
     public static class String_contains extends BuiltInFunction {
         public String_contains() {
-            super("contains", Arrays.asList("substring"), Arrays.asList(TalcType.STRING), TalcType.BOOLEAN);
+            super("contains", Arrays.asList("substring"), Arrays.asList(TalcType.STRING), TalcType.BOOL);
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
@@ -709,7 +709,7 @@ public class Functions {
     
     public static class String_ends_with extends BuiltInFunction {
         public String_ends_with() {
-            super("ends_with", Arrays.asList("suffix"), Arrays.asList(TalcType.STRING), TalcType.BOOLEAN);
+            super("ends_with", Arrays.asList("suffix"), Arrays.asList(TalcType.STRING), TalcType.BOOL);
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
@@ -812,7 +812,7 @@ public class Functions {
     
     public static class String_starts_with extends BuiltInFunction {
         public String_starts_with() {
-            super("starts_with", Arrays.asList("prefix"), Arrays.asList(TalcType.STRING), TalcType.BOOLEAN);
+            super("starts_with", Arrays.asList("prefix"), Arrays.asList(TalcType.STRING), TalcType.BOOL);
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {

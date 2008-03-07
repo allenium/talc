@@ -14,7 +14,7 @@
 * [easy] "assert" statements.
  + fix the "tests" to actually use these, so we get assertion failures if anything goes wrong.
 
-* [medium] should add an "Iterable" interface, change for-each to expect its expression has that type and then invoke "Iterable.iterator()" and use it. (though how does that get us keys as well as values? maybe not "Iterable" so much as "ForEachAble<K,V>"? "has_next() : boolean", "key() : K", and "value() : V"?)
+* [medium] should add an "Iterable" interface, change for-each to expect its expression has that type and then invoke "Iterable.iterator()" and use it. (though how does that get us keys as well as values? maybe not "Iterable" so much as "ForEachAble<K,V>"? "has_next() : bool", "key() : K", and "value() : V"?)
 
 * [medium] warnings about hiding? what kinds are okay and what kinds aren't?
 
@@ -155,7 +155,6 @@ some kind of class like our StopWatch.
 
 something like Basic's ability to turn function-call tracing on? generate suitable byte-code to output something on every method entry/exit, nicely lined-up and with arguments and return values?
 
-should "boolean" be just "bool"? (my feeling from using the language is "yes".)
 should list<t>.peek_back and list<T>.peek_front just be "back" and "front"?
 should list<t>.pop_back and list<T>.push_back just be "pop" and "push"?
 should we have list<T>.find(e:T):int ? should it take a start_index:int too, or return list<int>?

@@ -299,11 +299,11 @@ public class Parser {
         expect(Token.SEMICOLON);
         
         // Optional condition expression (taken to be "true" if missing).
-        AstNode conditionExpression = (lexer.token() == Token.SEMICOLON) ? new AstNode.Constant(location, BooleanValue.TRUE, TalcType.BOOLEAN) : parseExpression();
+        AstNode conditionExpression = (lexer.token() == Token.SEMICOLON) ? new AstNode.Constant(location, BooleanValue.TRUE, TalcType.BOOL) : parseExpression();
         expect(Token.SEMICOLON);
         
         // Optional update expression (for convenience also taken to be "true" if missing).
-        AstNode updateExpression = (lexer.token() == Token.CLOSE_PARENTHESIS) ? new AstNode.Constant(location, BooleanValue.TRUE, TalcType.BOOLEAN) : parseExpression();
+        AstNode updateExpression = (lexer.token() == Token.CLOSE_PARENTHESIS) ? new AstNode.Constant(location, BooleanValue.TRUE, TalcType.BOOL) : parseExpression();
         expect(Token.CLOSE_PARENTHESIS);
         AstNode.Block body = parseBlock();
         return new AstNode.ForStatement(location, variableDefinition, conditionExpression, updateExpression, body);
@@ -654,7 +654,7 @@ public class Parser {
             lexer.nextToken();
             primary = constant;
         } else if (op == Token.TRUE || op == Token.FALSE) {
-            AstNode constant = new AstNode.Constant(location, op == Token.TRUE ? BooleanValue.TRUE : BooleanValue.FALSE, TalcType.BOOLEAN);
+            AstNode constant = new AstNode.Constant(location, op == Token.TRUE ? BooleanValue.TRUE : BooleanValue.FALSE, TalcType.BOOL);
             lexer.nextToken();
             primary = constant;
         } else if (op == Token.NULL) {

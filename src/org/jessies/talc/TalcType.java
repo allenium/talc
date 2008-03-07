@@ -27,7 +27,7 @@ public class TalcType {
     public static final TalcType OBJECT = new TalcType(null, "object");
     
     // Built-in simple types.
-    public static final TalcType BOOLEAN = new TalcType(OBJECT, "boolean");
+    public static final TalcType BOOL = new TalcType(OBJECT, "bool");
     public static final TalcType FILE = new TalcType(OBJECT, "file");
     public static final TalcType INT = new TalcType(OBJECT, "int");
     public static final TalcType MATCH = new TalcType(OBJECT, "match");
@@ -60,7 +60,7 @@ public class TalcType {
         OBJECT.members().addFunction(new Functions.Object_to_s());
         addClass(OBJECT);
         
-        addClass(BOOLEAN);
+        addClass(BOOL);
         
         FILE.members.addFunction(new Functions.File_append());
         FILE.members.addFunction(new Functions.File_exists());
