@@ -977,7 +977,21 @@ public class Functions {
                     printable = argumentValue;
                 } else {
                     AstNode argumentValueConstant = new AstNode.Constant(null, argumentValue, null);
-                    printable = evaluator.visitFunctionCall(new AstNode.FunctionCall(null, "to_s", argumentValueConstant, new AstNode[0]));
+                    
+                    // Because we're inserting a function call *after* type-checking is complete we have to duplicate the code to find the relevant function definition.
+                    // When we switch to a pure compiler, we can simply invokeVirtual.
+                    // In terms of type correctness, this is okay as long as to_s is in type object, and type object is the root of the type hierarchy.
+                    TalcType searchType = argumentValue.type();
+                    Scope searchScope = searchType.members();
+                    if (searchType.isInstantiatedParametricType()) {
+                        searchScope = searchType.uninstantiatedParametricType().members();
+                    }
+                    AstNode.FunctionDefinition functionDefinition = searchScope.findFunction("to_s");
+                    
+                    AstNode.FunctionCall functionCall = new AstNode.FunctionCall(null, "to_s", argumentValueConstant, new AstNode[0]);
+                    functionCall.setDefinition(functionDefinition);
+                    
+                    printable = evaluator.visitFunctionCall(functionCall);
                 }
                 System.out.print(printable);
             }

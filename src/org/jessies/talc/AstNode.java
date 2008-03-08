@@ -357,6 +357,9 @@ public abstract class AstNode {
         private TalcTypeDescriptor classTypeDescriptor;
         private AstNode[] arguments;
         
+        // During semantic analysis, this will be updated to point to the definition of the function we're going to call.
+        private FunctionDefinition definition;
+        
         // A call of a global function.
         // FIXME: this may turn out to be a call to another method on "this", in which case we'll have to fix up "instance" later, when we realize.
         public FunctionCall(SourceLocation location, String functionName, AstNode[] arguments) {
@@ -395,6 +398,14 @@ public abstract class AstNode {
         
         public AstNode[] arguments() {
             return arguments;
+        }
+        
+        public void setDefinition(FunctionDefinition definition) {
+            this.definition = definition;
+        }
+        
+        public FunctionDefinition definition() {
+            return definition;
         }
         
         public String toString() {

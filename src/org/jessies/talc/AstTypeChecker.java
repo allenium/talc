@@ -286,6 +286,8 @@ public class AstTypeChecker implements AstVisitor<TalcType> {
             }
         }
         
+        functionCall.setDefinition(functionDefinition);
+        
         if (functionDefinition.isConstructor()) {
             what = "constructor for class \"" + functionName + "\"";
             if (functionCall.instance() != null) {

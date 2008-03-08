@@ -266,39 +266,8 @@ public class AstEvaluator implements AstVisitor<Value> {
     }
     
     public Value visitFunctionCall(AstNode.FunctionCall functionCall) {
-        Value instance = null;
-        
-        // We look for the function in the current scope unless it's a call to an instance or class method.
-        TalcType searchType = null;
-        if (functionCall.instance() != null) {
-            // Calls to instance methods need to be looked up in the scope of the instance expression's class.
-            instance = functionCall.instance().accept(this);
-            searchType = instance.type();
-        }
-        
-        //
-        // FIXME: is this right here?
-        //
-        if (functionCall.classTypeDescriptor() != null) {
-            // Calls to class methods need to be looked up in the scope of the relevant class.
-            searchType = functionCall.classTypeDescriptor().type();
-        }
-        //
-        //
-        
-        // So which scope?
-        Scope searchScope = functionCall.scope();
-        if (searchType != null) {
-            searchScope = searchType.members();
-            if (searchType.isInstantiatedParametricType()) {
-                // Calls to methods of instantiated parametric types need to be looked up in the scope of the uninstantiated parametric type.
-                searchScope = searchType.uninstantiatedParametricType().members();
-            }
-        }
-        
-        // The type checker guarantees that we'll find the function we're looking for.
-        AstNode.FunctionDefinition functionDefinition = searchScope.findFunction(functionCall.functionName());
-        return functionDefinition.invoke(this, instance, functionCall.arguments());
+        Value instance = (functionCall.instance() != null) ? functionCall.instance().accept(this) : null;
+        return functionCall.definition().invoke(this, instance, functionCall.arguments());
     }
     
     public Value invokeFunction(AstNode.FunctionDefinition f, Value instance, AstNode[] actualParameters) {
