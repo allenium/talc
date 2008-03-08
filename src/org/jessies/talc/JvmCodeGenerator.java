@@ -407,8 +407,8 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     
     public Void visitFunctionCall(AstNode.FunctionCall functionCall) {
         String functionName = functionCall.functionName();
-        // FIXME: generalize this!
-        if (functionName.equals("puts") || functionName.equals("print")) {
+        AstNode.FunctionDefinition definition = functionCall.definition();
+        if (definition.isVarArgs()) {
             AstNode[] arguments = functionCall.arguments();
             if (arguments.length == 1) {
                 arguments[0].accept(this);
