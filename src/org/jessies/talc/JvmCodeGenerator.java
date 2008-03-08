@@ -139,7 +139,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
             
             case EQ:        eq(binOp, "TRUE", "FALSE"); break;
             case NE:        eq(binOp, "FALSE", "TRUE"); break;
-            //// FIXME: there's no reason why we can't offer these relational operators on non-numeric types. But should we?
+            // FIXME: there's no reason why we can't offer these relational operators on non-numeric types. But should we?
             case LE:        cmp(binOp, GeneratorAdapter.LE); break;
             case GE:        cmp(binOp, GeneratorAdapter.GE); break;
             case GT:        cmp(binOp, GeneratorAdapter.GT); break;
