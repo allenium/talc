@@ -298,11 +298,17 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     }
     
     private void popAnythingLeftBy(AstNode node) {
-        // If the code we generated for "statement" left a value on the stack, we need to pop it off!
         // FIXME: is there a cleaner way to do this?
-        // FIXME: what about AstNode.FunctionCall?
+        
+        // If the code we generated for "statement" left a value on the stack, we need to pop it off!
         if (node instanceof AstNode.BinaryOperator || node instanceof AstNode.Constant || node instanceof AstNode.ListLiteral || node instanceof AstNode.VariableName) {
             mg.pop();
+        } else if (node instanceof AstNode.FunctionCall) {
+            // Pop unused return values from non-void functions.
+            AstNode.FunctionCall functionCall = (AstNode.FunctionCall) node;
+            if (functionCall.definition().returnType() != TalcType.VOID) {
+                mg.pop();
+            }
         }
     }
     
@@ -408,8 +414,8 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     public Void visitFunctionCall(AstNode.FunctionCall functionCall) {
         String functionName = functionCall.functionName();
         AstNode.FunctionDefinition definition = functionCall.definition();
+        AstNode[] arguments = functionCall.arguments();
         if (definition.isVarArgs()) {
-            AstNode[] arguments = functionCall.arguments();
             if (arguments.length == 1) {
                 arguments[0].accept(this);
                 mg.invokeStatic(Type.getType(Functions.class), Method.getMethod("void " + functionName + " (org.jessies.talc.Value)"));
@@ -425,9 +431,49 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
                 mg.invokeStatic(Type.getType(Functions.class), Method.getMethod("void " + functionName + " (org.jessies.talc.Value[])"));
             }
         } else {
-            throw new TalcError(functionCall, "don't know how to generate code for call to \"" + functionName + "\"");
+            for (int i = 0; i < arguments.length; ++i) {
+                arguments[i].accept(this);
+            }
+            Method method = methodForFunctionDefinition(definition);
+            mg.invokeStatic(Type.getType(Functions.class), method);
+            // FIXME: check here whether 'method' exists, and fail here rather than waiting for the verifier?
+            //throw new TalcError(functionCall, "don't know how to generate code for call to \"" + functionName + "\"");
         }
         return null;
+    }
+    
+    private Type typeForTalcType(TalcType talcType) {
+        if (talcType == TalcType.BOOL) {
+            return Type.getType(BooleanValue.class);
+        } else if (talcType == TalcType.INT) {
+            return Type.getType(IntegerValue.class);
+        } else if (talcType == TalcType.REAL) {
+            return Type.getType(RealValue.class);
+        } else if (talcType == TalcType.STRING) {
+            return Type.getType(StringValue.class);
+        } else if (talcType == TalcType.VOID) {
+            return Type.VOID_TYPE;
+        } else if (talcType.isInstantiatedParametricType()) {
+            // FIXME: this is a particularly big hack.
+            if (talcType.rawName() == "list") {
+                return Type.getType(ListValue.class);
+            } else {
+                throw new RuntimeException("FIXME: typeForTalcType(" + talcType + ") NYI");
+            }
+        } else {
+            // FIXME!
+            System.err.println("warning: typeForTalcType returning Value.class for " + talcType);
+            return Type.getType(Value.class);
+        }
+    }
+    
+    private Method methodForFunctionDefinition(AstNode.FunctionDefinition definition) {
+        List<TalcType> talcTypes = definition.formalParameterTypes();
+        Type[] argumentTypes = new Type[talcTypes.size()];
+        for (int i = 0; i < argumentTypes.length; ++i) {
+            argumentTypes[i] = typeForTalcType(talcTypes.get(i));
+        }
+        return new Method(definition.functionName(), typeForTalcType(definition.returnType()), argumentTypes);
     }
     
     public Void visitFunctionDefinition(AstNode.FunctionDefinition functionDefinition) {

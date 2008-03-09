@@ -22,6 +22,28 @@ import java.io.*;
 import java.util.*;
 
 public class Functions {
+    public static StringValue backquote(StringValue command) {
+        ProcessBuilder processBuilder = new ProcessBuilder("bash", "-c", command.toString());
+        StringWriter output = new StringWriter();
+        IntegerValue status = runProcessBuilder(processBuilder, output);
+        // FIXME: make the status available somehow.
+        return new StringValue(output.toString());
+    }
+    
+    public static void exit(IntegerValue status) {
+        System.exit(status.intValue());
+    }
+    
+    public static StringValue getenv(StringValue name) {
+        String value = System.getenv(name.toString());
+        return (value != null) ? new StringValue(value) : null;
+    }
+    
+    public static StringValue gets() {
+        String result = System.console().readLine();
+        return (result != null) ? new StringValue(result) : null;
+    }
+    
     public static void print(Value value) {
         Object printable = null;
         if (value == NullValue.NULL) {
@@ -61,6 +83,47 @@ public class Functions {
     public static void puts(Value[] values) {
         print(values);
         System.out.println();
+    }
+    
+    private static IntegerValue runProcessBuilder(ProcessBuilder processBuilder, Appendable output) {
+        processBuilder.redirectErrorStream(true);
+        int status = -1;
+        try {
+            Process process = processBuilder.start();
+            BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream(), "UTF-8"));
+            String line;
+            while ((line = in.readLine()) != null) {
+                output.append(line);
+                output.append('\n');
+            }
+            in.close();
+            // GCJ/Classpath hangs in waitFor unless we've explicitly closed all three streams.
+            process.getOutputStream().close();
+            process.getErrorStream().close();
+            status = process.waitFor();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return new IntegerValue(status);
+    }
+    
+    public static IntegerValue shell(StringValue command) {
+        ProcessBuilder processBuilder = new ProcessBuilder("bash", "-c", command.toString());
+        return runProcessBuilder(processBuilder, System.out);
+    }
+    
+    public static IntegerValue system(ListValue talcArgs) {
+        // Convert the talc arguments into native arguments.
+        List<String> args = new ArrayList<String>();
+        for (int i = 0; i < talcArgs.length(); ++i) {
+            args.add(talcArgs.get(i).toString());
+        }
+        ProcessBuilder processBuilder = new ProcessBuilder(args);
+        return runProcessBuilder(processBuilder, System.out);
+    }
+    
+    public static IntegerValue time_ms() {
+        return new IntegerValue(System.currentTimeMillis());
     }
     
     public static class Object_to_s extends BuiltInFunction {
@@ -902,13 +965,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            String command = arguments[0].accept(evaluator).toString();
-            
-            ProcessBuilder processBuilder = new ProcessBuilder("bash", "-c", command);
-            StringWriter output = new StringWriter();
-            IntegerValue status = system.runProcessBuilder(processBuilder, output);
-            // FIXME: make the status available somehow.
-            return new StringValue(output.toString());
+            return backquote((StringValue) arguments[0].accept(evaluator));
         }
     }
     
@@ -918,31 +975,18 @@ public class Functions {
         }
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
             IntegerValue status = (IntegerValue) arguments[0].accept(evaluator);
-            System.exit(status.intValue());
+            exit(status);
             return null;
         }
     }
     
     public static class Gets extends BuiltInFunction {
-        private static java.io.BufferedReader stdin;
-        
         public Gets() {
             super("gets", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.STRING);
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            // When GCJ supports Java 6's java.io.Console:
-            //return new StringValue(System.console().readLine());
-            
-            String result = null;
-            try {
-                if (stdin == null) {
-                    stdin = new java.io.BufferedReader(new java.io.InputStreamReader(System.in));
-                }
-                result = stdin.readLine();
-            } catch (java.io.IOException ex) {
-            }
-            return (result != null) ? new StringValue(result) : NullValue.NULL;
+            return gets();
         }
     }
     
@@ -952,8 +996,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            String value = System.getenv(arguments[0].accept(evaluator).toString());
-            return (value != null) ? new StringValue(value) : NullValue.NULL;
+            return getenv((StringValue) arguments[0].accept(evaluator));
         }
     }
     
@@ -1016,10 +1059,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            String command = arguments[0].accept(evaluator).toString();
-            
-            ProcessBuilder processBuilder = new ProcessBuilder("bash", "-c", command);
-            return system.runProcessBuilder(processBuilder, System.out);
+            return shell((StringValue) arguments[0].accept(evaluator));
         }
     }
     
@@ -1029,37 +1069,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            // Convert the talc arguments into native arguments.
-            ListValue talcArgs = (ListValue) arguments[0].accept(evaluator);
-            List<String> args = new ArrayList<String>();
-            for (int i = 0; i < talcArgs.length(); ++i) {
-                args.add(talcArgs.get(i).toString());
-            }
-            
-            ProcessBuilder processBuilder = new ProcessBuilder(args);
-            return system.runProcessBuilder(processBuilder, System.out);
-        }
-        
-        public static IntegerValue runProcessBuilder(ProcessBuilder processBuilder, Appendable output) {
-            processBuilder.redirectErrorStream(true);
-            int status = -1;
-            try {
-                Process process = processBuilder.start();
-                BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream(), "UTF-8"));
-                String line;
-                while ((line = in.readLine()) != null) {
-                    output.append(line);
-                    output.append('\n');
-                }
-                in.close();
-                // GCJ/Classpath hangs in waitFor unless we've explicitly closed all three streams.
-                process.getOutputStream().close();
-                process.getErrorStream().close();
-                status = process.waitFor();
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-            return new IntegerValue(status);
+            return system((ListValue) arguments[0].accept(evaluator));
         }
     }
     
@@ -1069,7 +1079,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            return new IntegerValue(System.currentTimeMillis());
+            return time_ms();
         }
     }
     

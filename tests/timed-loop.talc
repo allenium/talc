@@ -1,0 +1,16 @@
+#!/usr/bin/talc
+
+t0 := time_ms();
+for (i := 0; i < 10000; ++i) {
+  # Do nothing.
+}
+t1 := time_ms();
+puts((t1 - t0), "ms");
+if (true) {
+  time_ms();
+} else {
+  puts();
+}
+shell("date");
+system(["date"]);
+exit(2);

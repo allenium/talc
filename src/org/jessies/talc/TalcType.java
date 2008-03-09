@@ -400,6 +400,18 @@ public class TalcType {
         return "TalcType[name=" + name + ",keyType=" + keyType + ",valueType=" + valueType + ",superclass=" + superclass + ",unPT=" + uninstantiatedParametricType + ",isTypeVariable=" + isTypeVariable + ",members=" + members + "]";
     }
     
+    // Used in JvmCodeGenerator to recognize "list" and translate it to ListValue.
+    // FIXME: long-term, we'll need a better way to do that, and this method can probably disappear.
+    public String rawName() {
+        if (name != null) {
+            return name;
+        } else if (uninstantiatedParametricType != null) {
+            return uninstantiatedParametricType.name;
+        } else {
+            throw new RuntimeException("type " + this + " doesn't have a raw name");
+        }
+    }
+    
     public String toString() {
         StringBuilder result = new StringBuilder();
         String basicName = name;
