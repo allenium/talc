@@ -243,8 +243,8 @@ public class AstEvaluator implements AstVisitor<Value> {
             // FIXME: need some kind of "iterable" concept in the language.
             ListValue list = (ListValue) forEachStatement.expression().accept(this);
             // FIXME: what about modification of the list while we're looping?
-            for (int key = 0; key < list.length(); ++key) {
-                Value value = list.get(key);
+            for (int key = 0; key < list.length().intValue(); ++key) {
+                Value value = list.__get_item__(new IntegerValue(key));
                 if (loopVariableCount == 1) {
                     rho.defineVariable(loopVariableNames.get(0), value);
                 } else {

@@ -32,6 +32,8 @@ public class Talc {
         debuggingFlagNames['t'] = "shows timing information for each phase of compilation/execution";
         debuggingFlagNames['T'] = "shows information helpful when debugging the type checker";
         debuggingFlagNames['S'] = "shows the generated JVM bytecodes";
+        debuggingFlagNames['s'] = "saves the generated code to /tmp";
+        debuggingFlagNames['v'] = "verifies the generated code with BCEL's JustIce verifier";
     }
     
     public Talc() {

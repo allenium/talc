@@ -56,7 +56,13 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         activeLoops.pop();
     }
     
-    // The method we're currently emitting code for.
+    // The class we're currently emitting code for.
+    private ClassVisitor cv;
+    // The method in which to dump code found at the global scope.
+    // Only used when we come to the end of a method to reset mg.
+    // You shouldn't ever need to reference this directly.
+    private GeneratorAdapter globalMethod;
+    // The method we're currently emitting code for (which may or may not be globalMethod).
     private GeneratorAdapter mg;
     
     public JvmCodeGenerator(TalcClassLoader classLoader, List<AstNode> ast) {
@@ -65,22 +71,32 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         compile(ast, classWriter);
         byte[] bytecode = classWriter.toByteArray();
         
-        // FIXME: use this for caching rather than debugging?
-        /*
-        try {
-            FileOutputStream fos = new FileOutputStream("/tmp/GeneratedClass.class");
-            fos.write(bytecode);
-            fos.close();
-        } catch (Exception ex) {
-            System.err.println("talc: warning: couldn't write generated class file to /tmp.");
+        // FIXME: use this for caching rather than/as well as debugging?
+        if (Talc.debugging('s') || Talc.debugging('v')) {
+            saveGeneratedCode(bytecode);
         }
-        */
         
         classLoader.defineClass("GeneratedClass", bytecode);
     }
     
+    private void saveGeneratedCode(byte[] bytecode) {
+        File filename = new File("/tmp/GeneratedClass.class");
+        try {
+            FileOutputStream fos = new FileOutputStream(filename);
+            fos.write(bytecode);
+            fos.close();
+            if (Talc.debugging('v')) {
+                String command = "java -cp /usr/share/java/bcel-5.2.jar:" + filename.getParent() + ":" + System.getProperty("java.class.path") + " org.apache.bcel.verifier.Verifier GeneratedClass";
+                System.err.println("talc: verifying with:\n" + "  " + command);
+                Functions.shell(new StringValue(command));
+            }
+        } catch (Exception ex) {
+            System.err.println("talc: warning: couldn't write generated class file to \"" + filename + "\".");
+        }
+    }
+    
     private void compile(List<AstNode> ast, ClassWriter classWriter) {
-        ClassVisitor cv = classWriter;
+        this.cv = classWriter;
         if (Talc.debugging('S')) {
             cv = new TraceClassVisitor(cv, new PrintWriter(System.out));
         }
@@ -91,7 +107,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         
         // Create the implicit constructor.
         Method m = Method.getMethod("void <init>()");
-        mg = new GeneratorAdapter(Opcodes.ACC_PUBLIC, m, null, null, cv);
+        mg = globalMethod = new GeneratorAdapter(Opcodes.ACC_PUBLIC, m, null, null, cv);
         mg.visitCode();
         mg.loadThis();
         mg.invokeConstructor(Type.getType(Object.class), m);
@@ -100,6 +116,15 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
             node.accept(this);
         }
         
+        mg.returnValue();
+        mg.endMethod();
+        
+        // It's convenient to be able to run the class, so we can point an arbitrary JVM at it to see what it thinks.
+        // FIXME: should we wire up the passed-in arguments as ARGV?
+        mg = new GeneratorAdapter(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, Method.getMethod("void main(String[])"), null, null, cv);
+        mg.visitCode();
+        mg.newInstance(Type.getType("LGeneratedClass;"));
+        mg.invokeConstructor(Type.getType("LGeneratedClass;"), Method.getMethod("void <init>()"));
         mg.returnValue();
         mg.endMethod();
         
@@ -415,10 +440,23 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         String functionName = functionCall.functionName();
         AstNode.FunctionDefinition definition = functionCall.definition();
         AstNode[] arguments = functionCall.arguments();
+        
+        // Assume we're dealing with a global user-defined function...
+        Type containingType = Type.getType("LGeneratedClass;");
+        // ...unless we know it's not.
+        TalcType talcContainingType = definition.containingType();
+        System.err.println("call to " + functionName + " in type " + talcContainingType + " defined in scope " + definition.scope());
+        if (talcContainingType != null) {
+            containingType = typeForTalcType(talcContainingType);
+        } else if (definition.scope() == null) {
+            // We need a special case for built-in "global" functions.
+            containingType = Type.getType("Lorg/jessies/talc/Functions;");
+        }
+        
         if (definition.isVarArgs()) {
             if (arguments.length == 1) {
                 arguments[0].accept(this);
-                mg.invokeStatic(Type.getType(Functions.class), Method.getMethod("void " + functionName + " (org.jessies.talc.Value)"));
+                mg.invokeStatic(containingType, Method.getMethod("void " + functionName + " (org.jessies.talc.Value)"));
             } else {
                 mg.push(arguments.length);
                 mg.newArray(valueType);
@@ -428,14 +466,24 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
                     arguments[i].accept(this);
                     mg.arrayStore(valueType);
                 }
-                mg.invokeStatic(Type.getType(Functions.class), Method.getMethod("void " + functionName + " (org.jessies.talc.Value[])"));
+                mg.invokeStatic(containingType, Method.getMethod("void " + functionName + " (org.jessies.talc.Value[])"));
             }
         } else {
+            Method method = methodForFunctionDefinition(definition);
+            if (functionCall.instance() != null) {
+                functionCall.instance().accept(this);
+                mg.checkCast(containingType);
+            }
+            Type[] methodArgumentTypes = method.getArgumentTypes();
             for (int i = 0; i < arguments.length; ++i) {
                 arguments[i].accept(this);
+                mg.checkCast(methodArgumentTypes[i]);
             }
-            Method method = methodForFunctionDefinition(definition);
-            mg.invokeStatic(Type.getType(Functions.class), method);
+            if (functionCall.instance() != null) {
+                mg.invokeVirtual(containingType, method);
+            } else {
+                mg.invokeStatic(containingType, method);
+            }
             // FIXME: check here whether 'method' exists, and fail here rather than waiting for the verifier?
             //throw new TalcError(functionCall, "don't know how to generate code for call to \"" + functionName + "\"");
         }
@@ -444,26 +492,22 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     
     private Type typeForTalcType(TalcType talcType) {
         if (talcType == TalcType.BOOL) {
-            return Type.getType(BooleanValue.class);
+            return booleanValueType;
         } else if (talcType == TalcType.INT) {
-            return Type.getType(IntegerValue.class);
+            return integerValueType;
         } else if (talcType == TalcType.REAL) {
-            return Type.getType(RealValue.class);
+            return realValueType;
         } else if (talcType == TalcType.STRING) {
-            return Type.getType(StringValue.class);
+            return stringValueType;
         } else if (talcType == TalcType.VOID) {
             return Type.VOID_TYPE;
-        } else if (talcType.isInstantiatedParametricType()) {
+        } else if (talcType.rawName() == "list") {
             // FIXME: this is a particularly big hack.
-            if (talcType.rawName() == "list") {
-                return Type.getType(ListValue.class);
-            } else {
-                throw new RuntimeException("FIXME: typeForTalcType(" + talcType + ") NYI");
-            }
+            return listValueType;
         } else {
             // FIXME!
             System.err.println("warning: typeForTalcType returning Value.class for " + talcType);
-            return Type.getType(Value.class);
+            return valueType;
         }
     }
     
@@ -477,6 +521,14 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     }
     
     public Void visitFunctionDefinition(AstNode.FunctionDefinition functionDefinition) {
+        Method m = methodForFunctionDefinition(functionDefinition);
+        mg = new GeneratorAdapter(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, m, null, null, cv);
+        
+        mg.visitCode();
+        functionDefinition.body().accept(this);
+        mg.endMethod();
+        
+        mg = globalMethod;
         return null;
     }
     
@@ -530,7 +582,8 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         int resultLocal = mg.newLocal(listValueType);
         mg.storeLocal(resultLocal);
         
-        for (AstNode expression : listLiteral.expressions()) {
+        List<AstNode> expressions = listLiteral.expressions();
+        for (AstNode expression : expressions) {
             // <Generate code for the expression.>
             expression.accept(this);
             
@@ -540,12 +593,17 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
             mg.invokeVirtual(listValueType, Method.getMethod("org.jessies.talc.ListValue push_back(org.jessies.talc.Value)"));
         }
         
-        // We don't need to use loadLocal (or a dup in the loop above) because push_back leaves the result on the stack anyway.
-        //mg.loadLocal(resultLocal);
+        // We didn't need a dup in the loop above because push_back leaves the result on the stack anyway.
+        // Likewise, we don't need a loadLocal here unless we never went round the loop.
+        if (expressions.size() == 0) {
+            mg.loadLocal(resultLocal);
+        }
         return null;
     }
     
     public Void visitReturnStatement(AstNode.ReturnStatement returnStatement) {
+        returnStatement.expression().accept(this);
+        mg.returnValue();
         return null;
     }
     

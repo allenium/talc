@@ -52,8 +52,12 @@ public class ListValue implements Value {
         return list.contains(v);
     }
     
-    public Value get(int i) {
-        return list.get(i);
+    public Value __get_item__(IntegerValue i) {
+        return list.get(i.intValue());
+    }
+    
+    public BooleanValue is_empty() {
+        return BooleanValue.valueOf(list.size() == 0);
     }
     
     public String join(String separator) {
@@ -67,8 +71,24 @@ public class ListValue implements Value {
         return result.toString();
     }
     
-    public int length() {
-        return list.size();
+    public IntegerValue length() {
+        return new IntegerValue(list.size());
+    }
+    
+    public Value peek_back() {
+        return list.get(list.size() - 1);
+    }
+    
+    public Value peek_front() {
+        return list.get(0);
+    }
+    
+    public Value pop_back() {
+        return remove_at(list.size() - 1);
+    }
+    
+    public Value pop_front() {
+        return remove_at(0);
     }
     
     public ListValue push_back(Value v) {
@@ -100,8 +120,8 @@ public class ListValue implements Value {
     
     public ListValue reverse() {
         ListValue result = new ListValue();
-        for (int i = length() - 1; i >= 0; --i) {
-            result.push_back(get(i));
+        for (int i = list.size() - 1; i >= 0; --i) {
+            result.push_back(list.get(i));
         }
         return result;
     }

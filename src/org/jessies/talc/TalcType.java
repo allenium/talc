@@ -57,100 +57,100 @@ public class TalcType {
     public static final TalcType LIST_OF_NOTHING = new TalcType(null, "empty-list");
     
     static {
-        OBJECT.members().addFunction(new Functions.Object_to_s());
+        addMemberFunction(OBJECT, new Functions.Object_to_s());
         addClass(OBJECT);
         
         addClass(BOOL);
         
-        FILE.members.addFunction(new Functions.File_append());
-        FILE.members.addFunction(new Functions.File_exists());
-        FILE.members.addFunction(new Functions.File_file());
-        FILE.members.addFunction(new Functions.File_is_directory());
-        FILE.members.addFunction(new Functions.File_is_executable());
-        FILE.members.addFunction(new Functions.File_mkdir());
-        FILE.members.addFunction(new Functions.File_mkdir_p());
-        FILE.members.addFunction(new Functions.File_read());
-        FILE.members.addFunction(new Functions.File_read_lines());
-        FILE.members.addFunction(new Functions.File_realpath());
-        FILE.members.addFunction(new Functions.File_write());
+        addMemberFunction(FILE, new Functions.File_append());
+        addMemberFunction(FILE, new Functions.File_exists());
+        addMemberFunction(FILE, new Functions.File_file());
+        addMemberFunction(FILE, new Functions.File_is_directory());
+        addMemberFunction(FILE, new Functions.File_is_executable());
+        addMemberFunction(FILE, new Functions.File_mkdir());
+        addMemberFunction(FILE, new Functions.File_mkdir_p());
+        addMemberFunction(FILE, new Functions.File_read());
+        addMemberFunction(FILE, new Functions.File_read_lines());
+        addMemberFunction(FILE, new Functions.File_realpath());
+        addMemberFunction(FILE, new Functions.File_write());
         addClass(FILE);
         
-        INT.members.addFunction(new Functions.Int_abs());
-        INT.members.addFunction(new Functions.Int_signum());
-        INT.members.addFunction(new Functions.Int_to_base());
-        INT.members.addFunction(new Functions.Int_to_char());
-        INT.members.addFunction(new Functions.Numeric_to_i());
-        INT.members.addFunction(new Functions.Numeric_to_r());
+        addMemberFunction(INT, new Functions.Int_abs());
+        addMemberFunction(INT, new Functions.Int_signum());
+        addMemberFunction(INT, new Functions.Int_to_base());
+        addMemberFunction(INT, new Functions.Int_to_char());
+        addMemberFunction(INT, new Functions.Numeric_to_i());
+        addMemberFunction(INT, new Functions.Numeric_to_r());
         addClass(INT);
         
-        LIST_OF_T.members.addFunction(new Functions.List___get_item__());
-        LIST_OF_T.members.addFunction(new Functions.List___set_item__());
-        LIST_OF_T.members.addFunction(new Functions.List_add_all());
-        LIST_OF_T.members.addFunction(new Functions.List_clear());
-        LIST_OF_T.members.addFunction(new Functions.List_contains());
-        LIST_OF_T.members.addFunction(new Functions.List_is_empty());
-        LIST_OF_T.members.addFunction(new Functions.List_join());
-        LIST_OF_T.members.addFunction(new Functions.List_length());
-        LIST_OF_T.members.addFunction(new Functions.List_list());
-        LIST_OF_T.members.addFunction(new Functions.List_peek_back());
-        LIST_OF_T.members.addFunction(new Functions.List_peek_front());
-        LIST_OF_T.members.addFunction(new Functions.List_pop_back());
-        LIST_OF_T.members.addFunction(new Functions.List_pop_front());
-        LIST_OF_T.members.addFunction(new Functions.List_push_back());
-        LIST_OF_T.members.addFunction(new Functions.List_push_front());
-        LIST_OF_T.members.addFunction(new Functions.List_remove_all());
-        LIST_OF_T.members.addFunction(new Functions.List_remove_at());
-        LIST_OF_T.members.addFunction(new Functions.List_remove_first());
-        LIST_OF_T.members.addFunction(new Functions.List_reverse());
-        LIST_OF_T.members.addFunction(new Functions.List_sort());
-        LIST_OF_T.members.addFunction(new Functions.List_to_s());
-        LIST_OF_T.members.addFunction(new Functions.List_uniq());
+        addMemberFunction(LIST_OF_T, new Functions.List___get_item__());
+        addMemberFunction(LIST_OF_T, new Functions.List___set_item__());
+        addMemberFunction(LIST_OF_T, new Functions.List_add_all());
+        addMemberFunction(LIST_OF_T, new Functions.List_clear());
+        addMemberFunction(LIST_OF_T, new Functions.List_contains());
+        addMemberFunction(LIST_OF_T, new Functions.List_is_empty());
+        addMemberFunction(LIST_OF_T, new Functions.List_join());
+        addMemberFunction(LIST_OF_T, new Functions.List_length());
+        addMemberFunction(LIST_OF_T, new Functions.List_list());
+        addMemberFunction(LIST_OF_T, new Functions.List_peek_back());
+        addMemberFunction(LIST_OF_T, new Functions.List_peek_front());
+        addMemberFunction(LIST_OF_T, new Functions.List_pop_back());
+        addMemberFunction(LIST_OF_T, new Functions.List_pop_front());
+        addMemberFunction(LIST_OF_T, new Functions.List_push_back());
+        addMemberFunction(LIST_OF_T, new Functions.List_push_front());
+        addMemberFunction(LIST_OF_T, new Functions.List_remove_all());
+        addMemberFunction(LIST_OF_T, new Functions.List_remove_at());
+        addMemberFunction(LIST_OF_T, new Functions.List_remove_first());
+        addMemberFunction(LIST_OF_T, new Functions.List_reverse());
+        addMemberFunction(LIST_OF_T, new Functions.List_sort());
+        addMemberFunction(LIST_OF_T, new Functions.List_to_s());
+        addMemberFunction(LIST_OF_T, new Functions.List_uniq());
         LIST_OF_K = LIST_OF_T.duplicateWithDifferentKeyType(K);
         LIST_OF_V = LIST_OF_T.duplicateWithDifferentKeyType(V);
         addClass(LIST_OF_T);
         
-        MAP_OF_K_V.members.addFunction(new Functions.Map___get_item__());
-        MAP_OF_K_V.members.addFunction(new Functions.Map___set_item__());
-        MAP_OF_K_V.members.addFunction(new Functions.Map_clear());
-        MAP_OF_K_V.members.addFunction(new Functions.Map_has_key());
-        MAP_OF_K_V.members.addFunction(new Functions.Map_has_value());
-        MAP_OF_K_V.members.addFunction(new Functions.Map_keys());
-        MAP_OF_K_V.members.addFunction(new Functions.Map_length());
-        MAP_OF_K_V.members.addFunction(new Functions.Map_map());
-        MAP_OF_K_V.members.addFunction(new Functions.Map_remove());
-        MAP_OF_K_V.members.addFunction(new Functions.Map_values());
+        addMemberFunction(MAP_OF_K_V, new Functions.Map___get_item__());
+        addMemberFunction(MAP_OF_K_V, new Functions.Map___set_item__());
+        addMemberFunction(MAP_OF_K_V, new Functions.Map_clear());
+        addMemberFunction(MAP_OF_K_V, new Functions.Map_has_key());
+        addMemberFunction(MAP_OF_K_V, new Functions.Map_has_value());
+        addMemberFunction(MAP_OF_K_V, new Functions.Map_keys());
+        addMemberFunction(MAP_OF_K_V, new Functions.Map_length());
+        addMemberFunction(MAP_OF_K_V, new Functions.Map_map());
+        addMemberFunction(MAP_OF_K_V, new Functions.Map_remove());
+        addMemberFunction(MAP_OF_K_V, new Functions.Map_values());
         addClass(MAP_OF_K_V);
         
-        MATCH.members.addFunction(new Functions.Match_group());
+        addMemberFunction(MATCH, new Functions.Match_group());
         addClass(MATCH);
         
-        REAL.members.addFunction(new Functions.Real_abs());
-        REAL.members.addFunction(new Functions.Real_log());
-        REAL.members.addFunction(new Functions.Real_log10());
-        REAL.members.addFunction(new Functions.Real_logE());
-        REAL.members.addFunction(new Functions.Real_signum());
-        REAL.members.addFunction(new Functions.Real_sqrt());
-        REAL.members.addFunction(new Functions.Numeric_to_i());
-        REAL.members.addFunction(new Functions.Numeric_to_r());
+        addMemberFunction(REAL, new Functions.Real_abs());
+        addMemberFunction(REAL, new Functions.Real_log());
+        addMemberFunction(REAL, new Functions.Real_log10());
+        addMemberFunction(REAL, new Functions.Real_logE());
+        addMemberFunction(REAL, new Functions.Real_signum());
+        addMemberFunction(REAL, new Functions.Real_sqrt());
+        addMemberFunction(REAL, new Functions.Numeric_to_i());
+        addMemberFunction(REAL, new Functions.Numeric_to_r());
         addClass(REAL);
         
-        STRING.members.addFunction(new Functions.String_contains());
-        STRING.members.addFunction(new Functions.String_ends_with());
-        STRING.members.addFunction(new Functions.String_escape_html());
-        STRING.members.addFunction(new Functions.String_gsub());
-        STRING.members.addFunction(new Functions.String_lc());
-        STRING.members.addFunction(new Functions.String_lc_first());
-        STRING.members.addFunction(new Functions.String_length());
-        STRING.members.addFunction(new Functions.String_match());
-        STRING.members.addFunction(new Functions.String_replace());
-        STRING.members.addFunction(new Functions.String_split());
-        STRING.members.addFunction(new Functions.String_starts_with());
-        STRING.members.addFunction(new Functions.String_sub());
-        STRING.members.addFunction(new Functions.String_to_i());
-        STRING.members.addFunction(new Functions.String_to_r());
-        STRING.members.addFunction(new Functions.String_trim());
-        STRING.members.addFunction(new Functions.String_uc());
-        STRING.members.addFunction(new Functions.String_uc_first());
+        addMemberFunction(STRING, new Functions.String_contains());
+        addMemberFunction(STRING, new Functions.String_ends_with());
+        addMemberFunction(STRING, new Functions.String_escape_html());
+        addMemberFunction(STRING, new Functions.String_gsub());
+        addMemberFunction(STRING, new Functions.String_lc());
+        addMemberFunction(STRING, new Functions.String_lc_first());
+        addMemberFunction(STRING, new Functions.String_length());
+        addMemberFunction(STRING, new Functions.String_match());
+        addMemberFunction(STRING, new Functions.String_replace());
+        addMemberFunction(STRING, new Functions.String_split());
+        addMemberFunction(STRING, new Functions.String_starts_with());
+        addMemberFunction(STRING, new Functions.String_sub());
+        addMemberFunction(STRING, new Functions.String_to_i());
+        addMemberFunction(STRING, new Functions.String_to_r());
+        addMemberFunction(STRING, new Functions.String_trim());
+        addMemberFunction(STRING, new Functions.String_uc());
+        addMemberFunction(STRING, new Functions.String_uc_first());
         addClass(STRING);
     }
     
@@ -220,6 +220,11 @@ public class TalcType {
     
     public static void addClass(TalcType t) {
         documentedTypes.put(t.name, t);
+    }
+    
+    private static void addMemberFunction(TalcType type, AstNode.FunctionDefinition f) {
+        f.fixUpTypes(type);
+        type.members().addFunction(f);
     }
     
     public static TalcType byName(String name) {
