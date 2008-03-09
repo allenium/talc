@@ -46,7 +46,7 @@ public class Functions {
     
     public static void print(Value value) {
         Object printable = null;
-        if (value == NullValue.NULL) {
+        if (value == null) {
             printable = "null";
         } else if (value == BooleanValue.TRUE) {
             // FIXME: we'll need bool.to_s anyway, but maybe this is still a useful optimization?
@@ -60,7 +60,7 @@ public class Functions {
             printable = value.toString();
         } else {
             // FIXME: invokeVirtual "to_s" on the Value.
-            printable = "<<FIXME: need to call .to_s>>";
+            printable = "<<FIXME: need to call .to_s for " + value.getClass() + " (\"" + value.toString() + "\")>>";
             /*
             AstNode argumentValueConstant = new AstNode.Constant(null, argumentValue, null);
             printable = evaluator.visitFunctionCall(new AstNode.FunctionCall(null, "to_s", argumentValueConstant, new AstNode[0]));
@@ -1014,7 +1014,7 @@ public class Functions {
             for (AstNode argument : arguments) {
                 Value argumentValue = argument.accept(evaluator);
                 Object printable = null;
-                if (argumentValue == NullValue.NULL) {
+                if (argumentValue == null) {
                     printable = "null";
                 } else if (argumentValue instanceof StringValue) {
                     printable = argumentValue;

@@ -65,6 +65,7 @@ public class Environment {
             }
         }
         // Error checking should catch this before it can happen. If we get here, the bug's in the earlier phases.
-        throw new IllegalStateException("unknown variable \"" + name + "\" can't be read");
+        // We probably found the variable, but its value was "null".
+        return null;
     }
 }

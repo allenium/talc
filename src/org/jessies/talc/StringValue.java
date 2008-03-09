@@ -44,7 +44,7 @@ public class StringValue implements Value {
         if (m.find()) {
             return new MatchValue(m);
         }
-        return NullValue.NULL;
+        return null;
     }
     
     public int hashCode() {

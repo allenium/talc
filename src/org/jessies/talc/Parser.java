@@ -658,7 +658,7 @@ public class Parser {
             lexer.nextToken();
             primary = constant;
         } else if (op == Token.NULL) {
-            AstNode constant = new AstNode.Constant(location, NullValue.NULL, TalcType.NULL);
+            AstNode constant = new AstNode.Constant(location, null, TalcType.NULL);
             lexer.nextToken();
             primary = constant;
         } else if (op == Token.STRING_LITERAL) {

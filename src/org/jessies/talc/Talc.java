@@ -44,7 +44,7 @@ public class Talc {
             text += ";";
         }
         
-        List<Value> values = parseAndEvaluate(NullValue.NULL, new ListValue(), new Lexer(text));
+        List<Value> values = parseAndEvaluate(null, new ListValue(), new Lexer(text));
         StringBuilder result = new StringBuilder();
         for (Value value : values) {
             result.append(value);
@@ -178,7 +178,7 @@ public class Talc {
                 didSomethingUseful = true;
             } else if (args[i].equals("-e")) {
                 String expression = args[++i];
-                parseAndEvaluate(NullValue.NULL, new ListValue(), new Lexer(expression));
+                parseAndEvaluate(null, new ListValue(), new Lexer(expression));
                 didSomethingUseful = true;
             } else if (args[i].equals("--")) {
                 inScriptArgs = true;
