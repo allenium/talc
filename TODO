@@ -28,7 +28,9 @@
 
 * [medium] add map literals.
 
-* [medium] simplifier should know about types other than integers.
+* [medium] simplifier should know about types other than integers:
+           simplifier should know about "bool" and use this to simplify "if" statements and loops.
+           simplifier should know about "string" and concatenate literals at compile-time.
 
 * [medium] implement the ? : ternary operator.
 
