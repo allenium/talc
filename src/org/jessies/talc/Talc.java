@@ -163,8 +163,8 @@ public class Talc {
             } else if (args[i].equals("-h") || args[i].equals("--help")) {
                 usage();
                 didSomethingUseful = true;
-            } else if (args[i].equals("-D")) {
-                parseDebuggingFlags(args[++i]);
+            } else if (args[i].startsWith("-D")) {
+                parseDebuggingFlags(args[i].equals("-D") ? args[++i] : args[i].substring(2));
             } else if (args[i].equals("--dump-class")) {
                 String typeName = args[++i];
                 TalcType type = TalcType.byName(typeName);
