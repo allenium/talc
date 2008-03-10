@@ -33,8 +33,13 @@ public final class SourceLocation {
     
     // This is what gets embedded in the debugging information.
     // If we support back-ends other than the JVM, we might have to expose the File and let the back-end decide what's suitable.
-    public String getSourceFilename() {
+    public String sourceFilename() {
         return (file != null) ? file.getName() : "<stdin>";
+    }
+    
+    // This is what gets embedded in the debugging information.
+    public int lineNumber() {
+        return lineNumber;
     }
     
     public String toString() {

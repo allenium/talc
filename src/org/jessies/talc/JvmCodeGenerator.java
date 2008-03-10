@@ -69,7 +69,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     
     public JvmCodeGenerator(TalcClassLoader classLoader, List<AstNode> ast) {
         ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-        classWriter.visitSource(ast.get(0).location().getSourceFilename(), null);
+        classWriter.visitSource(ast.get(0).location().sourceFilename(), null);
         compile(ast, classWriter);
         byte[] bytecode = classWriter.toByteArray();
         
