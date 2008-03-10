@@ -42,6 +42,8 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     private final Type stringValueType = Type.getType(StringValue.class);
     private final Type valueType = Type.getType(Value.class);
     
+    private final Type javaLangObjectType = Type.getType(Object.class);
+    
     // We need the ability to track active loops to implement "break" and "continue".
     private static class LoopInfo { Label breakLabel, continueLabel; }
     private ArrayStack<LoopInfo> activeLoops = new ArrayStack<LoopInfo>();
@@ -117,7 +119,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         mg = globalMethod = new GeneratorAdapter(Opcodes.ACC_PUBLIC, m, null, null, cv);
         mg.visitCode();
         mg.loadThis();
-        mg.invokeConstructor(Type.getType(Object.class), m);
+        mg.invokeConstructor(javaLangObjectType, m);
         
         for (AstNode node : ast) {
             node.accept(this);
@@ -271,7 +273,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         
         binOp.lhs().accept(this);
         binOp.rhs().accept(this);
-        mg.invokeVirtual(Type.getType(Object.class), Method.getMethod("boolean equals(java.lang.Object)"));
+        mg.invokeVirtual(javaLangObjectType, Method.getMethod("boolean equals(java.lang.Object)"));
         mg.ifZCmp(GeneratorAdapter.NE, equalLabel);
         mg.getStatic(booleanValueType, neResult, booleanValueType);
         mg.goTo(doneLabel);
@@ -480,6 +482,16 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
             if (functionCall.instance() != null) {
                 functionCall.instance().accept(this);
                 mg.checkCast(containingType);
+                
+                if (functionName.equals("to_s")) {
+                    // A special case: for Java compatibility to_s is toString underneath.
+                    mg.newInstance(stringValueType);
+                    mg.dup();
+                    functionCall.instance().accept(this);
+                    mg.invokeVirtual(javaLangObjectType, Method.getMethod("java.lang.String toString()"));
+                    mg.invokeConstructor(stringValueType, Method.getMethod("void <init>(java.lang.String)"));
+                    return null;
+                }
             }
             Type[] methodArgumentTypes = method.getArgumentTypes();
             for (int i = 0; i < arguments.length; ++i) {
@@ -502,6 +514,8 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
             return booleanValueType;
         } else if (talcType == TalcType.INT) {
             return integerValueType;
+        } else if (talcType == TalcType.OBJECT) {
+            return javaLangObjectType;
         } else if (talcType == TalcType.REAL) {
             return realValueType;
         } else if (talcType == TalcType.STRING) {
@@ -514,6 +528,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         } else {
             // FIXME!
             System.err.println("warning: typeForTalcType returning Value.class for " + talcType);
+            Thread.dumpStack();
             return valueType;
         }
     }
@@ -540,8 +555,12 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         
         mg.visitCode();
         functionDefinition.body().accept(this);
+        if (functionDefinition.returnType() == TalcType.VOID) {
+            // Void functions are allowed an implicit "return".
+            // The bytecode verifier doesn't care if we have an unreachable RETURN bytecode, but it does care if we fall off the end of a method!
+            mg.returnValue();
+        }
         mg.endMethod();
-        
         mg = globalMethod;
         return null;
     }

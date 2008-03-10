@@ -45,26 +45,9 @@ public class Functions {
     }
     
     public static void print(Value value) {
-        Object printable = null;
+        Object printable = value;
         if (value == null) {
             printable = "null";
-        } else if (value == BooleanValue.TRUE) {
-            // FIXME: we'll need bool.to_s anyway, but maybe this is still a useful optimization?
-            printable = "true";
-        } else if (value == BooleanValue.FALSE) {
-            // FIXME: we'll need bool.to_s anyway, but maybe this is still a useful optimization?
-            printable = "false";
-        } else if (value instanceof StringValue) {
-            printable = value;
-        } else if (value instanceof IntegerValue) {
-            printable = value.toString();
-        } else {
-            // FIXME: invokeVirtual "to_s" on the Value.
-            printable = "<<FIXME: need to call .to_s for " + value.getClass() + " (\"" + value.toString() + "\")>>";
-            /*
-            AstNode argumentValueConstant = new AstNode.Constant(null, argumentValue, null);
-            printable = evaluator.visitFunctionCall(new AstNode.FunctionCall(null, "to_s", argumentValueConstant, new AstNode[0]));
-            */
         }
         System.out.print(printable);
     }
@@ -539,12 +522,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            ListValue list = (ListValue) instance;
-            StringBuilder result = new StringBuilder();
-            result.append("[");
-            result.append(list.join(", "));
-            result.append("]");
-            return new StringValue(result.toString());
+            return new StringValue(((ListValue) instance).toString());
         }
     }
     

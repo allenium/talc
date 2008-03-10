@@ -149,7 +149,11 @@ public class ListValue implements Value {
     }
     
     public String toString() {
-        return "[" + join(", ") + "]";
+        StringBuilder result = new StringBuilder();
+        result.append("[");
+        result.append(join(", "));
+        result.append("]");
+        return result.toString();
     }
     
     public TalcType type() {
