@@ -33,7 +33,8 @@ public class Talc {
         debuggingFlagNames['T'] = "shows information helpful when debugging the type checker";
         debuggingFlagNames['S'] = "shows the generated JVM bytecodes";
         debuggingFlagNames['s'] = "saves the generated code to /tmp";
-        debuggingFlagNames['v'] = "verifies the generated code with BCEL's JustIce verifier";
+        debuggingFlagNames['v'] = "verifies the generated code with ASM's verifier";
+        debuggingFlagNames['V'] = "verifies the generated code with BCEL's JustIce verifier (implies 's')";
     }
     
     public Talc() {

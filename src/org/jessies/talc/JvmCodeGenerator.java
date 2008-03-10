@@ -65,6 +65,8 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     // The method we're currently emitting code for (which may or may not be globalMethod).
     private GeneratorAdapter mg;
     
+    private int nextLocal = 0;
+    
     public JvmCodeGenerator(TalcClassLoader classLoader, List<AstNode> ast) {
         ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
         classWriter.visitSource(ast.get(0).location().getSourceFilename(), null);
@@ -72,8 +74,13 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         byte[] bytecode = classWriter.toByteArray();
         
         // FIXME: use this for caching rather than/as well as debugging?
-        if (Talc.debugging('s') || Talc.debugging('v')) {
+        if (Talc.debugging('s') || Talc.debugging('V')) {
             saveGeneratedCode(bytecode);
+        }
+        
+        if (Talc.debugging('v')) {
+            ClassReader cr = new ClassReader(bytecode);
+            CheckClassAdapter.verify(cr, false, new PrintWriter(System.err));
         }
         
         classLoader.defineClass("GeneratedClass", bytecode);
@@ -85,7 +92,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
             FileOutputStream fos = new FileOutputStream(filename);
             fos.write(bytecode);
             fos.close();
-            if (Talc.debugging('v')) {
+            if (Talc.debugging('V')) {
                 String command = "java -cp /usr/share/java/bcel-5.2.jar:" + filename.getParent() + ":" + System.getProperty("java.class.path") + " org.apache.bcel.verifier.Verifier GeneratedClass";
                 System.err.println("talc: verifying with:\n" + "  " + command);
                 Functions.shell(new StringValue(command));
@@ -252,7 +259,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         }
         // Store the new value.
         AstNode.VariableName variableName = (AstNode.VariableName) binOp.lhs();
-        mg.storeLocal(variableName.definition().local());
+        mg.visitVarInsn(Opcodes.ASTORE, variableName.definition().local());
     }
     
     // Compares binOp.lhs() and binOp.rhs() using Object.equals.
@@ -311,7 +318,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     private void assign(AstNode.BinaryOperator binOp) {
         binOp.rhs().accept(this);
         AstNode.VariableName variableName = (AstNode.VariableName) binOp.lhs();
-        mg.storeLocal(variableName.definition().local());
+        mg.visitVarInsn(Opcodes.ASTORE, variableName.definition().local());
     }
     
     public Void visitBlock(AstNode.Block block) {
@@ -445,7 +452,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         Type containingType = Type.getType("LGeneratedClass;");
         // ...unless we know it's not.
         TalcType talcContainingType = definition.containingType();
-        System.err.println("call to " + functionName + " in type " + talcContainingType + " defined in scope " + definition.scope());
+        //System.err.println("call to " + functionName + " in type " + talcContainingType + " defined in scope " + definition.scope());
         if (talcContainingType != null) {
             containingType = typeForTalcType(talcContainingType);
         } else if (definition.scope() == null) {
@@ -524,6 +531,13 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         Method m = methodForFunctionDefinition(functionDefinition);
         mg = new GeneratorAdapter(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, m, null, null, cv);
         
+        // FIXME: this should be 1 for non-static methods!
+        nextLocal = 0;
+        for (AstNode.VariableDefinition formalParameter : functionDefinition.formalParameters()) {
+            formalParameter.setLocal(nextLocal++);
+            //System.err.println(formalParameter + " (" + formalParameter.local() + ")");
+        }
+        
         mg.visitCode();
         functionDefinition.body().accept(this);
         mg.endMethod();
@@ -579,8 +593,8 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         mg.newInstance(listValueType);
         mg.dup();
         mg.invokeConstructor(listValueType, Method.getMethod("void <init>()"));
-        int resultLocal = mg.newLocal(listValueType);
-        mg.storeLocal(resultLocal);
+        int resultLocal = nextLocal++;
+        mg.visitVarInsn(Opcodes.ASTORE, resultLocal);
         
         List<AstNode> expressions = listLiteral.expressions();
         for (AstNode expression : expressions) {
@@ -588,7 +602,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
             expression.accept(this);
             
             // result.push_back(expression);
-            mg.loadLocal(resultLocal);
+            mg.visitVarInsn(Opcodes.ALOAD, resultLocal);
             mg.swap();
             mg.invokeVirtual(listValueType, Method.getMethod("org.jessies.talc.ListValue push_back(org.jessies.talc.Value)"));
         }
@@ -596,29 +610,32 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         // We didn't need a dup in the loop above because push_back leaves the result on the stack anyway.
         // Likewise, we don't need a loadLocal here unless we never went round the loop.
         if (expressions.size() == 0) {
-            mg.loadLocal(resultLocal);
+            mg.visitVarInsn(Opcodes.ALOAD, resultLocal);
         }
         return null;
     }
     
     public Void visitReturnStatement(AstNode.ReturnStatement returnStatement) {
-        returnStatement.expression().accept(this);
+        if (returnStatement.expression() != null) {
+            returnStatement.expression().accept(this);
+        }
         mg.returnValue();
         return null;
     }
     
     public Void visitVariableDefinition(AstNode.VariableDefinition variableDefinition) {
         // FIXME: we can't assume that all variables are locals!
-        int local = mg.newLocal(valueType);
+        int local = nextLocal++;
         variableDefinition.setLocal(local);
         variableDefinition.initializer().accept(this);
-        mg.storeLocal(local);
+        mg.visitVarInsn(Opcodes.ASTORE, local);
         return null;
     }
     
     public Void visitVariableName(AstNode.VariableName variableName) {
-        // FIXME: we can't assume that all variables are locals!
-        mg.loadLocal(variableName.definition().local());
+        // FIXME: we can't assume that all variables are locals or arguments!
+        //System.err.println(variableName.definition() + " (" + variableName.definition().local() + ")");
+        mg.visitVarInsn(Opcodes.ALOAD, variableName.definition().local());
         return null;
     }
     

@@ -219,7 +219,7 @@ public abstract class AstNode {
             if (constant instanceof StringValue) {
                 return "\"" + constant + "\"";
             }
-            return constant.toString();
+            return (constant != null) ? constant.toString() : "null";
         }
     }
     
@@ -445,6 +445,8 @@ public abstract class AstNode {
         private List<TalcTypeDescriptor> formalParameterTypeDescriptors;
         private TalcTypeDescriptor returnTypeDescriptor;
         
+        private List<AstNode.VariableDefinition> formalParameters;
+        
         public FunctionDefinition(SourceLocation location, String functionName, List<String> formalParameterNames, List<TalcType> formalParameterTypes, TalcType returnType, AstNode body) {
             this.location = location;
             this.functionName = functionName;
@@ -511,6 +513,14 @@ public abstract class AstNode {
         
         public String functionName() {
             return functionName;
+        }
+        
+        public void setFormalParameters(List<AstNode.VariableDefinition> formalParameters) {
+            this.formalParameters = formalParameters;
+        }
+        
+        public List<AstNode.VariableDefinition> formalParameters() {
+            return formalParameters;
         }
         
         public List<String> formalParameterNames() {
@@ -678,7 +688,7 @@ public abstract class AstNode {
         private TalcTypeDescriptor typeDescriptor;
         
         // Used by JvmCodeGenerator to remember local slots.
-        private int local;
+        private int local = -1;
         
         public VariableDefinition(SourceLocation location, String identifier, TalcTypeDescriptor typeDescriptor, AstNode initializer, boolean isFinal) {
             this.location = location;

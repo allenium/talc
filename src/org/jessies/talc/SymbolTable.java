@@ -187,9 +187,14 @@ public class SymbolTable implements AstVisitor<Void> {
         try {
             List<String> names = functionDefinition.formalParameterNames();
             List<TalcTypeDescriptor> typeDescriptors = functionDefinition.formalParameterTypeDescriptors();
+            // FIXME: could we set these VariableDefinitions up earlier? maybe create them in Parser, even?
+            ArrayList<AstNode.VariableDefinition> formalParameters = new ArrayList<AstNode.VariableDefinition>();
             for (int i = 0; i < names.size(); ++i) {
-                new AstNode.VariableDefinition(null, names.get(i), typeDescriptors.get(i), null, false).accept(this);
+                AstNode.VariableDefinition formalParameter = new AstNode.VariableDefinition(null, names.get(i), typeDescriptors.get(i), null, false);
+                formalParameter.accept(this);
+                formalParameters.add(formalParameter);
             }
+            functionDefinition.setFormalParameters(formalParameters);
             functionDefinition.body().accept(this);
         } finally {
             popScope();
