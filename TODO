@@ -5,6 +5,14 @@
 
 * [easy] better tests/demos.
 
+* [easy] add the other two common comment types:
+         // comment to end of line
+         /* block/inline comments */
+
+* [medium] optimize integer literals:
+ + never call "new IntegerValue"; always use IntegerValue.valueOf (in generated code and hand-written code alike), and implement caching like in java.lang.Integer.
+ + for some number of the most important values (-1, 0, and 1?), have them available as fields in IntegerValue, and have the code generator use getstatic instead of calling IntegerValue.valueOf.
+
 * [medium] replace "prelude.txt" with some kind of textual "include" system. (note: the prelude is currently broken and disabled.)
  + add the remaining prelude math functions in "math.talc" as a trivial example.
  + add "set.talc" as an example, implementing the equivalent of Java's HashSet. (would require user-defined parametric types!)
