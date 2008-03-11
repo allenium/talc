@@ -741,8 +741,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            String substring = arguments[0].accept(evaluator).toString();
-            return BooleanValue.valueOf(instance.toString().contains(substring));
+            return ((StringValue) instance).contains((StringValue) arguments[0].accept(evaluator));
         }
     }
     
@@ -752,8 +751,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            String suffix = arguments[0].accept(evaluator).toString();
-            return BooleanValue.valueOf(instance.toString().endsWith(suffix));
+            return ((StringValue) instance).ends_with((StringValue) arguments[0].accept(evaluator));
         }
     }
     
@@ -763,11 +761,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            return new StringValue(escape_html(instance.toString()));
-        }
-        
-        private String escape_html(String s) {
-            return s.replace("&", "&amp;").replace("\"", "&quot;").replace(">", "&gt;").replace("<", "&lt;");
+            return ((StringValue) instance).escape_html();
         }
     }
     
@@ -777,9 +771,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            String pattern = arguments[0].accept(evaluator).toString();
-            String replacement = arguments[1].accept(evaluator).toString();
-            return new StringValue(instance.toString().replaceAll(pattern, replacement));
+            return ((StringValue) instance).gsub((StringValue) arguments[0].accept(evaluator), (StringValue) arguments[1].accept(evaluator));
         }
     }
     
@@ -789,7 +781,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            return new StringValue(instance.toString().toLowerCase());
+            return ((StringValue) instance).lc();
         }
     }
     
@@ -799,8 +791,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            String s = instance.toString();
-            return new StringValue(s.toLowerCase().substring(0, 1) + s.substring(1));
+            return ((StringValue) instance).lc_first();
         }
     }
     
@@ -810,7 +801,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            return new IntegerValue(instance.toString().length());
+            return ((StringValue) instance).length();
         }
     }
     
@@ -820,9 +811,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            StringValue string = (StringValue) instance;
-            String pattern = arguments[0].accept(evaluator).toString();
-            return string.match(pattern);
+            return ((StringValue) instance).match((StringValue) arguments[0].accept(evaluator));
         }
     }
     
@@ -832,9 +821,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            String oldSubstring = arguments[0].accept(evaluator).toString();
-            String newSubstring = arguments[1].accept(evaluator).toString();
-            return new StringValue(instance.toString().replace(oldSubstring, newSubstring));
+            return ((StringValue) instance).replace((StringValue) arguments[0].accept(evaluator), (StringValue) arguments[1].accept(evaluator));
         }
     }
     
@@ -844,8 +831,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            String[] elements = instance.toString().split(arguments[0].accept(evaluator).toString());
-            return new ListValue(elements);
+            return ((StringValue) instance).split((StringValue) arguments[0].accept(evaluator));
         }
     }
     
@@ -855,8 +841,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            String prefix = arguments[0].accept(evaluator).toString();
-            return BooleanValue.valueOf(instance.toString().startsWith(prefix));
+            return ((StringValue) instance).starts_with((StringValue) arguments[0].accept(evaluator));
         }
     }
     
@@ -866,9 +851,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            String pattern = arguments[0].accept(evaluator).toString();
-            String replacement = arguments[1].accept(evaluator).toString();
-            return new StringValue(instance.toString().replaceFirst(pattern, replacement));
+            return ((StringValue) instance).sub((StringValue) arguments[0].accept(evaluator), (StringValue) arguments[1].accept(evaluator));
         }
     }
     
@@ -878,19 +861,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            int base = 10;
-            String s = instance.toString();
-            if (s.startsWith("0x")) {
-                base = 16;
-                s = s.substring(2);
-            } else if (s.startsWith("0b")) {
-                base = 2;
-                s = s.substring(2);
-            } else if (s.startsWith("0o")) {
-                base = 8;
-                s = s.substring(2);
-            }
-            return new IntegerValue(s, base);
+            return ((StringValue) instance).to_i();
         }
     }
     
@@ -900,7 +871,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            return new RealValue(instance.toString());
+            return ((StringValue) instance).to_r();
         }
     }
     
@@ -910,7 +881,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            return new StringValue(instance.toString().trim());
+            return ((StringValue) instance).trim();
         }
     }
     
@@ -920,7 +891,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            return new StringValue(instance.toString().toUpperCase());
+            return ((StringValue) instance).uc();
         }
     }
     
@@ -930,8 +901,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            String s = instance.toString();
-            return new StringValue(s.toUpperCase().substring(0, 1) + s.substring(1));
+            return ((StringValue) instance).uc_first();
         }
     }
     

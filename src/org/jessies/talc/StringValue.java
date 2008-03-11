@@ -31,6 +31,14 @@ public class StringValue implements Value {
         this(lhs.toString() + rhs.toString());
     }
     
+    public BooleanValue contains(StringValue substring) {
+        return BooleanValue.valueOf(value.contains(substring.value));
+    }
+    
+    public BooleanValue ends_with(StringValue suffix) {
+        return BooleanValue.valueOf(value.endsWith(suffix.value));
+    }
+    
     public boolean equals(Object o) {
         if (o instanceof StringValue) {
             return value.equals(((StringValue) o).value);
@@ -38,8 +46,28 @@ public class StringValue implements Value {
         return false;
     }
     
-    public Value match(String pattern) {
-        Pattern p = Pattern.compile(pattern);
+    public StringValue escape_html() {
+        return new StringValue(value.replace("&", "&amp;").replace("\"", "&quot;").replace(">", "&gt;").replace("<", "&lt;"));
+    }
+    
+    public StringValue gsub(StringValue pattern, StringValue replacement) {
+        return new StringValue(value.replaceAll(pattern.value, replacement.value));
+    }
+    
+    public StringValue lc() {
+        return new StringValue(value.toLowerCase());
+    }
+    
+    public StringValue lc_first() {
+        return new StringValue(value.toLowerCase().substring(0, 1) + value.substring(1));
+    }
+    
+    public IntegerValue length() {
+        return new IntegerValue(value.length());
+    }
+    
+    public MatchValue match(StringValue pattern) {
+        Pattern p = Pattern.compile(pattern.value);
         Matcher m = p.matcher(value);
         if (m.find()) {
             return new MatchValue(m);
@@ -51,11 +79,59 @@ public class StringValue implements Value {
         return value.hashCode();
     }
     
+    public StringValue replace(StringValue oldSubstring, StringValue newSubstring) {
+        return new StringValue(value.replace(oldSubstring.value, newSubstring.value));
+    }
+    
+    public ListValue split(StringValue pattern) {
+        return new ListValue(value.split(pattern.value));
+    }
+    
+    public BooleanValue starts_with(StringValue prefix) {
+        return BooleanValue.valueOf(value.startsWith(prefix.value));
+    }
+    
+    public StringValue sub(StringValue pattern, StringValue replacement) {
+        return new StringValue(value.replaceFirst(pattern.value, replacement.value));
+    }
+    
     public String toString() {
         return value;
     }
     
+    public IntegerValue to_i() {
+        String s = value;
+        int base = 10;
+        if (s.startsWith("0x")) {
+            base = 16;
+            s = s.substring(2);
+        } else if (s.startsWith("0b")) {
+            base = 2;
+            s = s.substring(2);
+        } else if (s.startsWith("0o")) {
+            base = 8;
+            s = s.substring(2);
+        }
+        return new IntegerValue(s, base);
+    }
+    
+    public RealValue to_r() {
+        return new RealValue(value);
+    }
+    
+    public StringValue trim() {
+        return new StringValue(value.trim());
+    }
+    
     public TalcType type() {
         return TalcType.STRING;
+    }
+    
+    public StringValue uc() {
+        return new StringValue(value.toUpperCase());
+    }
+    
+    public StringValue uc_first() {
+        return new StringValue(value.toUpperCase().substring(0, 1) + value.substring(1));
     }
 }
