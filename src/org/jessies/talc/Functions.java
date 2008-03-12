@@ -626,9 +626,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            MapValue map = (MapValue) instance;
-            Value key = arguments[0].accept(evaluator);
-            return map.remove(key);
+            return ((MapValue) instance).remove(arguments[0].accept(evaluator));
         }
     }
     
@@ -638,8 +636,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            MapValue map = (MapValue) instance;
-            return map.values();
+            return ((MapValue) instance).values();
         }
     }
     
@@ -649,9 +646,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            MatchValue match = (MatchValue) instance;
-            int n = ((IntegerValue) arguments[0].accept(evaluator)).intValue();
-            return match.group(n);
+            return ((MatchValue) instance).group((IntegerValue) arguments[0].accept(evaluator));
         }
     }
     
