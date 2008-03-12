@@ -260,8 +260,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            int base = ((IntegerValue) arguments[0].accept(evaluator)).intValue();
-            return new StringValue(((IntegerValue) instance).toString(base));
+            return ((IntegerValue) instance).to_base((IntegerValue) arguments[0].accept(evaluator));
         }
     }
     
@@ -271,9 +270,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            int i = ((IntegerValue) instance).intValue();
-            char ch = (char) i;
-            return new StringValue(String.valueOf(ch));
+            return ((IntegerValue) instance).to_char();
         }
     }
     
