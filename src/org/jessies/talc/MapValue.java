@@ -26,13 +26,17 @@ public class MapValue implements Value {
     public MapValue() {
     }
     
+    public Value __get_item__(Value key) {
+        return map.get(key);
+    }
+    
+    public Value __set_item__(Value key, Value value) {
+        return map.put(key, value);
+    }
+    
     public MapValue clear() {
         map.clear();
         return this;
-    }
-    
-    public Value get(Value key) {
-        return map.get(key);
     }
     
     public BooleanValue has_key(Value key) {
@@ -49,10 +53,6 @@ public class MapValue implements Value {
     
     public IntegerValue length() {
         return new IntegerValue(map.size());
-    }
-    
-    public Value put(Value key, Value value) {
-        return map.put(key, value);
     }
     
     public MapValue remove(Value key) {

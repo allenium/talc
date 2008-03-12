@@ -532,8 +532,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            MapValue map = (MapValue) instance;
-            return map.clear();
+            return ((MapValue) instance).clear();
         }
     }
     
@@ -543,9 +542,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            MapValue map = (MapValue) instance;
-            Value key = arguments[0].accept(evaluator);
-            return map.get(key);
+            return ((MapValue) instance).__get_item__(arguments[0].accept(evaluator));
         }
     }
     
@@ -555,9 +552,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            MapValue map = (MapValue) instance;
-            Value key = arguments[0].accept(evaluator);
-            return map.has_key(key);
+            return ((MapValue) instance).has_key(arguments[0].accept(evaluator));
         }
     }
     
@@ -567,9 +562,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            MapValue map = (MapValue) instance;
-            Value value = arguments[0].accept(evaluator);
-            return map.has_value(value);
+            return ((MapValue) instance).has_value(arguments[0].accept(evaluator));
         }
     }
     
@@ -579,8 +572,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            MapValue map = (MapValue) instance;
-            return map.keys();
+            return ((MapValue) instance).keys();
         }
     }
     
@@ -590,8 +582,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            MapValue map = (MapValue) instance;
-            return map.length();
+            return ((MapValue) instance).length();
         }
     }
     
@@ -612,11 +603,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            MapValue map = (MapValue) instance;
-            Value key = arguments[0].accept(evaluator);
-            Value value = arguments[1].accept(evaluator);
-            map.put(key, value);
-            return null;
+            return ((MapValue) instance).__set_item__(arguments[0].accept(evaluator), arguments[1].accept(evaluator));
         }
     }
     
