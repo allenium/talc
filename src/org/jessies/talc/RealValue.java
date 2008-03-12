@@ -68,11 +68,11 @@ public class RealValue implements NumericValue {
     }
     
     public RealValue log10() {
-        return new RealValue(Math.log(value) / Math.log(10.0));
+        return new RealValue(Math.log10(value));
     }
     
     public RealValue logE() {
-        return new RealValue(Math.log(value) / Math.log(Math.E));
+        return new RealValue(Math.log(value));
     }
     
     public RealValue signum() {

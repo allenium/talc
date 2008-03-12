@@ -142,6 +142,17 @@ RANDOM:random # convenience instance
 int.random(n:int):int # convenience using global RANDOM
 real.random():real # convenience using global RANDOM
 
+math.sin => Math.sin
+math.cos => Math.cos
+math.tan => Math.tan
+math.asin => Math.asin
+math.acos => Math.acos
+math.atan => Math.atan # and atan2?
+math.sinh => Math.sinh
+math.cosh => Math.cosh
+math.tanh => Math.tanh
+math.exp => Math.exp
+
 Perl-like pack/unpack?
 Perl/Python/Ruby-like tr/tr_d? sufficiently useful?
 should ARGV0 be of type "File" rather than "string"?
