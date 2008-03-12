@@ -701,7 +701,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            return ((RealValue) instance).log(new RealValue(10.0));
+            return ((RealValue) instance).log10();
         }
     }
     
@@ -711,7 +711,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            return ((RealValue) instance).log(new RealValue(Math.E));
+            return ((RealValue) instance).logE();
         }
     }
     
