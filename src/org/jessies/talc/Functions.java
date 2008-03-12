@@ -283,10 +283,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            ListValue list = (ListValue) instance;
-            ListValue others = (ListValue) arguments[0].accept(evaluator);
-            list.add_all(others);
-            return list;
+            return ((ListValue) instance).add_all((ListValue) arguments[0].accept(evaluator));
         }
     }
     
@@ -296,8 +293,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            ListValue list = (ListValue) instance;
-            return list.clear();
+            return ((ListValue) instance).clear();
         }
     }
     
@@ -307,9 +303,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            ListValue list = (ListValue) instance;
-            Value value = arguments[0].accept(evaluator);
-            return BooleanValue.valueOf(list.contains(value));
+            return ((ListValue) instance).contains(arguments[0].accept(evaluator));
         }
     }
     
@@ -319,8 +313,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            IntegerValue index = (IntegerValue) arguments[0].accept(evaluator);
-            return ((ListValue) instance).__get_item__(index);
+            return ((ListValue) instance).__get_item__((IntegerValue) arguments[0].accept(evaluator));
         }
     }
     
@@ -340,9 +333,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            ListValue list = (ListValue) instance;
-            String separator = arguments[0].accept(evaluator).toString();
-            return new StringValue(list.join(separator));
+            return ((ListValue) instance).join((StringValue) arguments[0].accept(evaluator));
         }
     }
     
@@ -413,9 +404,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            ListValue list = (ListValue) instance;
-            list.push_back(arguments[0].accept(evaluator));
-            return list;
+            return ((ListValue) instance).push_back(arguments[0].accept(evaluator));
         }
     }
     
@@ -425,9 +414,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            ListValue list = (ListValue) instance;
-            list.push_front(arguments[0].accept(evaluator));
-            return list;
+            return ((ListValue) instance).push_front(arguments[0].accept(evaluator));
         }
     }
     
@@ -437,11 +424,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            ListValue list = (ListValue) instance;
-            int index = ((IntegerValue) arguments[0].accept(evaluator)).intValue();
-            Value value = arguments[1].accept(evaluator);
-            list.put(index, value);
-            return null;
+            return ((ListValue) instance).__set_item__((IntegerValue) arguments[0].accept(evaluator), arguments[1].accept(evaluator));
         }
     }
     
@@ -451,10 +434,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            ListValue list = (ListValue) instance;
-            ListValue others = (ListValue) arguments[0].accept(evaluator);
-            list.remove_all(others);
-            return list;
+            return ((ListValue) instance).remove_all((ListValue) arguments[0].accept(evaluator));
         }
     }
     
@@ -464,10 +444,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            ListValue list = (ListValue) instance;
-            int index = ((IntegerValue) arguments[0].accept(evaluator)).intValue();
-            list.remove_at(index);
-            return list;
+            return ((ListValue) instance).remove_at((IntegerValue) arguments[0].accept(evaluator));
         }
     }
     
@@ -477,9 +454,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            ListValue list = (ListValue) instance;
-            Value value = arguments[0].accept(evaluator);
-            return BooleanValue.valueOf(list.remove_first(value));
+            return ((ListValue) instance).remove_first(arguments[0].accept(evaluator));
         }
     }
     
@@ -489,8 +464,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            ListValue list = (ListValue) instance;
-            return list.reverse();
+            return ((ListValue) instance).reverse();
         }
     }
     
@@ -500,8 +474,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            ListValue list = (ListValue) instance;
-            return list.sort();
+            return ((ListValue) instance).sort();
         }
     }
     
@@ -511,8 +484,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            ListValue list = (ListValue) instance;
-            return list.uniq();
+            return ((ListValue) instance).uniq();
         }
     }
     

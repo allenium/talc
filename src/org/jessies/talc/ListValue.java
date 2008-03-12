@@ -48,27 +48,33 @@ public class ListValue implements Value {
         return this;
     }
     
-    public boolean contains(Value v) {
-        return list.contains(v);
+    public BooleanValue contains(Value v) {
+        return BooleanValue.valueOf(list.contains(v));
     }
     
     public Value __get_item__(IntegerValue i) {
         return list.get(i.intValue());
     }
     
+    public Value __set_item__(IntegerValue i, Value v) {
+        list.set(i.intValue(), v);
+        return v;
+    }
+    
     public BooleanValue is_empty() {
         return BooleanValue.valueOf(list.size() == 0);
     }
     
-    public String join(String separator) {
+    public StringValue join(StringValue separator) {
+        String separatorString = separator.toString();
         StringBuilder result = new StringBuilder();
         for (int i = 0; i < list.size(); ++i) {
             if (i > 0) {
-                result.append(separator);
+                result.append(separatorString);
             }
             result.append(list.get(i));
         }
-        return result.toString();
+        return new StringValue(result.toString());
     }
     
     public IntegerValue length() {
@@ -84,11 +90,11 @@ public class ListValue implements Value {
     }
     
     public Value pop_back() {
-        return remove_at(list.size() - 1);
+        return list.remove(list.size() - 1);
     }
     
     public Value pop_front() {
-        return remove_at(0);
+        return list.remove(0);
     }
     
     public ListValue push_back(Value v) {
@@ -101,21 +107,18 @@ public class ListValue implements Value {
         return this;
     }
     
-    public void put(int i, Value v) {
-        list.set(i, v);
-    }
-    
     public ListValue remove_all(ListValue others) {
         list.removeAll(others.list);
         return this;
     }
     
-    public Value remove_at(int index) {
-        return list.remove(index);
+    public ListValue remove_at(IntegerValue index) {
+        list.remove(index.intValue());
+        return this;
     }
     
-    public boolean remove_first(Value v) {
-        return list.remove(v);
+    public BooleanValue remove_first(Value v) {
+        return BooleanValue.valueOf(list.remove(v));
     }
     
     public ListValue reverse() {
@@ -151,7 +154,7 @@ public class ListValue implements Value {
     public String toString() {
         StringBuilder result = new StringBuilder();
         result.append("[");
-        result.append(join(", "));
+        result.append(join(new StringValue(", ")));
         result.append("]");
         return result.toString();
     }
