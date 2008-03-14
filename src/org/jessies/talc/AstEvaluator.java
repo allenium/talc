@@ -58,8 +58,8 @@ public class AstEvaluator implements AstVisitor<Value> {
             case PRE_DECREMENT:  result = prePostIncrementDecrement(binOp, true, false); break;
             case PRE_INCREMENT:  result = prePostIncrementDecrement(binOp, true, true); break;
             
-            case EQ:             result = BooleanValue.valueOf(binOp.lhs().accept(this).equals(binOp.rhs().accept(this))); break;
-            case NE:             result = BooleanValue.valueOf(binOp.lhs().accept(this).equals(binOp.rhs().accept(this)) == false); break;
+            case EQ:             result = Functions.eq(binOp.lhs().accept(this), binOp.rhs().accept(this)); break;
+            case NE:             result = Functions.ne(binOp.lhs().accept(this), binOp.rhs().accept(this)); break;
             // FIXME: there's no reason why we can't offer these relational operators on non-numeric types. But should we?
             case LE:             result = BooleanValue.valueOf(lhsNumber(binOp).compareTo(rhsNumber(binOp)) <= 0); break;
             case GE:             result = BooleanValue.valueOf(lhsNumber(binOp).compareTo(rhsNumber(binOp)) >= 0); break;

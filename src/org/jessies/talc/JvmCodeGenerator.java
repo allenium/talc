@@ -42,6 +42,8 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     private final Type stringValueType = Type.getType(StringValue.class);
     private final Type valueType = Type.getType(Value.class);
     
+    private final Type orgJessiesTalcFunctionsType = Type.getType(Functions.class);
+    
     private final Type javaLangObjectType = Type.getType(Object.class);
     
     // We need the ability to track active loops to implement "break" and "continue".
@@ -67,7 +69,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     // The method we're currently emitting code for (which may or may not be globalMethod).
     private GeneratorAdapter mg;
     
-    private int nextLocal = 0;
+    private int nextLocal = 1; // FIXME: this is 1 because we know we generate a non-static method first.
     
     public JvmCodeGenerator(TalcClassLoader classLoader, List<AstNode> ast) {
         ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
@@ -171,8 +173,8 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
             case PRE_DECREMENT:  prePostIncrementDecrement(binOp, true, false); break;
             case PRE_INCREMENT:  prePostIncrementDecrement(binOp, true, true); break;
             
-            case EQ:        eq(binOp, "TRUE", "FALSE"); break;
-            case NE:        eq(binOp, "FALSE", "TRUE"); break;
+            case EQ:        eq(binOp, "eq"); break;
+            case NE:        eq(binOp, "ne"); break;
             // FIXME: there's no reason why we can't offer these relational operators on non-numeric types. But should we?
             case LE:        cmp(binOp, GeneratorAdapter.LE); break;
             case GE:        cmp(binOp, GeneratorAdapter.GE); break;
@@ -264,22 +266,10 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         mg.visitVarInsn(Opcodes.ASTORE, variableName.definition().local());
     }
     
-    // Compares binOp.lhs() and binOp.rhs() using Object.equals.
-    // Returns the BooleanValue corresponding eqResult if they're equal, and neResult otherwise.
-    // Implements == and !=.
-    private void eq(AstNode.BinaryOperator binOp, String eqResult, String neResult) {
-        Label equalLabel = mg.newLabel();
-        Label doneLabel = mg.newLabel();
-        
+    private void eq(AstNode.BinaryOperator binOp, String eqOrNe) {
         binOp.lhs().accept(this);
         binOp.rhs().accept(this);
-        mg.invokeVirtual(javaLangObjectType, Method.getMethod("boolean equals(java.lang.Object)"));
-        mg.ifZCmp(GeneratorAdapter.NE, equalLabel);
-        mg.getStatic(booleanValueType, neResult, booleanValueType);
-        mg.goTo(doneLabel);
-        mg.mark(equalLabel);
-        mg.getStatic(booleanValueType, eqResult, booleanValueType);
-        mg.mark(doneLabel);
+        mg.invokeStatic(orgJessiesTalcFunctionsType, new Method(eqOrNe, booleanValueType, new Type[] { valueType, valueType }));
     }
     
     private void cmp(AstNode.BinaryOperator binOp, int comparison) {
@@ -336,7 +326,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         // FIXME: is there a cleaner way to do this?
         
         // If the code we generated for "statement" left a value on the stack, we need to pop it off!
-        if (node instanceof AstNode.BinaryOperator || node instanceof AstNode.Constant || node instanceof AstNode.ListLiteral || node instanceof AstNode.VariableName) {
+        if (node instanceof AstNode.BinaryOperator || node instanceof AstNode.Constant || node instanceof AstNode.ListLiteral || node instanceof AstNode.VariableDefinition || node instanceof AstNode.VariableName) {
             mg.pop();
         } else if (node instanceof AstNode.FunctionCall) {
             // Pop unused return values from non-void functions.
@@ -460,7 +450,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
             containingType = typeForTalcType(talcContainingType);
         } else if (definition.scope() == null) {
             // We need a special case for built-in "global" functions.
-            containingType = Type.getType("Lorg/jessies/talc/Functions;");
+            containingType = orgJessiesTalcFunctionsType;
         }
         
         if (definition.isVarArgs()) {
@@ -650,6 +640,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         variableDefinition.setLocal(local);
         variableDefinition.initializer().accept(this);
         mg.checkCast(typeForTalcType(variableDefinition.type()));
+        mg.dup();
         mg.visitVarInsn(Opcodes.ASTORE, local);
         return null;
     }

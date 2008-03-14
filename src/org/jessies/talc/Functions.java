@@ -22,6 +22,14 @@ import java.io.*;
 import java.util.*;
 
 public class Functions {
+    public static BooleanValue eq(Value lhs, Value rhs) {
+        return BooleanValue.valueOf((lhs == null && rhs == null) || lhs.equals(rhs));
+    }
+    
+    public static BooleanValue ne(Value lhs, Value rhs) {
+        return BooleanValue.valueOf((lhs == null && rhs != null) || !lhs.equals(rhs));
+    }
+    
     public static StringValue backquote(StringValue command) {
         ProcessBuilder processBuilder = new ProcessBuilder("bash", "-c", command.toString());
         StringWriter output = new StringWriter();
@@ -40,6 +48,7 @@ public class Functions {
     }
     
     public static StringValue gets() {
+        // FIXME: System.console returns null if you've redirected stdin.
         String result = System.console().readLine();
         return (result != null) ? new StringValue(result) : null;
     }
