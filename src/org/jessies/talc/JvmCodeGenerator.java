@@ -263,7 +263,9 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         }
         // Store the new value.
         AstNode.VariableName variableName = (AstNode.VariableName) binOp.lhs();
-        mg.visitVarInsn(Opcodes.ASTORE, variableName.definition().local());
+        AstNode.VariableDefinition variableDefinition = variableName.definition();
+        mg.checkCast(typeForTalcType(variableDefinition.type()));
+        mg.visitVarInsn(Opcodes.ASTORE, variableDefinition.local());
     }
     
     private void eq(AstNode.BinaryOperator binOp, String eqOrNe) {
@@ -308,10 +310,13 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     }
     
     private void assign(AstNode.BinaryOperator binOp) {
-        binOp.rhs().accept(this);
-        mg.dup();
         AstNode.VariableName variableName = (AstNode.VariableName) binOp.lhs();
-        mg.visitVarInsn(Opcodes.ASTORE, variableName.definition().local());
+        AstNode.VariableDefinition variableDefinition = variableName.definition();
+        
+        binOp.rhs().accept(this);
+        mg.checkCast(typeForTalcType(variableDefinition.type()));
+        mg.dup();
+        mg.visitVarInsn(Opcodes.ASTORE, variableDefinition.local());
     }
     
     public Void visitBlock(AstNode.Block block) {
@@ -464,6 +469,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
                     mg.dup();
                     mg.push(i);
                     arguments[i].accept(this);
+                    mg.checkCast(valueType);
                     mg.arrayStore(valueType);
                 }
                 mg.invokeStatic(containingType, Method.getMethod("void " + functionName + " (org.jessies.talc.Value[])"));
