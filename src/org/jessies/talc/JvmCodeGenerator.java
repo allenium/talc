@@ -634,8 +634,8 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     public Void visitReturnStatement(AstNode.ReturnStatement returnStatement) {
         if (returnStatement.expression() != null) {
             returnStatement.expression().accept(this);
+            mg.checkCast(typeForTalcType(returnStatement.returnType()));
         }
-        mg.checkCast(typeForTalcType(returnStatement.returnType()));
         mg.returnValue();
         return null;
     }
