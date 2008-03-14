@@ -98,11 +98,11 @@ public class RealValue implements NumericValue {
         return value.doubleValue();
     }
     
-    public IntegerValue toIntegerValue() {
+    public IntegerValue to_i() {
         return new IntegerValue((long) value.doubleValue());
     }
     
-    public RealValue toRealValue() {
+    public RealValue to_r() {
         return this;
     }
     

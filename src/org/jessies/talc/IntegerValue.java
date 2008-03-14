@@ -135,11 +135,11 @@ public class IntegerValue implements NumericValue {
         return value.intValue();
     }
     
-    public IntegerValue toIntegerValue() {
+    public IntegerValue to_i() {
         return this;
     }
     
-    public RealValue toRealValue() {
+    public RealValue to_r() {
         double result = value.doubleValue();
         if (result == Double.NEGATIVE_INFINITY || result == Double.POSITIVE_INFINITY) {
             throw new RuntimeException("Integer value too large");

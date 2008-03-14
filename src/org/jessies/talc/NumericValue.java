@@ -27,9 +27,9 @@ public interface NumericValue extends Value {
     public NumericValue negate();
     
     /** Returns the equivalent IntegerValue, or throws an exception. */
-    public IntegerValue toIntegerValue();
+    public IntegerValue to_i();
     /** Returns the equivalent RealValue, or throws an exception. */
-    public RealValue toRealValue();
+    public RealValue to_r();
     
     /**
      * Returns -1, 0 or 1 if this Value is less than, equal to, or greater than rhs.

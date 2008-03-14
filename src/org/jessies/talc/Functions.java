@@ -612,7 +612,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            return ((NumericValue) instance).toIntegerValue();
+            return ((NumericValue) instance).to_i();
         }
     }
     
@@ -622,7 +622,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            return ((NumericValue) instance).toRealValue();
+            return ((NumericValue) instance).to_r();
         }
     }
     
