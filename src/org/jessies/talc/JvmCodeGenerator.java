@@ -319,6 +319,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     
     private void assign(AstNode.BinaryOperator binOp) {
         binOp.rhs().accept(this);
+        mg.dup();
         AstNode.VariableName variableName = (AstNode.VariableName) binOp.lhs();
         mg.visitVarInsn(Opcodes.ASTORE, variableName.definition().local());
     }
