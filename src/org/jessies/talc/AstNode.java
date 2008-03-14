@@ -658,6 +658,7 @@ public abstract class AstNode {
     
     public static class ReturnStatement extends AstNode {
         private AstNode expression;
+        private TalcType returnType;
         
         public ReturnStatement(SourceLocation location, AstNode expression) {
             this.location = location;
@@ -670,6 +671,14 @@ public abstract class AstNode {
         
         public AstNode expression() {
             return expression;
+        }
+        
+        public void setReturnType(TalcType returnType) {
+            this.returnType = returnType;
+        }
+        
+        public TalcType returnType() {
+            return returnType;
         }
         
         public String toString() {

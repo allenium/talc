@@ -430,6 +430,7 @@ public class AstTypeChecker implements AstVisitor<TalcType> {
         } else if (returnedType.canBeAssignedTo(returnType) == false) {
             throw new TalcError(returnStatement, "return expression has type " + returnedType + " but must be assignable to " + returnType);
         }
+        returnStatement.setReturnType(returnType);
         // The "return" itself is a statement.
         return TalcType.VOID;
     }
