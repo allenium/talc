@@ -414,7 +414,10 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         Label headLabel = mg.newLabel();
         
         // <initializer>
-        if (forStatement.initializer() != null) forStatement.initializer().accept(this);
+        if (forStatement.initializer() != null) {
+            forStatement.initializer().accept(this);
+            popAnythingLeftBy(forStatement.initializer());
+        }
         // headLabel:
         mg.mark(headLabel);
         // if (<condition> == false) goto breakLabel;
@@ -477,9 +480,6 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         } else {
             Method method = methodForFunctionDefinition(definition);
             if (functionCall.instance() != null) {
-                functionCall.instance().accept(this);
-                mg.checkCast(containingType);
-                
                 if (functionName.equals("to_s")) {
                     // A special case: for Java compatibility to_s is toString underneath.
                     mg.newInstance(stringValueType);
@@ -488,6 +488,11 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
                     mg.invokeVirtual(javaLangObjectType, Method.getMethod("java.lang.String toString()"));
                     mg.invokeConstructor(stringValueType, Method.getMethod("void <init>(java.lang.String)"));
                     return null;
+                } else {
+                    functionCall.instance().accept(this);
+                    mg.checkCast(containingType);
+                    
+                    // FIXME: is this fall-through right?
                 }
             }
             Type[] methodArgumentTypes = method.getArgumentTypes();
