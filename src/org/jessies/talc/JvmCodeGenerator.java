@@ -649,6 +649,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         int local = nextLocal++;
         variableDefinition.setLocal(local);
         variableDefinition.initializer().accept(this);
+        mg.checkCast(typeForTalcType(variableDefinition.type()));
         mg.visitVarInsn(Opcodes.ASTORE, local);
         return null;
     }
