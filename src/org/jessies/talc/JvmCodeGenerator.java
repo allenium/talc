@@ -87,6 +87,26 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         }
     }
     
+    private class JvmStaticFieldAccessor implements VariableAccessor {
+        private Type owner;
+        private String name;
+        private Type type;
+        
+        private JvmStaticFieldAccessor(Type owner, String name, Type type) {
+            this.owner = owner;
+            this.name = name;
+            this.type = type;
+        }
+        
+        public void emitGet() {
+            mg.getStatic(owner, name, type);
+        }
+        
+        public void emitPut() {
+            mg.putStatic(owner, name, type);
+        }
+    }
+    
     public JvmCodeGenerator(TalcClassLoader classLoader, List<AstNode> ast) {
         ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
         classWriter.visitSource(ast.get(0).location().sourceFilename(), null);
@@ -660,11 +680,20 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     }
     
     public Void visitVariableDefinition(AstNode.VariableDefinition variableDefinition) {
-        // FIXME: we can't assume that all variables are locals!
-        VariableAccessor accessor = new JvmLocalVariableAccessor(nextLocal++);
+        Type type = typeForTalcType(variableDefinition.type());
+        VariableAccessor accessor;
+        if (variableDefinition.scope() == Scope.globalScope()) {
+            // If we're at global scope, we may need to back variables with fields.
+            // Escape analysis would tell us whether or not we do, but we don't do any of that, so we have to assume the worst.
+            cv.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, variableDefinition.identifier(), type.getDescriptor(), null, null);
+            accessor = new JvmStaticFieldAccessor(Type.getType("LGeneratedClass;"), variableDefinition.identifier(), type);
+        } else {
+            // If we're at local scope, we can back variables with locals.
+            accessor = new JvmLocalVariableAccessor(nextLocal++);
+        }
         variableDefinition.setAccessor(accessor);
         variableDefinition.initializer().accept(this);
-        mg.checkCast(typeForTalcType(variableDefinition.type()));
+        mg.checkCast(type);
         mg.dup();
         accessor.emitPut();
         return null;
