@@ -44,6 +44,8 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     
     private final Type orgJessiesTalcFunctionsType = Type.getType(Functions.class);
     
+    private final Type generatedClassType = Type.getType("LGeneratedClass;");
+    
     private final Type javaLangObjectType = Type.getType(Object.class);
     
     // We need the ability to track active loops to implement "break" and "continue".
@@ -178,8 +180,8 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         // FIXME: should we wire up the passed-in arguments as ARGV?
         mg = new GeneratorAdapter(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, Method.getMethod("void main(String[])"), null, null, cv);
         mg.visitCode();
-        mg.newInstance(Type.getType("LGeneratedClass;"));
-        mg.invokeConstructor(Type.getType("LGeneratedClass;"), Method.getMethod("void <init>()"));
+        mg.newInstance(generatedClassType);
+        mg.invokeConstructor(generatedClassType, Method.getMethod("void <init>()"));
         mg.returnValue();
         mg.endMethod();
         
@@ -518,7 +520,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         AstNode[] arguments = functionCall.arguments();
         
         // Assume we're dealing with a global user-defined function...
-        Type containingType = Type.getType("LGeneratedClass;");
+        Type containingType = generatedClassType;
         // ...unless we know it's not.
         TalcType talcContainingType = definition.containingType();
         //System.err.println("call to " + functionName + " in type " + talcContainingType + " defined in scope " + definition.scope());
@@ -719,7 +721,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
             // If we're at global scope, we may need to back variables with fields.
             // Escape analysis would tell us whether or not we do, but we don't do any of that, so we have to assume the worst.
             cv.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, variableDefinition.identifier(), type.getDescriptor(), null, null);
-            accessor = new JvmStaticFieldAccessor(Type.getType("LGeneratedClass;"), variableDefinition.identifier(), type);
+            accessor = new JvmStaticFieldAccessor(generatedClassType, variableDefinition.identifier(), type);
         } else {
             // If we're at local scope, we can back variables with locals.
             accessor = new JvmLocalVariableAccessor(nextLocal++);
