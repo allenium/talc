@@ -27,8 +27,7 @@ public class SymbolTable implements AstVisitor<Void> {
     public SymbolTable(List<AstNode> ast) {
         creationTime = System.nanoTime();
         
-        // Note that we have to surround the global scope with an anonymous scope so we don't confuse user-defined junk with built-in globals in Scope.fillWithGlobalVariables.
-        scopes.push(new Scope(Scope.globalScope()));
+        scopes.push(Scope.globalScope());
         
         for (AstNode node : ast) {
             node.accept(this);

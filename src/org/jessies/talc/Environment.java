@@ -28,7 +28,7 @@ public class Environment {
     public Environment() {
         stack = new ArrayStack<StackFrame>();
         pushStackFrame();
-        Scope.fillWithGlobalVariables(stack.peek().variables);
+        Scope.fillWithBuiltInVariables(stack.peek().variables);
         pushStackFrame();
     }
     

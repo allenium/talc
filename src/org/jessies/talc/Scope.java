@@ -21,6 +21,7 @@ package org.jessies.talc;
 import java.util.*;
 
 public class Scope {
+    private static Scope builtInScope;
     private static Scope globalScope;
     
     private Scope parent;
@@ -123,32 +124,40 @@ public class Scope {
         return (field == null ? otherField == null : field.equals(otherField));
     }
     
+    public static Scope builtInScope() {
+        return builtInScope;
+    }
+    
     public static Scope globalScope() {
         return globalScope;
     }
     
     public static void initGlobalScope(Value argv0, ListValue args) {
-        globalScope = new Scope(null);
-        // Global functions.
-        globalScope.addFunction(new Functions.backquote());
-        globalScope.addFunction(new Functions.Exit());
-        globalScope.addFunction(new Functions.Getenv());
-        globalScope.addFunction(new Functions.Gets());
-        globalScope.addFunction(new Functions.Print());
-        globalScope.addFunction(new Functions.Puts());
-        globalScope.addFunction(new Functions.shell());
-        globalScope.addFunction(new Functions.system());
-        globalScope.addFunction(new Functions.time_ms());
-        // Global constants.
-        globalScope.addVariable(new BuiltInConstant("ARGV0", TalcType.STRING, argv0));
-        globalScope.addVariable(new BuiltInConstant("ARGS", TalcType.LIST_OF_STRING, args));
-        globalScope.addVariable(new BuiltInConstant("FILE_SEPARATOR", TalcType.STRING, new StringValue(java.io.File.separator)));
-        globalScope.addVariable(new BuiltInConstant("PATH_SEPARATOR", TalcType.STRING, new StringValue(java.io.File.pathSeparator)));
+        builtInScope = new Scope(null);
+        // Built-in functions.
+        builtInScope.addFunction(new Functions.backquote());
+        builtInScope.addFunction(new Functions.Exit());
+        builtInScope.addFunction(new Functions.Getenv());
+        builtInScope.addFunction(new Functions.Gets());
+        builtInScope.addFunction(new Functions.Print());
+        builtInScope.addFunction(new Functions.Puts());
+        builtInScope.addFunction(new Functions.shell());
+        builtInScope.addFunction(new Functions.system());
+        builtInScope.addFunction(new Functions.time_ms());
+        // Built-in constants.
+        builtInScope.addVariable(new BuiltInConstant("ARGV0", TalcType.STRING, argv0));
+        builtInScope.addVariable(new BuiltInConstant("ARGS", TalcType.LIST_OF_STRING, args));
+        builtInScope.addVariable(new BuiltInConstant("FILE_SEPARATOR", TalcType.STRING, new StringValue(java.io.File.separator)));
+        builtInScope.addVariable(new BuiltInConstant("PATH_SEPARATOR", TalcType.STRING, new StringValue(java.io.File.pathSeparator)));
+        
+        // Note that we have to surround the built-in scope with a scope for user-defined globals.
+        // Both things are "global", but it's important not to confuse the two.
+        globalScope = new Scope(builtInScope);
     }
     
-    public static void fillWithGlobalVariables(Variables variables) {
-        for (AstNode.VariableDefinition global : globalScope.variables.values()) {
-            variables.defineVariable(global.identifier(), ((AstNode.Constant) global.initializer()).constant());
+    public static void fillWithBuiltInVariables(Variables variables) {
+        for (AstNode.VariableDefinition builtIn : builtInScope.variables.values()) {
+            variables.defineVariable(builtIn.identifier(), ((AstNode.Constant) builtIn.initializer()).constant());
         }
     }
 }
