@@ -181,19 +181,18 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
             case GT:        cmp(binOp, GeneratorAdapter.GT); break;
             case LT:        cmp(binOp, GeneratorAdapter.LT); break;
             
-            case ASSIGN:    assign(binOp); break;
-            //case ASSIGN:         result = assignTo(lhs, binOp.rhs().accept(this)); break;
-            //case PLUS_ASSIGN:    result = assignTo(lhs, visitNumericAddOrStringConcatenation(binOp)); break;
-            //case SUB_ASSIGN:     result = assignTo(lhs, lhsNumber(binOp).subtract(rhsNumber(binOp))); break;
-            //case MUL_ASSIGN:     result = assignTo(lhs, lhsNumber(binOp).multiply(rhsNumber(binOp))); break;
-            //case POW_ASSIGN:     result = assignTo(lhs, lhsNumber(binOp).pow(rhsNumber(binOp))); break;
-            //case DIV_ASSIGN:     result = assignTo(lhs, lhsNumber(binOp).divide(rhsNumber(binOp))); break;
-            //case MOD_ASSIGN:     result = assignTo(lhs, rhsInt(binOp).mod(rhsInt(binOp))); break;
-            //case SHL_ASSIGN:     result = assignTo(lhs, rhsInt(binOp).shiftLeft(rhsInt(binOp))); break;
-            //case SHR_ASSIGN:     result = assignTo(lhs, rhsInt(binOp).shiftRight(rhsInt(binOp))); break;
-            //case AND_ASSIGN:     result = assignTo(lhs, rhsInt(binOp).and(rhsInt(binOp))); break;
-            //case OR_ASSIGN:      result = assignTo(lhs, rhsInt(binOp).or(rhsInt(binOp))); break;
-            //case XOR_ASSIGN:     result = assignTo(lhs, rhsInt(binOp).xor(rhsInt(binOp))); break;
+            case ASSIGN:            binOp.rhs().accept(this); assignTo(binOp.lhs()); break;
+            case PLUS_ASSIGN:       numericAddOrStringConcatenation(binOp); assignTo(binOp.lhs()); break;
+            case SUB_ASSIGN:        invokeBinaryOp(binOp, numericValueType, "subtract"); assignTo(binOp.lhs()); break;
+            case MUL_ASSIGN:        invokeBinaryOp(binOp, numericValueType, "multiply"); assignTo(binOp.lhs()); break;
+            case POW_ASSIGN:        invokeBinaryOp(binOp, numericValueType, "pow"); assignTo(binOp.lhs()); break;
+            case DIV_ASSIGN:        invokeBinaryOp(binOp, numericValueType, "divide"); assignTo(binOp.lhs()); break;
+            case MOD_ASSIGN:        invokeBinaryOp(binOp, numericValueType, "mod"); assignTo(binOp.lhs()); break;
+            case SHL_ASSIGN:        invokeBinaryOp(binOp, numericValueType, "shiftLeft"); assignTo(binOp.lhs()); break;
+            case SHR_ASSIGN:        invokeBinaryOp(binOp, numericValueType, "shiftRight"); assignTo(binOp.lhs()); break;
+            case AND_ASSIGN:        invokeBinaryOp(binOp, numericValueType, "and"); assignTo(binOp.lhs()); break;
+            case OR_ASSIGN:         invokeBinaryOp(binOp, numericValueType, "or"); assignTo(binOp.lhs()); break;
+            case XOR_ASSIGN:        invokeBinaryOp(binOp, numericValueType, "xor"); assignTo(binOp.lhs()); break;
             
         default:
             throw new TalcError(binOp, "don't know how to generate code for " + binOp.op());
@@ -309,11 +308,9 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         }
     }
     
-    private void assign(AstNode.BinaryOperator binOp) {
-        AstNode.VariableName variableName = (AstNode.VariableName) binOp.lhs();
+    private void assignTo(AstNode lhs) {
+        AstNode.VariableName variableName = (AstNode.VariableName) lhs;
         AstNode.VariableDefinition variableDefinition = variableName.definition();
-        
-        binOp.rhs().accept(this);
         mg.checkCast(typeForTalcType(variableDefinition.type()));
         mg.dup();
         mg.visitVarInsn(Opcodes.ASTORE, variableDefinition.local());
