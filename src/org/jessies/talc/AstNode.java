@@ -696,8 +696,8 @@ public abstract class AstNode {
         // Until the symbol table is built, this is all we have, type-wise.
         private TalcTypeDescriptor typeDescriptor;
         
-        // Used by JvmCodeGenerator to remember local slots.
-        private int local = -1;
+        // Used by the code generator to remember where it put this variable.
+        private VariableAccessor accessor;
         
         public VariableDefinition(SourceLocation location, String identifier, TalcTypeDescriptor typeDescriptor, AstNode initializer, boolean isFinal) {
             this.location = location;
@@ -763,12 +763,12 @@ public abstract class AstNode {
             return initializer;
         }
         
-        public void setLocal(int local) {
-            this.local = local;
+        public void setAccessor(VariableAccessor accessor) {
+            this.accessor = accessor;
         }
         
-        public int local() {
-            return local;
+        public VariableAccessor accessor() {
+            return accessor;
         }
         
         public String toString() {

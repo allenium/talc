@@ -71,6 +71,22 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     
     private int nextLocal = 1; // FIXME: this is 1 because we know we generate a non-static method first.
     
+    private class JvmLocalVariableAccessor implements VariableAccessor {
+        private int localSlot;
+        
+        private JvmLocalVariableAccessor(int localSlot) {
+            this.localSlot = localSlot;
+        }
+        
+        public void emitGet() {
+            mg.visitVarInsn(Opcodes.ALOAD, localSlot);
+        }
+        
+        public void emitPut() {
+            mg.visitVarInsn(Opcodes.ASTORE, localSlot);
+        }
+    }
+    
     public JvmCodeGenerator(TalcClassLoader classLoader, List<AstNode> ast) {
         ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
         classWriter.visitSource(ast.get(0).location().sourceFilename(), null);
@@ -264,7 +280,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         AstNode.VariableName variableName = (AstNode.VariableName) binOp.lhs();
         AstNode.VariableDefinition variableDefinition = variableName.definition();
         mg.checkCast(typeForTalcType(variableDefinition.type()));
-        mg.visitVarInsn(Opcodes.ASTORE, variableDefinition.local());
+        variableDefinition.accessor().emitPut();
     }
     
     private void eq(AstNode.BinaryOperator binOp, String eqOrNe) {
@@ -313,7 +329,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         AstNode.VariableDefinition variableDefinition = variableName.definition();
         mg.checkCast(typeForTalcType(variableDefinition.type()));
         mg.dup();
-        mg.visitVarInsn(Opcodes.ASTORE, variableDefinition.local());
+        variableDefinition.accessor().emitPut();
     }
     
     public Void visitBlock(AstNode.Block block) {
@@ -550,8 +566,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         // FIXME: this should be 1 for non-static methods!
         nextLocal = 0;
         for (AstNode.VariableDefinition formalParameter : functionDefinition.formalParameters()) {
-            formalParameter.setLocal(nextLocal++);
-            //System.err.println(formalParameter + " (" + formalParameter.local() + ")");
+            formalParameter.setAccessor(new JvmLocalVariableAccessor(nextLocal++));
         }
         
         mg.visitCode();
@@ -646,19 +661,17 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     
     public Void visitVariableDefinition(AstNode.VariableDefinition variableDefinition) {
         // FIXME: we can't assume that all variables are locals!
-        int local = nextLocal++;
-        variableDefinition.setLocal(local);
+        VariableAccessor accessor = new JvmLocalVariableAccessor(nextLocal++);
+        variableDefinition.setAccessor(accessor);
         variableDefinition.initializer().accept(this);
         mg.checkCast(typeForTalcType(variableDefinition.type()));
         mg.dup();
-        mg.visitVarInsn(Opcodes.ASTORE, local);
+        accessor.emitPut();
         return null;
     }
     
     public Void visitVariableName(AstNode.VariableName variableName) {
-        // FIXME: we can't assume that all variables are locals or arguments!
-        //System.err.println(variableName.definition() + " (" + variableName.definition().local() + ")");
-        mg.visitVarInsn(Opcodes.ALOAD, variableName.definition().local());
+        variableName.definition().accessor().emitGet();
         return null;
     }
     
