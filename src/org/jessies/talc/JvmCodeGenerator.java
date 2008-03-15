@@ -159,6 +159,14 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         mg.loadThis();
         mg.invokeConstructor(javaLangObjectType, m);
         
+        // Create the static fields corresponding to the built-in variables.
+        // Their initializers should appear at the start of the constructor.
+        for (AstNode.VariableDefinition builtInVariableDefinition : Scope.builtInVariableDefinitions()) {
+            System.err.println(builtInVariableDefinition);
+            builtInVariableDefinition.accept(this);
+        }
+        
+        // Now generate code for the user's global-scope code.
         for (AstNode node : ast) {
             node.accept(this);
         }
@@ -384,7 +392,9 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     public Void visitConstant(AstNode.Constant constant) {
         // FIXME: this is all very unfortunate. life would be simpler if we'd use Java's "built-in" Boolean and String types, and do something a bit cleverer for "int", too.
         TalcType constantType = constant.type();
-        if (constantType == TalcType.BOOL) {
+        if (constantType == TalcType.NULL || constant.constant() == null) {
+            mg.visitInsn(Opcodes.ACONST_NULL);
+        } else if (constantType == TalcType.BOOL) {
             mg.getStatic(booleanValueType, (constant.constant() == BooleanValue.TRUE) ? "TRUE" : "FALSE", booleanValueType);
         } else if (constantType == TalcType.INT) {
             mg.newInstance(integerValueType);
@@ -393,8 +403,6 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
             mg.push(constant.constant().toString());
             mg.push(10);
             mg.invokeConstructor(integerValueType, Method.getMethod("void <init>(String, int)"));
-        } else if (constantType == TalcType.NULL) {
-            mg.visitInsn(Opcodes.ACONST_NULL);
         } else if (constantType == TalcType.REAL) {
             mg.newInstance(realValueType);
             mg.dup();
@@ -405,8 +413,33 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
             mg.dup();
             mg.push(constant.constant().toString());
             mg.invokeConstructor(stringValueType, Method.getMethod("void <init>(String)"));
+        } else if (constantType.rawName().equals("list")) {
+            // FIXME: this is a hack to support the ARGS built-in global uniformly between the interpreter and compiler.
+            // A side-effect of this hack is that ARGS will have been hard-wired in any generated class stored on disk.
+            // This code (or code like it) should be in our generated "main".
+            // Maybe then we should consider calling the generated code via "main" rather than by constructing a new instance?
+            
+            // ListValue result = new ListValue();
+            mg.newInstance(listValueType);
+            mg.dup();
+            mg.invokeConstructor(listValueType, Method.getMethod("void <init>()"));
+            
+            ListValue list = (ListValue) constant.constant();
+            int max = list.length().intValue();
+            for (int i = 0; i < max; ++i) {
+                mg.dup();
+                
+                // new StringValue(ARGS[i])
+                mg.newInstance(stringValueType);
+                mg.dup();
+                mg.push(list.__get_item__(new IntegerValue(i)).toString());
+                mg.invokeConstructor(stringValueType, Method.getMethod("void <init>(String)"));
+                
+                // result.push_back(...);
+                mg.invokeVirtual(listValueType, Method.getMethod("org.jessies.talc.ListValue push_back(org.jessies.talc.Value)"));
+            }
         } else {
-            throw new TalcError(constant, "don't know how to generate code for constants of this type");
+            throw new TalcError(constant, "don't know how to generate code for constants of type " + constantType);
         }
         return null;
     }
@@ -559,7 +592,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
             return stringValueType;
         } else if (talcType == TalcType.VOID) {
             return Type.VOID_TYPE;
-        } else if (talcType.rawName() == "list") {
+        } else if (talcType.rawName().equals("list")) {
             // FIXME: this is a particularly big hack.
             return listValueType;
         } else {
@@ -682,7 +715,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     public Void visitVariableDefinition(AstNode.VariableDefinition variableDefinition) {
         Type type = typeForTalcType(variableDefinition.type());
         VariableAccessor accessor;
-        if (variableDefinition.scope() == Scope.globalScope()) {
+        if (variableDefinition.scope() == Scope.globalScope() || variableDefinition.scope() == Scope.builtInScope()) {
             // If we're at global scope, we may need to back variables with fields.
             // Escape analysis would tell us whether or not we do, but we don't do any of that, so we have to assume the worst.
             cv.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, variableDefinition.identifier(), type.getDescriptor(), null, null);
