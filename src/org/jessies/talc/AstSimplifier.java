@@ -179,7 +179,7 @@ public class AstSimplifier implements AstVisitor<AstNode> {
     }
     
     public AstNode visitForEachStatement(AstNode.ForEachStatement forEachStatement) {
-        return new AstNode.ForEachStatement(forEachStatement.location(), forEachStatement.loopVariableNames(), forEachStatement.loopVariableTypeDescriptors(), forEachStatement.expression().accept(this), forEachStatement.body().accept(this));
+        return new AstNode.ForEachStatement(forEachStatement.location(), forEachStatement.loopVariableDefinitions(), forEachStatement.expression().accept(this), forEachStatement.body().accept(this));
     }
     
     public AstNode visitFunctionCall(AstNode.FunctionCall call) {

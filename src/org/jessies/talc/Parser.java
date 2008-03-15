@@ -314,25 +314,23 @@ public class Parser {
         
         // "for ( <name> [, <name>] in <expression> ) <block>"
         // When we're called, we've already swallowed as far as the optional COMMA or SEMICOLON.
-        ArrayList<String> loopVariableNames = new ArrayList<String>();
-        ArrayList<TalcTypeDescriptor> loopVariableTypeDescriptors = new ArrayList<TalcTypeDescriptor>();
+        ArrayList<AstNode.VariableDefinition> loopVariableDefinitions = new ArrayList<AstNode.VariableDefinition>();
         
         // First, obligatory loop variable.
-        loopVariableNames.add(variableName);
-        loopVariableTypeDescriptors.add(new TalcTypeDescriptor("for-each-placeholder-1"));
+        loopVariableDefinitions.add(new AstNode.VariableDefinition(location, variableName, (TalcType) null, null, false));
         
         // Second, optional loop variable.
         if (lexer.token() == Token.COMMA) {
             expect(Token.COMMA);
-            loopVariableNames.add(expectIdentifier("second loop variable name in for-each loop"));
-            loopVariableTypeDescriptors.add(new TalcTypeDescriptor("for-each-placeholder-2"));
+            String variableName2 = expectIdentifier("second loop variable name in for-each loop");
+            loopVariableDefinitions.add(new AstNode.VariableDefinition(location, variableName2, (TalcType) null, null, false));
         }
         
         expect(Token.IN);
         AstNode expression = parseExpression();
         expect(Token.CLOSE_PARENTHESIS);
         AstNode.Block body = parseBlock();
-        return new AstNode.ForEachStatement(location, loopVariableNames, loopVariableTypeDescriptors, expression, body);
+        return new AstNode.ForEachStatement(location, loopVariableDefinitions, expression, body);
     }
     
     private AstNode.VariableDefinition parseVariableDefinition(SourceLocation location, String identifier) {

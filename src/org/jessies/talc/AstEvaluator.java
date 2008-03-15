@@ -237,19 +237,17 @@ public class AstEvaluator implements AstVisitor<Value> {
     public Value visitForEachStatement(AstNode.ForEachStatement forEachStatement) {
         rho.pushStackFrame();
         try {
-            List<String> loopVariableNames = forEachStatement.loopVariableNames();
-            final int loopVariableCount = loopVariableNames.size();
-            
+            List<AstNode.VariableDefinition> loopVariableDefinitions = forEachStatement.loopVariableDefinitions();
             // FIXME: need some kind of "iterable" concept in the language.
             ListValue list = (ListValue) forEachStatement.expression().accept(this);
             // FIXME: what about modification of the list while we're looping?
             for (int key = 0; key < list.length().intValue(); ++key) {
                 Value value = list.__get_item__(new IntegerValue(key));
-                if (loopVariableCount == 1) {
-                    rho.defineVariable(loopVariableNames.get(0), value);
+                if (loopVariableDefinitions.size() == 1) {
+                    rho.defineVariable(loopVariableDefinitions.get(0).identifier(), value);
                 } else {
-                    rho.defineVariable(loopVariableNames.get(0), new IntegerValue(key));
-                    rho.defineVariable(loopVariableNames.get(1), value);
+                    rho.defineVariable(loopVariableDefinitions.get(0).identifier(), new IntegerValue(key));
+                    rho.defineVariable(loopVariableDefinitions.get(1).identifier(), value);
                 }
                 try {
                     forEachStatement.body().accept(this);

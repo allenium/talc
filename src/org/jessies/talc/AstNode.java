@@ -251,38 +251,23 @@ public abstract class AstNode {
     }
     
     public static class ForEachStatement extends AstNode {
-        private List<String> loopVariableNames;
+        private List<AstNode.VariableDefinition> loopVariableDefinitions;
         private AstNode expression;
         private AstNode body;
         
-        // Until the symbol table is built, this is all we have, type-wise.
-        private List<TalcTypeDescriptor> loopVariableTypeDescriptors;
-        
-        public ForEachStatement(SourceLocation location, List<String> loopVariableNames, List<TalcTypeDescriptor> loopVariableTypeDescriptors, AstNode expression, AstNode body) {
+        public ForEachStatement(SourceLocation location, List<AstNode.VariableDefinition> loopVariableDefinitions, AstNode expression, AstNode body) {
             this.location = location;
-            this.loopVariableNames = loopVariableNames;
-            this.loopVariableTypeDescriptors = loopVariableTypeDescriptors;
+            this.loopVariableDefinitions = loopVariableDefinitions;
             this.expression = expression;
             this.body = body;
-        }
-        
-        public void fixUpTypes(List<TalcType> actualTypes) {
-            int i = 0;
-            for (TalcType actualType : actualTypes) {
-                loopVariableTypeDescriptors.get(i++).setActualType(actualType);
-            }
         }
         
         public <ResultT> ResultT accept(AstVisitor<ResultT> visitor) {
             return visitor.visitForEachStatement(this);
         }
         
-        public List<String> loopVariableNames() {
-            return loopVariableNames;
-        }
-        
-        public List<TalcTypeDescriptor> loopVariableTypeDescriptors() {
-            return loopVariableTypeDescriptors;
+        public List<AstNode.VariableDefinition> loopVariableDefinitions() {
+            return loopVariableDefinitions;
         }
         
         public AstNode expression() {
@@ -296,11 +281,11 @@ public abstract class AstNode {
         public String toString() {
             StringBuilder result = new StringBuilder();
             result.append("for (");
-            for (int i = 0; i < loopVariableNames.size(); ++i) {
+            for (int i = 0; i < loopVariableDefinitions.size(); ++i) {
                 if (i > 0) {
                     result.append(", ");
                 }
-                result.append(loopVariableNames.get(i));
+                result.append(loopVariableDefinitions.get(i));
             }
             result.append("; ");
             result.append(expression);

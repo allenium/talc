@@ -225,14 +225,14 @@ public class AstTypeChecker implements AstVisitor<TalcType> {
             throw new TalcError(forEachStatement, "for-each expression must have a collection type, got " + expressionType + " instead");
         }
         
-        List<String> loopVariableNames = forEachStatement.loopVariableNames();
-        List<TalcType> loopVariableTypes = new ArrayList<TalcType>(loopVariableNames.size());
+        List<AstNode.VariableDefinition> loopVariableDefinitions = forEachStatement.loopVariableDefinitions();
         // Two loop variables bind to the key and value types, in that order.
-        if (loopVariableNames.size() > 1) {
-            loopVariableTypes.add(keyType);
+        if (loopVariableDefinitions.size() == 2) {
+            loopVariableDefinitions.get(0).fixUpTypes(keyType);
+            loopVariableDefinitions.get(1).fixUpTypes(valueType);
+        } else {
+            loopVariableDefinitions.get(0).fixUpTypes(valueType);
         }
-        loopVariableTypes.add(valueType);
-        forEachStatement.fixUpTypes(loopVariableTypes);
         
         forEachStatement.body().accept(this);
         return TalcType.VOID;

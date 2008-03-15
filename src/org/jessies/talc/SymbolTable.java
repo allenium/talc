@@ -151,11 +151,7 @@ public class SymbolTable implements AstVisitor<Void> {
         pushScope();
         try {
             // Add the loop variables.
-            List<String> loopVariableNames = forEachStatement.loopVariableNames();
-            List<TalcTypeDescriptor> loopVariableTypeDescriptors = forEachStatement.loopVariableTypeDescriptors();
-            
-            for (int i = 0; i < loopVariableNames.size(); ++i) {
-                AstNode.VariableDefinition loopVariable = new AstNode.VariableDefinition(forEachStatement.location(), loopVariableNames.get(i), loopVariableTypeDescriptors.get(i), null, true);
+            for (AstNode.VariableDefinition loopVariable : forEachStatement.loopVariableDefinitions()) {
                 scopes.peek().addVariable(loopVariable);
             }
             // Then check the body.
