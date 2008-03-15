@@ -39,7 +39,7 @@ public class AstTypeChecker implements AstVisitor<TalcType> {
     
     public TalcType visitBinaryOperator(AstNode.BinaryOperator binOp) {
         TalcType type = visitBinaryOperator0(binOp);
-        binOp.fixUpType(type);
+        binOp.setType(type);
         return type;
     }
     
@@ -228,10 +228,10 @@ public class AstTypeChecker implements AstVisitor<TalcType> {
         List<AstNode.VariableDefinition> loopVariableDefinitions = forEachStatement.loopVariableDefinitions();
         // Two loop variables bind to the key and value types, in that order.
         if (loopVariableDefinitions.size() == 2) {
-            loopVariableDefinitions.get(0).fixUpTypes(keyType);
-            loopVariableDefinitions.get(1).fixUpTypes(valueType);
+            loopVariableDefinitions.get(0).fixUpType(keyType);
+            loopVariableDefinitions.get(1).fixUpType(valueType);
         } else {
-            loopVariableDefinitions.get(0).fixUpTypes(valueType);
+            loopVariableDefinitions.get(0).fixUpType(valueType);
         }
         
         forEachStatement.body().accept(this);
@@ -441,7 +441,7 @@ public class AstTypeChecker implements AstVisitor<TalcType> {
             actualType = variableDefinition.initializer().accept(this);
         }
         
-        variableDefinition.fixUpTypes(actualType);
+        variableDefinition.fixUpType(actualType);
         TalcType declaredType = variableDefinition.type();
         
         if (variableDefinition.initializer() != null) {

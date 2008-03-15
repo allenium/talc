@@ -67,7 +67,7 @@ public abstract class AstNode {
             return rhs;
         }
         
-        public void fixUpType(TalcType type) {
+        public void setType(TalcType type) {
             this.type = type;
         }
         
@@ -702,7 +702,7 @@ public abstract class AstNode {
             this.isField = false;
         }
         
-        public void fixUpTypes(TalcType initializerType) {
+        public void fixUpType(TalcType initializerType) {
             if (type == null) {
                 if (typeDescriptor != null) {
                     // The declaration had an explicit type, so use it.
