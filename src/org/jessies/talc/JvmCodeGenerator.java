@@ -376,7 +376,8 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     }
     
     public Void visitClassDefinition(AstNode.ClassDefinition classDefinition) {
-        return null;
+        throw new TalcError(classDefinition, "don't know how to generate code for user-defined classes");
+        //return null;
     }
     
     public Void visitContinueStatement(AstNode.ContinueStatement continueStatement) {
@@ -438,7 +439,8 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     }
     
     public Void visitForEachStatement(AstNode.ForEachStatement forEachStatement) {
-        return null;
+        throw new TalcError(forEachStatement, "don't know how to generate code for for-each loops");
+        //return null;
     }
     
     public Void visitFunctionCall(AstNode.FunctionCall functionCall) {
