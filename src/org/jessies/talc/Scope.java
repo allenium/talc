@@ -155,9 +155,7 @@ public class Scope {
         globalScope = new Scope(builtInScope);
     }
     
-    public static void fillWithBuiltInVariables(Variables variables) {
-        for (AstNode.VariableDefinition builtIn : builtInScope.variables.values()) {
-            variables.defineVariable(builtIn.identifier(), ((AstNode.Constant) builtIn.initializer()).constant());
-        }
+    public static Collection<AstNode.VariableDefinition> builtInVariableDefinitions() {
+        return builtInScope.variables.values();
     }
 }

@@ -27,8 +27,15 @@ public class Environment {
     
     public Environment() {
         stack = new ArrayStack<StackFrame>();
+        
+        // The top-most stack frame contains the built-in variables.
         pushStackFrame();
-        Scope.fillWithBuiltInVariables(stack.peek().variables);
+        Variables variables = stack.peek().variables;
+        for (AstNode.VariableDefinition builtIn : Scope.builtInVariableDefinitions()) {
+            variables.defineVariable(builtIn.identifier(), ((AstNode.Constant) builtIn.initializer()).constant());
+        }
+        
+        // The next stack frame is the global scope for user-defined variables.
         pushStackFrame();
     }
     
