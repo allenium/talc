@@ -24,8 +24,8 @@ import java.nio.*;
 public class FileValue implements Value {
     private File file;
     
-    public FileValue(String filename) {
-        this.file = new File(filename);
+    public FileValue(StringValue filename) {
+        this.file = new File(filename.toString());
     }
     
     public void append(StringValue content) {
@@ -84,7 +84,7 @@ public class FileValue implements Value {
     
     public FileValue realpath() {
         try {
-            return new FileValue(file.getCanonicalPath());
+            return new FileValue(new StringValue(file.getCanonicalPath()));
         } catch (IOException ex) {
             // FIXME: what do we want to do with errors?
             throw new RuntimeException(ex);

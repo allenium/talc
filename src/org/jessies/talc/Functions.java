@@ -158,7 +158,7 @@ public class Functions {
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
-            return new FileValue(arguments[0].accept(evaluator).toString());
+            return new FileValue((StringValue) arguments[0].accept(evaluator));
         }
     }
     
