@@ -426,7 +426,7 @@ public class Functions {
     
     public static class List___set_item__ extends BuiltInFunction {
         public List___set_item__() {
-            super("__set_item__", Arrays.asList("index", "value"), Arrays.asList(TalcType.INT, TalcType.T), TalcType.VOID);
+            super("__set_item__", Arrays.asList("index", "value"), Arrays.asList(TalcType.INT, TalcType.T), TalcType.T);
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
@@ -577,7 +577,7 @@ public class Functions {
     
     public static class Map___set_item__ extends BuiltInFunction {
         public Map___set_item__() {
-            super("__set_item__", Arrays.asList("key", "value"), Arrays.asList(TalcType.K, TalcType.V), TalcType.VOID);
+            super("__set_item__", Arrays.asList("key", "value"), Arrays.asList(TalcType.K, TalcType.V), TalcType.V);
         }
         
         public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
