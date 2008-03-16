@@ -40,6 +40,7 @@ public class Scope {
     }
     
     public void addVariable(AstNode.VariableDefinition v) {
+        v.setScope(this);
         if (variables == null) {
             variables = new HashMap<String, AstNode.VariableDefinition>();
         }
