@@ -35,8 +35,10 @@ import org.objectweb.asm.util.TraceClassVisitor;
 public class JvmCodeGenerator implements AstVisitor<Void> {
     // We use a lot of types repeatedly, so let's try to ask for any given type just once.
     private final Type booleanValueType = Type.getType(BooleanValue.class);
+    private final Type fileValueType = Type.getType(FileValue.class);
     private final Type integerValueType = Type.getType(IntegerValue.class);
     private final Type listValueType = Type.getType(ListValue.class);
+    private final Type matchValueType = Type.getType(MatchValue.class);
     private final Type numericValueType = Type.getType(NumericValue.class);
     private final Type realValueType = Type.getType(RealValue.class);
     private final Type stringValueType = Type.getType(StringValue.class);
@@ -623,6 +625,12 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
                     // FIXME: is this fall-through right?
                 }
             }
+            
+            if (definition.isConstructor()) {
+                mg.newInstance(containingType);
+                mg.dup();
+            }
+            
             Type[] methodArgumentTypes = method.getArgumentTypes();
             for (int i = 0; i < arguments.length; ++i) {
                 arguments[i].accept(this);
@@ -630,9 +638,12 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
             }
             if (functionCall.instance() != null) {
                 mg.invokeVirtual(containingType, method);
+            } else if (definition.isConstructor()) {
+                mg.invokeConstructor(containingType, method);
             } else {
                 mg.invokeStatic(containingType, method);
             }
+            
             // FIXME: check here whether 'method' exists, and fail here rather than waiting for the verifier?
             //throw new TalcError(functionCall, "don't know how to generate code for call to \"" + functionName + "\"");
         }
@@ -642,8 +653,12 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     private Type typeForTalcType(TalcType talcType) {
         if (talcType == TalcType.BOOL) {
             return booleanValueType;
+        } else if (talcType == TalcType.FILE) {
+            return fileValueType;
         } else if (talcType == TalcType.INT) {
             return integerValueType;
+        } else if (talcType == TalcType.MATCH) {
+            return matchValueType;
         } else if (talcType == TalcType.OBJECT) {
             return javaLangObjectType;
         } else if (talcType == TalcType.REAL) {
@@ -669,7 +684,16 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         for (int i = 0; i < argumentTypes.length; ++i) {
             argumentTypes[i] = typeForTalcType(talcTypes.get(i));
         }
-        return new Method(definition.functionName(), typeForTalcType(definition.returnType()), argumentTypes);
+        String name;
+        Type returnType;
+        if (definition.isConstructor()) {
+            name = "<init>";
+            returnType = Type.VOID_TYPE;
+        } else {
+            name = definition.functionName();
+            returnType = typeForTalcType(definition.returnType());
+        }
+        return new Method(name, returnType, argumentTypes);
     }
     
     public Void visitFunctionDefinition(AstNode.FunctionDefinition functionDefinition) {
