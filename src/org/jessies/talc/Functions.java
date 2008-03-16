@@ -23,11 +23,17 @@ import java.util.*;
 
 public class Functions {
     public static BooleanValue eq(Value lhs, Value rhs) {
-        return BooleanValue.valueOf((lhs == null && rhs == null) || lhs.equals(rhs));
+        if (lhs == null) {
+            return BooleanValue.valueOf(rhs == null);
+        }
+        return BooleanValue.valueOf(lhs.equals(rhs));
     }
     
     public static BooleanValue ne(Value lhs, Value rhs) {
-        return BooleanValue.valueOf((lhs == null && rhs != null) || !lhs.equals(rhs));
+        if (lhs == null) {
+            return BooleanValue.valueOf(rhs != null);
+        }
+        return BooleanValue.valueOf(!lhs.equals(rhs));
     }
     
     public static StringValue backquote(StringValue command) {
@@ -47,9 +53,19 @@ public class Functions {
         return (value != null) ? new StringValue(value) : null;
     }
     
+    private static java.io.BufferedReader stdin; // FIXME: is there a better home for this?
     public static StringValue gets() {
-        // FIXME: System.console returns null if you've redirected stdin.
-        String result = System.console().readLine();
+        // You might like the idea of using System.console() here, but it only works for /dev/tty.
+        // It's pretty normal for scripts to work on redirected input, so System.console() is no good to us.
+        String result = null;
+        try {
+            if (stdin == null) {
+                stdin = new java.io.BufferedReader(new java.io.InputStreamReader(System.in));
+            }
+            result = stdin.readLine();
+        } catch (java.io.IOException ex) {
+            // FIXME: does swallowing the exception and returning null make sense?
+        }
         return (result != null) ? new StringValue(result) : null;
     }
     
