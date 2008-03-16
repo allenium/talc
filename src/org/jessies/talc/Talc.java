@@ -138,7 +138,7 @@ public class Talc {
         System.out.print("\b\b");
     }
     
-    private void usage() {
+    private void usage(int exitStatus) {
         System.err.println("usage: talc [--copyright] [-D flags] [--dump-class name] [--dump-classes] [-f file] [-e program]");
         System.err.println("where:");
         for (int i = 0; i < debuggingFlagNames.length; ++i) {
@@ -146,6 +146,7 @@ public class Talc {
                 System.err.println("  -D " + ((char) i) + "\t" + debuggingFlagNames[i]);
             }
         }
+        System.exit(exitStatus);
     }
     
     private void parseArguments(String[] args) throws IOException {
@@ -161,10 +162,16 @@ public class Talc {
                 System.out.println("ASM bytecode library copyright (C) 2000-2007 INRIA, France Telecom.");
                 didSomethingUseful = true;
             } else if (args[i].equals("-h") || args[i].equals("--help")) {
-                usage();
-                didSomethingUseful = true;
+                usage(0);
             } else if (args[i].startsWith("-D")) {
-                parseDebuggingFlags(args[i].equals("-D") ? args[++i] : args[i].substring(2));
+                String flags = args[i].substring(2);
+                if (flags.length() == 0) {
+                    if (i + 1 >= args.length) {
+                        usage(1);
+                    }
+                    flags = args[++i];
+                }
+                parseDebuggingFlags(flags);
             } else if (args[i].equals("--dump-class")) {
                 String typeName = args[++i];
                 TalcType type = TalcType.byName(typeName);
@@ -232,8 +239,7 @@ public class Talc {
         for (int i = 0; i < flags.length(); ++i) {
             char ch = flags.charAt(i);
             if (debuggingFlagNames[ch] == null) {
-                usage();
-                System.exit(1);
+                usage(1);
             } else {
                 debuggingFlags[ch] = true;
             }
