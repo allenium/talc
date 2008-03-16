@@ -164,7 +164,6 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         // Create the static fields corresponding to the built-in variables.
         // Their initializers should appear at the start of the constructor.
         for (AstNode.VariableDefinition builtInVariableDefinition : Scope.builtInVariableDefinitions()) {
-            System.err.println(builtInVariableDefinition);
             builtInVariableDefinition.accept(this);
         }
         
@@ -510,8 +509,67 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     }
     
     public Void visitForEachStatement(AstNode.ForEachStatement forEachStatement) {
-        throw new TalcError(forEachStatement, "don't know how to generate code for for-each loops");
-        //return null;
+        // FIXME: we need some kind of "iterable" concept in the language. until then, this code assumes we're dealing with a list.
+        
+        ArrayList<AstNode.VariableDefinition> loopVariables = (ArrayList<AstNode.VariableDefinition>) forEachStatement.loopVariableDefinitions();
+        if (loopVariables.size() == 1) {
+            // The user didn't ask for the key, but we'll be needing it, so synthesize it before visiting the loop variable definitions.
+            AstNode.VariableDefinition k = new AstNode.VariableDefinition(null, null, TalcType.INT, new AstNode.Constant(null, new IntegerValue(0), TalcType.INT), false);
+            loopVariables.add(0, k);
+        }
+        for (AstNode.VariableDefinition loopVariable : loopVariables) {
+            visitVariableDefinition(loopVariable);
+        }
+        
+        LoopInfo loopInfo = enterLoop();
+        
+        Label headLabel = mg.newLabel();
+        
+        // collection: list = <expression>;
+        forEachStatement.expression().accept(this);
+        JvmLocalVariableAccessor collection = new JvmLocalVariableAccessor(nextLocal++);
+        mg.checkCast(listValueType);
+        mg.dup();
+        collection.emitPut();
+        
+        // max: int = collection.length();
+        JvmLocalVariableAccessor max = new JvmLocalVariableAccessor(nextLocal++);
+        mg.invokeVirtual(listValueType, new Method("length", integerValueType, new Type[0]));
+        max.emitPut();
+        
+        VariableAccessor k = loopVariables.get(0).accessor();
+        VariableAccessor v = loopVariables.get(1).accessor();
+        Type vType = typeForTalcType(loopVariables.get(1).type());
+        
+        // headLabel:
+        mg.mark(headLabel);
+        // if (k >= max) goto breakLabel;
+        k.emitGet();
+        max.emitGet();
+        mg.invokeInterface(numericValueType, Method.getMethod("int compareTo(org.jessies.talc.NumericValue)"));
+        mg.push(0);
+        mg.ifICmp(GeneratorAdapter.GE, loopInfo.breakLabel);
+        // v = collection.__get_item__(k);
+        collection.emitGet();
+        k.emitGet();
+        mg.invokeVirtual(listValueType, new Method("__get_item__", valueType, new Type[] { integerValueType }));
+        mg.checkCast(vType);
+        v.emitPut();
+        // <body>
+        forEachStatement.body().accept(this);
+        // continueLabel:
+        mg.mark(loopInfo.continueLabel);
+        // ++k;
+        k.emitGet();
+        mg.invokeVirtual(integerValueType, new Method("inc", integerValueType, new Type[0]));
+        k.emitPut();
+        // goto headLabel;
+        mg.goTo(headLabel);
+        // breakLabel:
+        mg.mark(loopInfo.breakLabel);
+        
+        leaveLoop();
+        return null;
     }
     
     public Void visitFunctionCall(AstNode.FunctionCall functionCall) {

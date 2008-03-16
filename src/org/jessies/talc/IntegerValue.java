@@ -131,6 +131,11 @@ public class IntegerValue implements NumericValue {
         return new IntegerValue(result);
     }
     
+    // Used to implement for-each loops, so it's not unreasonable to assume the value will fit in 32 bits.
+    public IntegerValue inc() {
+        return new IntegerValue(value.intValue() + 1);
+    }
+    
     public int intValue() {
         return value.intValue();
     }

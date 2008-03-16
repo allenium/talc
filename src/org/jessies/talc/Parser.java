@@ -317,13 +317,13 @@ public class Parser {
         ArrayList<AstNode.VariableDefinition> loopVariableDefinitions = new ArrayList<AstNode.VariableDefinition>();
         
         // First, obligatory loop variable.
-        loopVariableDefinitions.add(new AstNode.VariableDefinition(location, variableName, (TalcType) null, null, false));
+        loopVariableDefinitions.add(new AstNode.VariableDefinition(location, variableName, (TalcType) null, new AstNode.Constant(location, null, TalcType.NULL), false));
         
         // Second, optional loop variable.
         if (lexer.token() == Token.COMMA) {
             expect(Token.COMMA);
             String variableName2 = expectIdentifier("second loop variable name in for-each loop");
-            loopVariableDefinitions.add(new AstNode.VariableDefinition(location, variableName2, (TalcType) null, null, false));
+            loopVariableDefinitions.add(new AstNode.VariableDefinition(location, variableName2, (TalcType) null, new AstNode.Constant(location, null, TalcType.NULL), false));
         }
         
         expect(Token.IN);
