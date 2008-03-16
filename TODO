@@ -16,6 +16,7 @@
 * [medium] replace "prelude.txt" with some kind of textual "include" system. (note: the prelude is currently broken and disabled.)
  + add the remaining prelude math functions in "math.talc" as a trivial example.
  + add "set.talc" as an example, implementing the equivalent of Java's HashSet. (would require user-defined parametric types!)
+ + should have some kind of "include path" (accessible in scripts as a list<string>?) that by default includes something like /usr/share/talc/<major-version?>/ so third-parties can add their libraries to the system independently of talc.
 
 * [medium] improve Lexer.getLocation so we provide the start and end line/column rather than just the end (even just the start would be better than just the end, as we have at the moment; error messages point to the end of the problem where the start would be more natural).
 
@@ -101,15 +102,20 @@ http://blogs.sun.com/chrisoliver/resource/f3.html - "format as" looks interestin
 
 C#'s System.IO.File is pretty nice, though i'm unconvinced by the the File/Directory split. note that their File only has static methods that take String pathnames. there's a separate FileInfo class (like "struct stat").
 
-#should "getenv" be generalized to ENV:map<string, string>? probably needs to be a special type with JNI-backed get and put that actually modify the environment. will that upset the JVM?
+# environment variables
+should "getenv" be generalized to ENV:map<string, string>? probably needs to be a special type with JNI-backed get and put that actually modify the environment. will that upset the JVM?
+how should we offer access to Java's system properties? there's quite a parallel with environment variables, so we should probably follow a similar route.
+we should offer Talc version information to interested scripts. how? system property? global variables? something like TALC_VERSION: string = "1.7.3" would be simplest, but there are lots of alternatives, and we should probably wait until we have a concrete need to distinguish versions (though that will, of course, be too late for someone).
 
+should exit call System.exit or raise a SystemExitException as in most scripting languages?
 die(...):void - puts(...);exit(1); # should output to stderr. include source location? warn() too?
 sleep(ms:int):void # what time unit? integer ms? real s?
 
-#should "shell" and "system" use a "status" type instead of "int" for the exit code making it easier to check for signals and the like?
-#should "shell" and "system" actually just be two overloaded "system" methods?
-#what should "backquote" do with the exit code?
-#should we offer an ability to separate stdout and stderr? to run in a specific directory?
+# subprocesses
+should "shell" and "system" use a "status" type instead of "int" for the exit code making it easier to check for signals and the like?
+should "shell" and "system" actually just be two overloaded "system" methods?
+what should "backquote" do with the exit code?
+should we offer an ability to separate stdout and stderr? to run in a specific directory?
 
 object.compareTo # or comparable interface?
 object.equals # have == call "equals", but have the default "equals" be identity? auto-generate field-by-field "equals"?
@@ -142,6 +148,8 @@ RANDOM:random # convenience instance
 int.random(n:int):int # convenience using global RANDOM
 real.random():real # convenience using global RANDOM
 
+# should we have a "math" class of static methods, or a "math" library of global functions?
+# the latter is less Java-like, but probably more popular and convenient for the intended users.
 math.sin => Math.sin
 math.cos => Math.cos
 math.tan => Math.tan
@@ -160,7 +168,7 @@ access to stderr? ability to print/puts to files/sockets/pipes?
 
 how should "printf"-like functionality be implemented? string.format? (int|real|string).format methods?
 
-should we use "size" ubiquitously, rather than "length"? or does "size" have too strong a flavor of "byte count"?
+should we use "size" ubiquitously, rather than "length"? or does "size" have too strong a flavor of "byte count"? Objective C uses "count", which i disliked because it sounds like a verb, but then again, "size" is effectively counting the elements (imagine you have a linked list rather than an array list). "size" and "length" are the common ones that new users are going to guess, though.
 
 # the need for these is demonstrated by "binomial-triangle.talc"...
 list<T>.n_copies(n:int,item:T):list<T> # returns a new list with 'n' copies of 'item'.
@@ -183,6 +191,16 @@ should FILE_SEPARATOR and PATH_SEPARATOR be in class "file"?
 
 make sure all Value subclasses return sensible hashCodes!
 
+* language defect:
+      a[i] = 0;        # OK
+      x = a[i];        # OK
+      a[i] = a[i] + 1; # OK
+      a[i] += 1;       # ERROR
+      a[i]++;          # ERROR
+      ++a[i];          # ERROR
+  it's a mistake to translate [] and []= in the parser. i think we do need some kind of AstNode.IndexExpression, and to do the __get_item__/__set_item__ translation in a context-sensitive way. not clear on the details, but this will have to be looked at eventually. i don't mind outlawing ++ and -- on these expressions, but compound assignment seems like something that should work.
+  another advantage to explicitly supporting AstNode.IndexExpression is that the JVM code generator could insert "checkcast" instructions to paper over the fact that __get_item__ returns Value rather than the appropriate type for the specific collection.
+
 * report better errors than 'no instance method "__get_item__" in class int' for talc -e '1[23];'.
   how public should those special names be?
   are we up-front about this, and using it as a mechanism for user-defined classes to support [] and []=?
@@ -195,4 +213,6 @@ if (x.starts_with("/")) {
   s := "x" + s;
 }
 
-* report sensible error when global function used before definition. (or cope, as with methods? should global variables also be treated like fields?)
+* report sensible error when global function used before definition. (or cope, as we do with methods? global variables obviously shouldn't be treated like fields in terms of usability before definition, and global functions can refer to global variables, so presumably we should treat global functions specially to avoid this kind of weirdness?)
+
+* in the JVM code generator, we should try to reuse local variable slots when variables go out of scope. at the moment, we have really large numbers of locals which (a) makes verifier output hard to read and (b) isn't very Java-like, which may mean Hotspot isn't adapted to it. we probably need to switch to a BitSet to implement this correctly.
