@@ -5,10 +5,6 @@
 
 * [easy] better tests/demos.
 
-* [easy] add the other two common comment types:
-         // comment to end of line
-         /* block/inline comments */
-
 * [medium] optimize integer literals:
  + never call "new IntegerValue"; always use IntegerValue.valueOf (in generated code and hand-written code alike), and implement caching like in java.lang.Integer.
  + for some number of the most important values (-1, 0, and 1?), have them available as fields in IntegerValue, and have the code generator use getstatic instead of calling IntegerValue.valueOf.
@@ -92,7 +88,7 @@
 
 * [future] should the "for" initialization be as general as in similar languages? how can we do that without the hateful comma operator?
 
-* [future] use Object instead of Value where possible, remove BooleanValue and StringValue in favor of native Boolean and String. probably RealValue -> Double too. (no point throwing away even a little bit of performance unless having our Value classes buys us something. the only thing i can think of that it buys us is somewhere we could put Functions.String_match and so forth. oh, and having Value makes things like type() simpler.)
+* [future] remove StringValue in favor of java.lang.String. probably RealValue -> Double too. (no point throwing away even a little bit of performance unless having our "value" classes buys us something. the only thing i can think of that it buys us is somewhere we could put Functions.String_match and so forth. plus BooleanValue is more convenient than Boolean because we know there are only two instances and can compare them by identity.)
 
 LIBRARY
 
@@ -189,7 +185,7 @@ should list<t>.pop_back and list<T>.push_back just be "pop" and "push"?
 should we have list<T>.find(e:T):int ? should it take a start_index:int too, or return list<int>?
 should FILE_SEPARATOR and PATH_SEPARATOR be in class "file"?
 
-make sure all Value subclasses return sensible hashCodes!
+make sure all "value" classes return sensible hashCodes!
 
 * language defect:
       a[i] = 0;        # OK
@@ -199,7 +195,6 @@ make sure all Value subclasses return sensible hashCodes!
       a[i]++;          # ERROR
       ++a[i];          # ERROR
   it's a mistake to translate [] and []= in the parser. i think we do need some kind of AstNode.IndexExpression, and to do the __get_item__/__set_item__ translation in a context-sensitive way. not clear on the details, but this will have to be looked at eventually. i don't mind outlawing ++ and -- on these expressions, but compound assignment seems like something that should work.
-  another advantage to explicitly supporting AstNode.IndexExpression is that the JVM code generator could insert "checkcast" instructions to paper over the fact that __get_item__ returns Value rather than the appropriate type for the specific collection.
 
 * report better errors than 'no instance method "__get_item__" in class int' for talc -e '1[23];'.
   how public should those special names be?
