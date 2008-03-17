@@ -21,7 +21,7 @@ package org.jessies.talc;
 import java.io.*;
 import java.nio.*;
 
-public class FileValue implements Value {
+public class FileValue {
     private File file;
     
     public FileValue(StringValue filename) {

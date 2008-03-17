@@ -133,7 +133,7 @@ public class Scope {
         return globalScope;
     }
     
-    public static void initGlobalScope(Value argv0, ListValue args) {
+    public static void initGlobalScope(StringValue argv0, ListValue args) {
         builtInScope = new Scope(null);
         // Built-in functions.
         builtInScope.addFunction(new Functions.backquote());

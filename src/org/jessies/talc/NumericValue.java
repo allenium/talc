@@ -18,7 +18,7 @@
 
 package org.jessies.talc;
 
-public interface NumericValue extends Value {
+public interface NumericValue {
     public NumericValue add(NumericValue rhs);
     public NumericValue subtract(NumericValue rhs);
     public NumericValue multiply(NumericValue rhs);
@@ -32,7 +32,7 @@ public interface NumericValue extends Value {
     public RealValue to_r();
     
     /**
-     * Returns -1, 0 or 1 if this Value is less than, equal to, or greater than rhs.
+     * Returns -1, 0 or 1 if this NumericValue is less than, equal to, or greater than rhs.
      * The suggested idiom for performing any boolean comparison 'op' is: (x.compareTo(y) op 0).
      */
     public int compareTo(NumericValue rhs);

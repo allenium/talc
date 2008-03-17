@@ -307,6 +307,7 @@ public class AstTypeChecker implements AstVisitor<TalcType> {
                 if (actualParameterType.canBeAssignedTo(requiredType) == false) {
                     throw new TalcError(functionCall, "argument " + i + " to " + what + " has type " + actualParameterType + " but must be assignable to type " + requiredType + " (in " + searchType + ")");
                 }
+                functionCall.setResolvedArgumentType(i, requiredType);
             }
         }
         
@@ -318,6 +319,10 @@ public class AstTypeChecker implements AstVisitor<TalcType> {
             }
             returnType = resolveTypeParameters(functionCall, resolvingType, returnType);
         }
+        
+        // We set this whether it's different from the declared return type or not, for the convenience of later phases.
+        functionCall.setResolvedReturnType(returnType);
+        
         if (DEBUG_TYPES) { System.err.println(what + " has declared return type " + functionDefinition.returnType() + ", resolving type " + resolvingType + ", and resolved return type " + returnType); }
         return returnType;
     }

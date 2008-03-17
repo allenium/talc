@@ -1,6 +1,6 @@
 /*
  * This file is part of Talc.
- * Copyright (C) 2007 Elliott Hughes <enh@jessies.org>.
+ * Copyright (C) 2007-2008 Elliott Hughes <enh@jessies.org>.
  * 
  * Talc is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,9 +28,9 @@ public abstract class BuiltInFunction extends AstNode.FunctionDefinition {
     
     // Step in at invocation time and do what we have to do.
     @Override
-    public Value invoke(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+    public Object invoke(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
         return invokeBuiltIn(evaluator, instance, arguments);
     }
     
-    public abstract Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments);
+    public abstract Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments);
 }

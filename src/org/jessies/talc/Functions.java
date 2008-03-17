@@ -22,14 +22,14 @@ import java.io.*;
 import java.util.*;
 
 public class Functions {
-    public static BooleanValue eq(Value lhs, Value rhs) {
+    public static BooleanValue eq(Object lhs, Object rhs) {
         if (lhs == null) {
             return BooleanValue.valueOf(rhs == null);
         }
         return BooleanValue.valueOf(lhs.equals(rhs));
     }
     
-    public static BooleanValue ne(Value lhs, Value rhs) {
+    public static BooleanValue ne(Object lhs, Object rhs) {
         if (lhs == null) {
             return BooleanValue.valueOf(rhs != null);
         }
@@ -69,7 +69,7 @@ public class Functions {
         return (result != null) ? new StringValue(result) : null;
     }
     
-    public static void print(Value value) {
+    public static void print(Object value) {
         Object printable = value;
         if (value == null) {
             printable = "null";
@@ -77,18 +77,18 @@ public class Functions {
         System.out.print(printable);
     }
     
-    public static void print(Value[] values) {
-        for (Value value : values) {
+    public static void print(Object[] values) {
+        for (Object value : values) {
             print(value);
         }
     }
     
-    public static void puts(Value value) {
+    public static void puts(Object value) {
         print(value);
         System.out.println();
     }
     
-    public static void puts(Value[] values) {
+    public static void puts(Object[] values) {
         print(values);
         System.out.println();
     }
@@ -141,7 +141,7 @@ public class Functions {
             super("to_s", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.STRING);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return new StringValue(instance.toString());
         }
     }
@@ -151,7 +151,7 @@ public class Functions {
             super("append", Arrays.asList("content"), Arrays.asList(TalcType.STRING), TalcType.VOID);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             ((FileValue) instance).append((StringValue) arguments[0].accept(evaluator));
             return null;
         }
@@ -162,7 +162,7 @@ public class Functions {
             super("exists", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.BOOL);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((FileValue) instance).exists();
         }
     }
@@ -173,7 +173,7 @@ public class Functions {
             markAsConstructor();
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return new FileValue((StringValue) arguments[0].accept(evaluator));
         }
     }
@@ -183,7 +183,7 @@ public class Functions {
             super("is_directory", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.BOOL);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((FileValue) instance).is_directory();
         }
     }
@@ -193,7 +193,7 @@ public class Functions {
             super("is_executable", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.BOOL);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((FileValue) instance).is_executable();
         }
     }
@@ -203,7 +203,7 @@ public class Functions {
             super("mkdir", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.BOOL);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((FileValue) instance).mkdir();
         }
     }
@@ -213,7 +213,7 @@ public class Functions {
             super("mkdir_p", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.BOOL);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((FileValue) instance).mkdir_p();
         }
     }
@@ -223,7 +223,7 @@ public class Functions {
             super("read", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.STRING);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((FileValue) instance).read();
         }
     }
@@ -233,7 +233,7 @@ public class Functions {
             super("read_lines", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.LIST_OF_STRING);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((FileValue) instance).read_lines();
         }
     }
@@ -243,7 +243,7 @@ public class Functions {
             super("realpath", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.FILE);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((FileValue) instance).realpath();
         }
     }
@@ -253,7 +253,7 @@ public class Functions {
             super("write", Arrays.asList("content"), Arrays.asList(TalcType.STRING), TalcType.VOID);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             ((FileValue) instance).write((StringValue) arguments[0].accept(evaluator));
             return null;
         }
@@ -264,7 +264,7 @@ public class Functions {
             super("abs", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.INT);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((IntegerValue) instance).abs();
         }
     }
@@ -274,7 +274,7 @@ public class Functions {
             super("signum", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.INT);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((IntegerValue) instance).signum();
         }
     }
@@ -284,7 +284,7 @@ public class Functions {
             super("to_base", Arrays.asList("base"), Arrays.asList(TalcType.INT), TalcType.STRING);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((IntegerValue) instance).to_base((IntegerValue) arguments[0].accept(evaluator));
         }
     }
@@ -294,7 +294,7 @@ public class Functions {
             super("to_char", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.STRING);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((IntegerValue) instance).to_char();
         }
     }
@@ -304,7 +304,7 @@ public class Functions {
             super("add_all", Arrays.asList("others"), Arrays.asList(TalcType.LIST_OF_T), TalcType.LIST_OF_T);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((ListValue) instance).add_all((ListValue) arguments[0].accept(evaluator));
         }
     }
@@ -314,7 +314,7 @@ public class Functions {
             super("clear", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.LIST_OF_T);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((ListValue) instance).clear();
         }
     }
@@ -324,7 +324,7 @@ public class Functions {
             super("contains", Arrays.asList("value"), Arrays.asList(TalcType.T), TalcType.BOOL);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((ListValue) instance).contains(arguments[0].accept(evaluator));
         }
     }
@@ -334,7 +334,7 @@ public class Functions {
             super("__get_item__", Arrays.asList("index"), Arrays.asList(TalcType.INT), TalcType.T);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((ListValue) instance).__get_item__((IntegerValue) arguments[0].accept(evaluator));
         }
     }
@@ -344,7 +344,7 @@ public class Functions {
             super("is_empty", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.BOOL);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((ListValue) instance).is_empty();
         }
     }
@@ -354,7 +354,7 @@ public class Functions {
             super("join", Arrays.asList("separator"), Arrays.asList(TalcType.STRING), TalcType.STRING);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((ListValue) instance).join((StringValue) arguments[0].accept(evaluator));
         }
     }
@@ -364,7 +364,7 @@ public class Functions {
             super("length", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.INT);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((ListValue) instance).length();
         }
     }
@@ -375,7 +375,7 @@ public class Functions {
             markAsConstructor();
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return new ListValue();
         }
     }
@@ -385,7 +385,7 @@ public class Functions {
             super("peek_back", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.T);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((ListValue) instance).peek_back();
         }
     }
@@ -395,7 +395,7 @@ public class Functions {
             super("peek_front", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.T);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((ListValue) instance).peek_front();
         }
     }
@@ -405,7 +405,7 @@ public class Functions {
             super("pop_back", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.T);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((ListValue) instance).pop_back();
         }
     }
@@ -415,7 +415,7 @@ public class Functions {
             super("pop_front", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.T);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((ListValue) instance).pop_front();
         }
     }
@@ -425,7 +425,7 @@ public class Functions {
             super("push_back", Arrays.asList("value"), Arrays.asList(TalcType.T), TalcType.LIST_OF_T);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((ListValue) instance).push_back(arguments[0].accept(evaluator));
         }
     }
@@ -435,7 +435,7 @@ public class Functions {
             super("push_front", Arrays.asList("value"), Arrays.asList(TalcType.T), TalcType.LIST_OF_T);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((ListValue) instance).push_front(arguments[0].accept(evaluator));
         }
     }
@@ -445,7 +445,7 @@ public class Functions {
             super("__set_item__", Arrays.asList("index", "value"), Arrays.asList(TalcType.INT, TalcType.T), TalcType.T);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((ListValue) instance).__set_item__((IntegerValue) arguments[0].accept(evaluator), arguments[1].accept(evaluator));
         }
     }
@@ -455,7 +455,7 @@ public class Functions {
             super("remove_all", Arrays.asList("others"), Arrays.asList(TalcType.LIST_OF_T), TalcType.LIST_OF_T);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((ListValue) instance).remove_all((ListValue) arguments[0].accept(evaluator));
         }
     }
@@ -465,7 +465,7 @@ public class Functions {
             super("remove_at", Arrays.asList("index"), Arrays.asList(TalcType.INT), TalcType.LIST_OF_T);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((ListValue) instance).remove_at((IntegerValue) arguments[0].accept(evaluator));
         }
     }
@@ -475,7 +475,7 @@ public class Functions {
             super("remove_first", Arrays.asList("value"), Arrays.asList(TalcType.T), TalcType.BOOL);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((ListValue) instance).remove_first(arguments[0].accept(evaluator));
         }
     }
@@ -485,7 +485,7 @@ public class Functions {
             super("reverse", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.LIST_OF_T);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((ListValue) instance).reverse();
         }
     }
@@ -495,7 +495,7 @@ public class Functions {
             super("sort", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.LIST_OF_T);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((ListValue) instance).sort();
         }
     }
@@ -505,7 +505,7 @@ public class Functions {
             super("uniq", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.LIST_OF_T);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((ListValue) instance).uniq();
         }
     }
@@ -515,7 +515,7 @@ public class Functions {
             super("to_s", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.STRING);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return new StringValue(((ListValue) instance).toString());
         }
     }
@@ -525,7 +525,7 @@ public class Functions {
             super("clear", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.MAP_OF_K_V);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((MapValue) instance).clear();
         }
     }
@@ -535,7 +535,7 @@ public class Functions {
             super("__get_item__", Arrays.asList("key"), Arrays.asList(TalcType.K), TalcType.V);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((MapValue) instance).__get_item__(arguments[0].accept(evaluator));
         }
     }
@@ -545,7 +545,7 @@ public class Functions {
             super("has_key", Arrays.asList("key"), Arrays.asList(TalcType.K), TalcType.BOOL);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((MapValue) instance).has_key(arguments[0].accept(evaluator));
         }
     }
@@ -555,7 +555,7 @@ public class Functions {
             super("has_value", Arrays.asList("value"), Arrays.asList(TalcType.V), TalcType.BOOL);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((MapValue) instance).has_value(arguments[0].accept(evaluator));
         }
     }
@@ -565,7 +565,7 @@ public class Functions {
             super("keys", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.LIST_OF_K);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((MapValue) instance).keys();
         }
     }
@@ -575,7 +575,7 @@ public class Functions {
             super("length", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.INT);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((MapValue) instance).length();
         }
     }
@@ -586,7 +586,7 @@ public class Functions {
             markAsConstructor();
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return new MapValue();
         }
     }
@@ -596,7 +596,7 @@ public class Functions {
             super("__set_item__", Arrays.asList("key", "value"), Arrays.asList(TalcType.K, TalcType.V), TalcType.V);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((MapValue) instance).__set_item__(arguments[0].accept(evaluator), arguments[1].accept(evaluator));
         }
     }
@@ -606,7 +606,7 @@ public class Functions {
             super("remove", Arrays.asList("key"), Arrays.asList(TalcType.K), TalcType.MAP_OF_K_V);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((MapValue) instance).remove(arguments[0].accept(evaluator));
         }
     }
@@ -616,7 +616,7 @@ public class Functions {
             super("values", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.LIST_OF_V);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((MapValue) instance).values();
         }
     }
@@ -626,7 +626,7 @@ public class Functions {
             super("group", Arrays.asList("n"), Arrays.asList(TalcType.INT), TalcType.STRING);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((MatchValue) instance).group((IntegerValue) arguments[0].accept(evaluator));
         }
     }
@@ -636,7 +636,7 @@ public class Functions {
             super("to_i", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.INT);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((NumericValue) instance).to_i();
         }
     }
@@ -646,7 +646,7 @@ public class Functions {
             super("to_r", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.REAL);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((NumericValue) instance).to_r();
         }
     }
@@ -656,7 +656,7 @@ public class Functions {
             super("abs", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.REAL);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((RealValue) instance).abs();
         }
     }
@@ -666,7 +666,7 @@ public class Functions {
             super("log", Arrays.asList("base"), Arrays.asList(TalcType.REAL), TalcType.REAL);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((RealValue) instance).log((RealValue) arguments[0].accept(evaluator));
         }
     }
@@ -676,7 +676,7 @@ public class Functions {
             super("log10", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.REAL);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((RealValue) instance).log10();
         }
     }
@@ -686,7 +686,7 @@ public class Functions {
             super("logE", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.REAL);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((RealValue) instance).logE();
         }
     }
@@ -696,7 +696,7 @@ public class Functions {
             super("signum", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.REAL);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((RealValue) instance).signum();
         }
     }
@@ -706,7 +706,7 @@ public class Functions {
             super("sqrt", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.REAL);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((RealValue) instance).sqrt();
         }
     }
@@ -716,7 +716,7 @@ public class Functions {
             super("contains", Arrays.asList("substring"), Arrays.asList(TalcType.STRING), TalcType.BOOL);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((StringValue) instance).contains((StringValue) arguments[0].accept(evaluator));
         }
     }
@@ -726,7 +726,7 @@ public class Functions {
             super("ends_with", Arrays.asList("suffix"), Arrays.asList(TalcType.STRING), TalcType.BOOL);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((StringValue) instance).ends_with((StringValue) arguments[0].accept(evaluator));
         }
     }
@@ -736,7 +736,7 @@ public class Functions {
             super("escape_html", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.STRING);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((StringValue) instance).escape_html();
         }
     }
@@ -746,7 +746,7 @@ public class Functions {
             super("gsub", Arrays.asList("pattern", "replacement"), Arrays.asList(TalcType.STRING, TalcType.STRING), TalcType.STRING);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((StringValue) instance).gsub((StringValue) arguments[0].accept(evaluator), (StringValue) arguments[1].accept(evaluator));
         }
     }
@@ -756,7 +756,7 @@ public class Functions {
             super("lc", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.STRING);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((StringValue) instance).lc();
         }
     }
@@ -766,7 +766,7 @@ public class Functions {
             super("lc_first", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.STRING);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((StringValue) instance).lc_first();
         }
     }
@@ -776,7 +776,7 @@ public class Functions {
             super("length", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.INT);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((StringValue) instance).length();
         }
     }
@@ -786,7 +786,7 @@ public class Functions {
             super("match", Arrays.asList("pattern"), Arrays.asList(TalcType.STRING), TalcType.MATCH);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((StringValue) instance).match((StringValue) arguments[0].accept(evaluator));
         }
     }
@@ -796,7 +796,7 @@ public class Functions {
             super("replace", Arrays.asList("old", "new"), Arrays.asList(TalcType.STRING, TalcType.STRING), TalcType.STRING);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((StringValue) instance).replace((StringValue) arguments[0].accept(evaluator), (StringValue) arguments[1].accept(evaluator));
         }
     }
@@ -806,7 +806,7 @@ public class Functions {
             super("split", Arrays.asList("pattern"), Arrays.asList(TalcType.STRING), TalcType.LIST_OF_STRING);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((StringValue) instance).split((StringValue) arguments[0].accept(evaluator));
         }
     }
@@ -816,7 +816,7 @@ public class Functions {
             super("starts_with", Arrays.asList("prefix"), Arrays.asList(TalcType.STRING), TalcType.BOOL);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((StringValue) instance).starts_with((StringValue) arguments[0].accept(evaluator));
         }
     }
@@ -826,7 +826,7 @@ public class Functions {
             super("sub", Arrays.asList("pattern", "replacement"), Arrays.asList(TalcType.STRING, TalcType.STRING), TalcType.STRING);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((StringValue) instance).sub((StringValue) arguments[0].accept(evaluator), (StringValue) arguments[1].accept(evaluator));
         }
     }
@@ -836,7 +836,7 @@ public class Functions {
             super("to_i", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.INT);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((StringValue) instance).to_i();
         }
     }
@@ -846,7 +846,7 @@ public class Functions {
             super("to_r", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.REAL);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((StringValue) instance).to_r();
         }
     }
@@ -856,7 +856,7 @@ public class Functions {
             super("trim", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.STRING);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((StringValue) instance).trim();
         }
     }
@@ -866,7 +866,7 @@ public class Functions {
             super("uc", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.STRING);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((StringValue) instance).uc();
         }
     }
@@ -876,7 +876,7 @@ public class Functions {
             super("uc_first", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.STRING);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return ((StringValue) instance).uc_first();
         }
     }
@@ -886,7 +886,7 @@ public class Functions {
             super("backquote", Arrays.asList("command"), Arrays.asList(TalcType.STRING), TalcType.STRING);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return backquote((StringValue) arguments[0].accept(evaluator));
         }
     }
@@ -895,7 +895,7 @@ public class Functions {
         public Exit() {
             super("exit", Arrays.asList("status"), Arrays.asList(TalcType.INT), TalcType.VOID);
         }
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             IntegerValue status = (IntegerValue) arguments[0].accept(evaluator);
             exit(status);
             return null;
@@ -907,7 +907,7 @@ public class Functions {
             super("gets", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.STRING);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return gets();
         }
     }
@@ -917,7 +917,7 @@ public class Functions {
             super("getenv", Arrays.asList("name"), Arrays.asList(TalcType.STRING), TalcType.STRING);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return getenv((StringValue) arguments[0].accept(evaluator));
         }
     }
@@ -927,7 +927,7 @@ public class Functions {
             super("print", null, null, TalcType.VOID);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             print(evaluator, arguments);
             return null;
         }
@@ -948,7 +948,7 @@ public class Functions {
             super("puts", null, null, TalcType.VOID);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             Print.print(evaluator, arguments);
             System.out.println();
             return null;
@@ -960,7 +960,7 @@ public class Functions {
             super("shell", Arrays.asList("command"), Arrays.asList(TalcType.STRING), TalcType.INT);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return shell((StringValue) arguments[0].accept(evaluator));
         }
     }
@@ -970,7 +970,7 @@ public class Functions {
             super("system", Arrays.asList("command"), Arrays.asList(TalcType.LIST_OF_STRING), TalcType.INT);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return system((ListValue) arguments[0].accept(evaluator));
         }
     }
@@ -980,7 +980,7 @@ public class Functions {
             super("time_ms", Collections.<String>emptyList(), Collections.<TalcType>emptyList(), TalcType.INT);
         }
         
-        public Value invokeBuiltIn(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             return time_ms();
         }
     }

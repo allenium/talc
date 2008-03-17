@@ -18,7 +18,7 @@
 
 package org.jessies.talc;
 
-public class BooleanValue implements Value {
+public class BooleanValue {
     public static final BooleanValue TRUE = new BooleanValue();
     public static final BooleanValue FALSE = new BooleanValue();
     

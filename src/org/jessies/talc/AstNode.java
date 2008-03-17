@@ -194,10 +194,10 @@ public abstract class AstNode {
     }
     
     public static class Constant extends AstNode {
-        private Value constant;
+        private Object constant;
         private TalcType type;
         
-        public Constant(SourceLocation location, Value constant, TalcType type) {
+        public Constant(SourceLocation location, Object constant, TalcType type) {
             this.location = location;
             this.constant = constant;
             this.type = type;
@@ -207,7 +207,7 @@ public abstract class AstNode {
             return visitor.visitConstant(this);
         }
         
-        public Value constant() {
+        public Object constant() {
             return constant;
         }
         
@@ -345,12 +345,16 @@ public abstract class AstNode {
         // During semantic analysis, this will be updated to point to the definition of the function we're going to call.
         private FunctionDefinition definition;
         
+        private TalcType[] resolvedArgumentTypes;
+        private TalcType resolvedReturnType;
+        
         // A call of a global function.
         // FIXME: this may turn out to be a call to another method on "this", in which case we'll have to fix up "instance" later, when we realize.
         public FunctionCall(SourceLocation location, String functionName, AstNode[] arguments) {
             this.location = location;
             this.functionName = functionName;
             this.arguments = arguments;
+            this.resolvedArgumentTypes = new TalcType[arguments.length];
         }
         
         // A call of an instance method.
@@ -391,6 +395,22 @@ public abstract class AstNode {
         
         public FunctionDefinition definition() {
             return definition;
+        }
+        
+        public void setResolvedReturnType(TalcType resolvedReturnType) {
+            this.resolvedReturnType = resolvedReturnType;
+        }
+        
+        public TalcType resolvedReturnType() {
+            return resolvedReturnType;
+        }
+        
+        public void setResolvedArgumentType(int i, TalcType resolvedArgumentType) {
+            this.resolvedArgumentTypes[i] = resolvedArgumentType;
+        }
+        
+        public TalcType resolvedArgumentType(int i) {
+            return resolvedArgumentTypes[i];
         }
         
         public String toString() {
@@ -532,7 +552,7 @@ public abstract class AstNode {
             return body;
         }
         
-        public Value invoke(AstEvaluator evaluator, Value instance, AstNode[] arguments) {
+        public Object invoke(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
             // FIXME: this is a bit of a hack. It would be nicer if we didn't "evaluate" functions by putting them in an Environment.
             return evaluator.invokeFunction(this, instance, arguments);
         }

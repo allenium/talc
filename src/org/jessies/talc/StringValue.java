@@ -20,7 +20,7 @@ package org.jessies.talc;
 
 import java.util.regex.*;
 
-public class StringValue implements Value {
+public class StringValue {
     private String value;
     
     public StringValue(String value) {

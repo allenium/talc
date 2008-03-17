@@ -42,7 +42,6 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     private final Type numericValueType = Type.getType(NumericValue.class);
     private final Type realValueType = Type.getType(RealValue.class);
     private final Type stringValueType = Type.getType(StringValue.class);
-    private final Type valueType = Type.getType(Value.class);
     
     private final Type orgJessiesTalcFunctionsType = Type.getType(Functions.class);
     
@@ -317,7 +316,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     private void eq(AstNode.BinaryOperator binOp, String eqOrNe) {
         binOp.lhs().accept(this);
         binOp.rhs().accept(this);
-        mg.invokeStatic(orgJessiesTalcFunctionsType, new Method(eqOrNe, booleanValueType, new Type[] { valueType, valueType }));
+        mg.invokeStatic(orgJessiesTalcFunctionsType, new Method(eqOrNe, booleanValueType, new Type[] { javaLangObjectType, javaLangObjectType }));
     }
     
     private void cmp(AstNode.BinaryOperator binOp, int comparison) {
@@ -439,7 +438,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
                 mg.invokeConstructor(stringValueType, Method.getMethod("void <init>(String)"));
                 
                 // result.push_back(...);
-                mg.invokeVirtual(listValueType, Method.getMethod("org.jessies.talc.ListValue push_back(org.jessies.talc.Value)"));
+                mg.invokeVirtual(listValueType, Method.getMethod("org.jessies.talc.ListValue push_back(java.lang.Object)"));
             }
         } else {
             throw new TalcError(constant, "don't know how to generate code for constants of type " + constantType);
@@ -554,7 +553,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         // v = collection.__get_item__(k);
         collection.emitGet();
         k.emitGet();
-        mg.invokeVirtual(listValueType, new Method("__get_item__", valueType, new Type[] { integerValueType }));
+        mg.invokeVirtual(listValueType, new Method("__get_item__", javaLangObjectType, new Type[] { integerValueType }));
         mg.checkCast(vType);
         v.emitPut();
         // <body>
@@ -594,18 +593,18 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         if (definition.isVarArgs()) {
             if (arguments.length == 1) {
                 arguments[0].accept(this);
-                mg.invokeStatic(containingType, Method.getMethod("void " + functionName + " (org.jessies.talc.Value)"));
+                mg.invokeStatic(containingType, Method.getMethod("void " + functionName + " (java.lang.Object)"));
             } else {
                 mg.push(arguments.length);
-                mg.newArray(valueType);
+                mg.newArray(javaLangObjectType);
                 for (int i = 0; i < arguments.length; ++i) {
                     mg.dup();
                     mg.push(i);
                     arguments[i].accept(this);
-                    mg.checkCast(valueType);
-                    mg.arrayStore(valueType);
+                    mg.checkCast(javaLangObjectType);
+                    mg.arrayStore(javaLangObjectType);
                 }
-                mg.invokeStatic(containingType, Method.getMethod("void " + functionName + " (org.jessies.talc.Value[])"));
+                mg.invokeStatic(containingType, Method.getMethod("void " + functionName + " (java.lang.Object[])"));
             }
         } else {
             Method method = methodForFunctionDefinition(definition);
@@ -644,6 +643,12 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
                 mg.invokeStatic(containingType, method);
             }
             
+            // Because we implement generics by erasure, we should "checkcast" non-void return types.
+            TalcType resolvedReturnType = functionCall.resolvedReturnType();
+            if (resolvedReturnType != TalcType.VOID) {
+                mg.checkCast(typeForTalcType(resolvedReturnType));
+            }
+            
             // FIXME: check here whether 'method' exists, and fail here rather than waiting for the verifier?
             //throw new TalcError(functionCall, "don't know how to generate code for call to \"" + functionName + "\"");
         }
@@ -667,14 +672,14 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
             return stringValueType;
         } else if (talcType == TalcType.VOID) {
             return Type.VOID_TYPE;
+        } else if (talcType == TalcType.T || talcType == TalcType.K || talcType == TalcType.V) {
+            // We implement generics by erasure.
+            return javaLangObjectType;
         } else if (talcType.rawName().equals("list")) {
             // FIXME: this is a particularly big hack.
             return listValueType;
         } else {
-            // FIXME!
-            System.err.println("warning: typeForTalcType returning Value.class for " + talcType);
-            Thread.dumpStack();
-            return valueType;
+            throw new RuntimeException("don't know how to represent TalcType " + talcType);
         }
     }
     
@@ -776,7 +781,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
             // result.push_back(expression);
             mg.visitVarInsn(Opcodes.ALOAD, resultLocal);
             mg.swap();
-            mg.invokeVirtual(listValueType, Method.getMethod("org.jessies.talc.ListValue push_back(org.jessies.talc.Value)"));
+            mg.invokeVirtual(listValueType, Method.getMethod("org.jessies.talc.ListValue push_back(java.lang.Object)"));
         }
         
         // We didn't need a dup in the loop above because push_back leaves the result on the stack anyway.

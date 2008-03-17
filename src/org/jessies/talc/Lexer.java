@@ -51,7 +51,7 @@ public class Lexer {
     private MyPushbackReader reader;
     private Token token;
     private String identifier;
-    private Value numericLiteral;
+    private Object numericLiteral;
     private boolean DEBUG_LEXER = Talc.debugging('l');
     
     public Lexer(String expression) {
@@ -371,7 +371,7 @@ public class Lexer {
         return identifier;
     }
     
-    public Value numericLiteral() {
+    public Object numericLiteral() {
         if (token != Token.INT_LITERAL && token != Token.REAL_LITERAL) {
             throw new TalcError(this, "Lexer.numericLiteral called when current token was " + token);
         }

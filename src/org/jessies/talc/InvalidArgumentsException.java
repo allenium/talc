@@ -1,6 +1,6 @@
 /*
  * This file is part of Talc.
- * Copyright (C) 2007 Elliott Hughes <enh@jessies.org>.
+ * Copyright (C) 2007-2008 Elliott Hughes <enh@jessies.org>.
  * 
  * Talc is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,11 +19,11 @@
 package org.jessies.talc;
 
 public class InvalidArgumentsException extends RuntimeException {
-    public InvalidArgumentsException(Token op, Value... arguments) {
+    public InvalidArgumentsException(Token op, Object... arguments) {
         super(makeMessage(op, arguments));
     }
     
-    private static String makeMessage(Token op, Value[] arguments) {
+    private static String makeMessage(Token op, Object[] arguments) {
         StringBuilder result = new StringBuilder();
         result.append("Invalid arguments to " + op + ": ");
         for (int i = 0; i < arguments.length; ++i) {

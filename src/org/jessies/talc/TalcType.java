@@ -333,7 +333,7 @@ public class TalcType {
         return members;
     }
     
-    public Value newInstance(AstEvaluator evaluator) {
+    public Object newInstance(AstEvaluator evaluator) {
         return members().initializeNewInstance(new UserDefinedClassValue(this), evaluator);
     }
     

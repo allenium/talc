@@ -20,15 +20,15 @@ package org.jessies.talc;
 
 import java.util.*;
 
-public class AstEvaluator implements AstVisitor<Value> {
+public class AstEvaluator implements AstVisitor<Object> {
     private Environment rho;
     
     public AstEvaluator(Environment rho) {
         this.rho = rho;
     }
     
-    public Value visitBinaryOperator(AstNode.BinaryOperator binOp) {
-        Value result = null;
+    public Object visitBinaryOperator(AstNode.BinaryOperator binOp) {
+        Object result = null;
         AstNode lhs = binOp.lhs();
         switch (binOp.op()) {
             case NEG:     result = lhsNumber(binOp).negate(); break;
@@ -85,12 +85,12 @@ public class AstEvaluator implements AstVisitor<Value> {
         return result;
     }
     
-    private Value prePostIncrementDecrement(AstNode.BinaryOperator binOp, boolean isPre, boolean isIncrement) {
+    private Object prePostIncrementDecrement(AstNode.BinaryOperator binOp, boolean isPre, boolean isIncrement) {
         if (isPre) {
             return assignTo(binOp.lhs(), incrementDecrement(lhsNumber(binOp), isIncrement));
         } else {
             NumericValue n = lhsNumber(binOp);
-            Value result = n;
+            Object result = n;
             assignTo(binOp.lhs(), incrementDecrement(n, isIncrement));
             return result;
         }
@@ -106,10 +106,10 @@ public class AstEvaluator implements AstVisitor<Value> {
         }
     }
     
-    private Value visitNumericAddOrStringConcatenation(AstNode.BinaryOperator binOp) {
+    private Object visitNumericAddOrStringConcatenation(AstNode.BinaryOperator binOp) {
         // '+' adds numbers or concatenates strings.
-        Value lhs = binOp.lhs().accept(this);
-        Value rhs = binOp.rhs().accept(this);
+        Object lhs = binOp.lhs().accept(this);
+        Object rhs = binOp.rhs().accept(this);
         if (lhs instanceof NumericValue) {
             return ((NumericValue) lhs).add((NumericValue) rhs);
         } else {
@@ -118,11 +118,11 @@ public class AstEvaluator implements AstVisitor<Value> {
         }
     }
     
-    private Value lhsValue(AstNode.BinaryOperator binOp) {
+    private Object lhsValue(AstNode.BinaryOperator binOp) {
         return binOp.lhs().accept(this);
     }
     
-    private Value rhsValue(AstNode.BinaryOperator binOp) {
+    private Object rhsValue(AstNode.BinaryOperator binOp) {
         return binOp.rhs().accept(this);
     }
     
@@ -150,13 +150,13 @@ public class AstEvaluator implements AstVisitor<Value> {
         return (NumericValue) rhsValue(binOp);
     }
     
-    private Value assignTo(AstNode lhs, Value newValue) {
+    private Object assignTo(AstNode lhs, Object newValue) {
         AstNode.VariableName variableName = (AstNode.VariableName) lhs;
         String name = variableName.identifier();
         return (variableName.isFieldAccess()) ? ((UserDefinedClassValue) rho.valueOf("this")).putField(name, newValue) : rho.assignVariable(name, newValue);
     }
     
-    public Value visitBlock(AstNode.Block block) {
+    public Object visitBlock(AstNode.Block block) {
         rho.pushStackFrame();
         try {
             for (AstNode statement : block.statements()) {
@@ -168,7 +168,7 @@ public class AstEvaluator implements AstVisitor<Value> {
         }
     }
     
-    public Value visitBreakStatement(AstNode.BreakStatement node) {
+    public Object visitBreakStatement(AstNode.BreakStatement node) {
         throw new BreakException();
     }
     
@@ -182,19 +182,19 @@ public class AstEvaluator implements AstVisitor<Value> {
         }
     }
     
-    public Value visitClassDefinition(AstNode.ClassDefinition classDefinition) {
+    public Object visitClassDefinition(AstNode.ClassDefinition classDefinition) {
         return null;
     }
     
-    public Value visitConstant(AstNode.Constant node) {
+    public Object visitConstant(AstNode.Constant node) {
         return node.constant();
     }
     
-    public Value visitContinueStatement(AstNode.ContinueStatement node) {
+    public Object visitContinueStatement(AstNode.ContinueStatement node) {
         throw new ContinueException();
     }
     
-    public Value visitDoStatement(AstNode.DoStatement doStatement) {
+    public Object visitDoStatement(AstNode.DoStatement doStatement) {
         AstNode expression = doStatement.expression();
         AstNode body = doStatement.body();
         do {
@@ -209,7 +209,7 @@ public class AstEvaluator implements AstVisitor<Value> {
         return null;
     }
     
-    public Value visitForStatement(AstNode.ForStatement forStatement) {
+    public Object visitForStatement(AstNode.ForStatement forStatement) {
         rho.pushStackFrame();
         try {
             if (forStatement.initializer() != null) {
@@ -234,7 +234,7 @@ public class AstEvaluator implements AstVisitor<Value> {
         }
     }
     
-    public Value visitForEachStatement(AstNode.ForEachStatement forEachStatement) {
+    public Object visitForEachStatement(AstNode.ForEachStatement forEachStatement) {
         rho.pushStackFrame();
         try {
             List<AstNode.VariableDefinition> loopVariableDefinitions = forEachStatement.loopVariableDefinitions();
@@ -242,7 +242,7 @@ public class AstEvaluator implements AstVisitor<Value> {
             ListValue list = (ListValue) forEachStatement.expression().accept(this);
             // FIXME: what about modification of the list while we're looping?
             for (int key = 0; key < list.length().intValue(); ++key) {
-                Value value = list.__get_item__(new IntegerValue(key));
+                Object value = list.__get_item__(new IntegerValue(key));
                 if (loopVariableDefinitions.size() == 1) {
                     rho.defineVariable(loopVariableDefinitions.get(0).identifier(), value);
                 } else {
@@ -263,18 +263,18 @@ public class AstEvaluator implements AstVisitor<Value> {
         }
     }
     
-    public Value visitFunctionCall(AstNode.FunctionCall functionCall) {
-        Value instance = (functionCall.instance() != null) ? functionCall.instance().accept(this) : null;
+    public Object visitFunctionCall(AstNode.FunctionCall functionCall) {
+        Object instance = (functionCall.instance() != null) ? functionCall.instance().accept(this) : null;
         return functionCall.definition().invoke(this, instance, functionCall.arguments());
     }
     
-    public Value invokeFunction(AstNode.FunctionDefinition f, Value instance, AstNode[] actualParameters) {
+    public Object invokeFunction(AstNode.FunctionDefinition f, Object instance, AstNode[] actualParameters) {
         List<String> formalParameters = f.formalParameterNames();
         final int parameterCount = formalParameters.size();
         
         // Evaluate the arguments in the call scope before adding any of the arguments to the function body scope.
         // This avoids problems when a formal parameter name causes shadowing.
-        Value[] values = new Value[parameterCount];
+        Object[] values = new Object[parameterCount];
         for (int i = 0; i < parameterCount; ++i) {
             values[i] = actualParameters[i].accept(this);
         }
@@ -282,7 +282,7 @@ public class AstEvaluator implements AstVisitor<Value> {
         // Push a new stack frame for the function body...
         rho.pushStackFrame();
         try {
-            Value result = null;
+            Object result = null;
             
             if (instance != null) {
                 // Set the local "this" to point to the instance in question.
@@ -312,11 +312,11 @@ public class AstEvaluator implements AstVisitor<Value> {
         }
     }
     
-    public Value visitFunctionDefinition(AstNode.FunctionDefinition functionDefinition) {
+    public Object visitFunctionDefinition(AstNode.FunctionDefinition functionDefinition) {
         return null;
     }
     
-    public Value visitIfStatement(AstNode.IfStatement ifStatement) {
+    public Object visitIfStatement(AstNode.IfStatement ifStatement) {
         List<AstNode> expressions = ifStatement.expressions();
         List<AstNode> bodies = ifStatement.bodies();
         final int expressionCount = expressions.size();
@@ -330,7 +330,7 @@ public class AstEvaluator implements AstVisitor<Value> {
         return null;
     }
     
-    public Value visitListLiteral(AstNode.ListLiteral listLiteral) {
+    public Object visitListLiteral(AstNode.ListLiteral listLiteral) {
         ListValue result = new ListValue();
         for (AstNode expression : listLiteral.expressions()) {
             result.push_back(expression.accept(this));
@@ -338,18 +338,18 @@ public class AstEvaluator implements AstVisitor<Value> {
         return result;
     }
     
-    public Value visitReturnStatement(AstNode.ReturnStatement returnStatement) {
+    public Object visitReturnStatement(AstNode.ReturnStatement returnStatement) {
         throw new ReturnException(returnStatement.expression() != null ? returnStatement.expression().accept(this) : null);
     }
     
     private static class ReturnException extends ExceptionWithoutStackTrace {
-        private Value value;
+        private Object value;
         
-        public ReturnException(Value value) {
+        public ReturnException(Object value) {
             this.value = value;
         }
         
-        public Value value() {
+        public Object value() {
             return value;
         }
     }
@@ -363,17 +363,17 @@ public class AstEvaluator implements AstVisitor<Value> {
         }
     }
     
-    public Value visitVariableDefinition(AstNode.VariableDefinition var) {
-        Value initialValue = var.initializer().accept(this);
+    public Object visitVariableDefinition(AstNode.VariableDefinition var) {
+        Object initialValue = var.initializer().accept(this);
         return rho.defineVariable(var.identifier(), initialValue);
     }
     
-    public Value visitVariableName(AstNode.VariableName variableName) {
+    public Object visitVariableName(AstNode.VariableName variableName) {
         String name = variableName.identifier();
         return (variableName.isFieldAccess()) ? ((UserDefinedClassValue) rho.valueOf("this")).getField(name) : rho.valueOf(name);
     }
     
-    public Value visitWhileStatement(AstNode.WhileStatement whileStatement) {
+    public Object visitWhileStatement(AstNode.WhileStatement whileStatement) {
         AstNode expression = whileStatement.expression();
         AstNode body = whileStatement.body();
         while (((BooleanValue) expression.accept(this)).booleanValue()) {

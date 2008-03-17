@@ -20,17 +20,17 @@ package org.jessies.talc;
 
 import java.util.*;
 
-public class MapValue implements Value {
-    private HashMap<Value, Value> map = new HashMap<Value, Value>();
+public class MapValue {
+    private HashMap<Object, Object> map = new HashMap<Object, Object>();
     
     public MapValue() {
     }
     
-    public Value __get_item__(Value key) {
+    public Object __get_item__(Object key) {
         return map.get(key);
     }
     
-    public Value __set_item__(Value key, Value value) {
+    public Object __set_item__(Object key, Object value) {
         return map.put(key, value);
     }
     
@@ -39,11 +39,11 @@ public class MapValue implements Value {
         return this;
     }
     
-    public BooleanValue has_key(Value key) {
+    public BooleanValue has_key(Object key) {
         return BooleanValue.valueOf(map.containsKey(key));
     }
     
-    public BooleanValue has_value(Value value) {
+    public BooleanValue has_value(Object value) {
         return BooleanValue.valueOf(map.containsValue(value));
     }
     
@@ -55,7 +55,7 @@ public class MapValue implements Value {
         return new IntegerValue(map.size());
     }
     
-    public MapValue remove(Value key) {
+    public MapValue remove(Object key) {
         map.remove(key);
         return this;
     }

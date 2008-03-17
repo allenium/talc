@@ -47,9 +47,9 @@ public class Talc {
             text += ";";
         }
         
-        List<Value> values = parseAndEvaluate(null, new ListValue(), new Lexer(text));
+        List<Object> values = parseAndEvaluate(null, new ListValue(), new Lexer(text));
         StringBuilder result = new StringBuilder();
-        for (Value value : values) {
+        for (Object value : values) {
             result.append(value);
             if (value instanceof IntegerValue) {
                 IntegerValue integerValue = (IntegerValue) value;
@@ -71,7 +71,7 @@ public class Talc {
         }
     }
     
-    private List<Value> parseAndEvaluate(Value argv0, ListValue args, Lexer lexer) {
+    private List<Object> parseAndEvaluate(StringValue argv0, ListValue args, Lexer lexer) {
         // 1. Parse.
         long parse0 = System.nanoTime();
         List<AstNode> ast = new Parser(lexer).parse();
@@ -98,7 +98,7 @@ public class Talc {
             long execution0 = System.nanoTime();
             Environment rho = new Environment();
             AstEvaluator evaluator = new AstEvaluator(rho);
-            ArrayList<Value> result = new ArrayList<Value>();
+            ArrayList<Object> result = new ArrayList<Object>();
             for (AstNode node : ast) {
                 result.add(node.accept(evaluator));
             }

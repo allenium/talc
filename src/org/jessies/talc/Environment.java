@@ -47,7 +47,7 @@ public class Environment {
         stack.pop();
     }
     
-    public Value assignVariable(String name, Value value) {
+    public Object assignVariable(String name, Object value) {
         // FIXME: we don't need to search the whole stack at run-time!
         for (StackFrame frame : stack) {
             // FIXME: looking up the name twice is unnecessary.
@@ -59,14 +59,14 @@ public class Environment {
         throw new IllegalStateException("unknown variable \"" + name + "\" can't be assigned value " + value);
     }
     
-    public Value defineVariable(String name, Value value) {
+    public Object defineVariable(String name, Object value) {
         return stack.peek().variables.defineVariable(name, value);
     }
     
-    public Value valueOf(String name) {
+    public Object valueOf(String name) {
         // FIXME: we don't need to search the whole stack at run-time!
         for (StackFrame frame : stack) {
-            Value value = frame.variables.valueOf(name);
+            Object value = frame.variables.valueOf(name);
             if (value != null) {
                 return value;
             }

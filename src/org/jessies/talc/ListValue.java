@@ -20,8 +20,8 @@ package org.jessies.talc;
 
 import java.util.*;
 
-public class ListValue implements Value {
-    private ArrayList<Value> list = new ArrayList<Value>();
+public class ListValue {
+    private ArrayList<Object> list = new ArrayList<Object>();
     
     public ListValue() {
     }
@@ -34,7 +34,7 @@ public class ListValue implements Value {
         }
     }
     
-    public ListValue(Collection<? extends Value> collection) {
+    public ListValue(Collection<? extends Object> collection) {
         list.addAll(collection);
     }
     
@@ -48,15 +48,15 @@ public class ListValue implements Value {
         return this;
     }
     
-    public BooleanValue contains(Value v) {
+    public BooleanValue contains(Object v) {
         return BooleanValue.valueOf(list.contains(v));
     }
     
-    public Value __get_item__(IntegerValue i) {
+    public Object __get_item__(IntegerValue i) {
         return list.get(i.intValue());
     }
     
-    public Value __set_item__(IntegerValue i, Value v) {
+    public Object __set_item__(IntegerValue i, Object v) {
         list.set(i.intValue(), v);
         return v;
     }
@@ -81,28 +81,28 @@ public class ListValue implements Value {
         return new IntegerValue(list.size());
     }
     
-    public Value peek_back() {
+    public Object peek_back() {
         return list.get(list.size() - 1);
     }
     
-    public Value peek_front() {
+    public Object peek_front() {
         return list.get(0);
     }
     
-    public Value pop_back() {
+    public Object pop_back() {
         return list.remove(list.size() - 1);
     }
     
-    public Value pop_front() {
+    public Object pop_front() {
         return list.remove(0);
     }
     
-    public ListValue push_back(Value v) {
+    public ListValue push_back(Object v) {
         list.add(v);
         return this;
     }
     
-    public ListValue push_front(Value v) {
+    public ListValue push_front(Object v) {
         list.add(0, v);
         return this;
     }
@@ -117,7 +117,7 @@ public class ListValue implements Value {
         return this;
     }
     
-    public BooleanValue remove_first(Value v) {
+    public BooleanValue remove_first(Object v) {
         return BooleanValue.valueOf(list.remove(v));
     }
     
@@ -132,8 +132,8 @@ public class ListValue implements Value {
     public ListValue sort() {
         ListValue result = new ListValue();
         result.add_all(this);
-        Collections.sort(result.list, new Comparator<Value>() {
-            public int compare(Value o1, Value o2) {
+        Collections.sort(result.list, new Comparator<Object>() {
+            public int compare(Object o1, Object o2) {
                 if (o1 instanceof IntegerValue) {
                     return ((IntegerValue) o1).compareTo((IntegerValue) o2);
                 } else if (o1 instanceof RealValue) {
@@ -165,7 +165,7 @@ public class ListValue implements Value {
     
     public ListValue uniq() {
         ListValue result = new ListValue();
-        result.list.addAll(new LinkedHashSet<Value>(list));
+        result.list.addAll(new LinkedHashSet<Object>(list));
         return result;
     }
 }

@@ -1,6 +1,6 @@
 /*
  * This file is part of Talc.
- * Copyright (C) 2007 Elliott Hughes <enh@jessies.org>.
+ * Copyright (C) 2007-2008 Elliott Hughes <enh@jessies.org>.
  * 
  * Talc is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,17 +21,17 @@ package org.jessies.talc;
 import java.util.*;
 
 public class Variables {
-    private HashMap<String, Value> variables;
+    private HashMap<String, Object> variables;
     
     public Variables() {
-        variables = new HashMap<String, Value>();
+        variables = new HashMap<String, Object>();
     }
     
-    public Value defineVariable(String name, Value value) {
+    public Object defineVariable(String name, Object value) {
         return assignVariable(name, value);
     }
     
-    public Value assignVariable(String name, Value newValue) {
+    public Object assignVariable(String name, Object newValue) {
         variables.put(name, newValue);
         return newValue;
     }
@@ -40,7 +40,7 @@ public class Variables {
         return variables.containsKey(name);
     }
     
-    public Value valueOf(String name) {
+    public Object valueOf(String name) {
         return variables.get(name);
     }
 }

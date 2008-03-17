@@ -1,6 +1,6 @@
 /*
  * This file is part of Talc.
- * Copyright (C) 2007 Elliott Hughes <enh@jessies.org>.
+ * Copyright (C) 2007-2008 Elliott Hughes <enh@jessies.org>.
  * 
  * Talc is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,22 +20,22 @@ package org.jessies.talc;
 
 import java.util.*;
 
-public class UserDefinedClassValue implements Value {
+public class UserDefinedClassValue {
     private TalcType type;
-    private HashMap<String, Value> fields;
+    private HashMap<String, Object> fields;
     
     public UserDefinedClassValue(TalcType type) {
         this.type = type;
         // FIXME: we could optimize this in several ways. We know at compile-time how many fields there in "type". If we wanted, we could assign each an integer.
-        this.fields = new HashMap<String, Value>();
+        this.fields = new HashMap<String, Object>();
     }
     
-    public Value putField(String name, Value value) {
+    public Object putField(String name, Object value) {
         fields.put(name, value);
         return value;
     }
     
-    public Value getField(String name) {
+    public Object getField(String name) {
         return fields.get(name);
     }
     
