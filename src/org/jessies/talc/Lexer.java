@@ -51,7 +51,7 @@ public class Lexer {
     private MyPushbackReader reader;
     private Token token;
     private String identifier;
-    private Object numericLiteral;
+    private NumericValue numericLiteral;
     private boolean DEBUG_LEXER = Talc.debugging('l');
     
     public Lexer(String expression) {
@@ -371,7 +371,7 @@ public class Lexer {
         return identifier;
     }
     
-    public Object numericLiteral() {
+    public NumericValue numericLiteral() {
         if (token != Token.INT_LITERAL && token != Token.REAL_LITERAL) {
             throw new TalcError(this, "Lexer.numericLiteral called when current token was " + token);
         }
@@ -387,7 +387,7 @@ public class Lexer {
             switch (token()) {
                 case IDENTIFIER: System.err.println("identifier \"" + identifier() + "\""); break;
                 case INT_LITERAL: System.err.println("integer literal " + numericLiteral()); break;
-                case REAL_LITERAL: System.err.println("integer literal " + numericLiteral()); break;
+                case REAL_LITERAL: System.err.println("real literal " + numericLiteral()); break;
                 default: System.err.println(token()); break;
             }
             nextToken();
