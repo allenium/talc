@@ -128,12 +128,7 @@ public class Lexer {
         
         // Skip shell-like comments to end of line.
         while (ch == '#') {
-            while ((ch = reader.read()) != EOF && ch != '\n') {
-            }
-            // Skip the whitespace from the terminating newline to the first non-whitespace character on the next line.
-            while (ch != EOF && ch <= ' ') {
-                ch = reader.read();
-            }
+            ch = skipCommentToEndOfLine();
         }
         
         switch (ch) {
@@ -156,7 +151,6 @@ public class Lexer {
             case '=': return maybe('=', Token.EQ, Token.ASSIGN);
             case '+': return maybe2('+', Token.PLUS_PLUS, '=', Token.PLUS_ASSIGN, Token.PLUS);
             case '-': return maybe2('-', Token.MINUS_MINUS, '=', Token.SUB_ASSIGN, Token.MINUS);
-            case '/': return maybe('=', Token.DIV_ASSIGN, Token.DIV);
             case '%': return maybe('=', Token.MOD_ASSIGN, Token.MOD);
             case '!': return maybe('=', Token.NE, Token.PLING);
             case '~': return Token.B_NOT;
@@ -170,6 +164,23 @@ public class Lexer {
             case '>': return maybeDoubleOrAssign('>', Token.GT, Token.SHR, Token.GE, Token.SHR_ASSIGN);
             
             case '@': case '"': case '\'': return readStringLiteral(ch);
+            
+        case '/':
+            {
+                // Forward slash is impressively versatile.
+                int ch2 = reader.read();
+                if (ch2 == '=') {
+                    return Token.DIV_ASSIGN;
+                } else if (ch2 == '/') {
+                    reader.unread(skipCommentToEndOfLine());
+                    return nextToken0();
+                } else if (ch2 == '*') {
+                    skipBlockComment();
+                    return nextToken0();
+                }
+                reader.unread(ch);
+                return Token.DIV;
+            }
             
         default:
             if (ch >= '0' && ch <= '9') {
@@ -221,6 +232,34 @@ public class Lexer {
                 return (keyword != null ? keyword : Token.IDENTIFIER);
             } else {
                 throw new TalcError(this, "invalid character '" + ensurePrintable(ch) + "' in input");
+            }
+        }
+    }
+    
+    private int skipCommentToEndOfLine() throws IOException {
+        int ch;
+        while ((ch = reader.read()) != EOF && ch != '\n') {
+        }
+        // Skip the whitespace from the terminating newline to the first non-whitespace character on the next line.
+        while (ch != EOF && ch <= ' ') {
+            ch = reader.read();
+        }
+        return ch;
+    }
+    
+    private void skipBlockComment() throws IOException {
+        while (true) {
+            int ch = reader.read();
+            if (ch == EOF) {
+                // FIXME: report the location of the *start* of the block comment.
+                throw new TalcError(this, "hit end of input during block comment");
+            } else if (ch == '*') {
+                int ch2 = reader.read();
+                if (ch2 == '/') {
+                    return;
+                } else {
+                    reader.unread(ch2);
+                }
             }
         }
     }
