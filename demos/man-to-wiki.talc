@@ -1,0 +1,104 @@
+#!/usr/bin/talc
+
+// Filters stdin, which should the groff source of a man page, and outputs wiki markup.
+// The groff dialect is based on "man 7 man" on Ubuntu 7.10 and my own Talc man page.
+// The wiki dialect is whatever code.google.com is using.
+
+// Copyright (C) 2008 Elliott Hughes.
+
+in_verbatim := false;
+indent := "";
+post_indent: string = null;
+
+while ((s := gets()) != null) {
+    // FIXME: we're supposed to support C++-like scoping of variable definitions within if guards!
+    m: match = null;
+    
+    if (in_verbatim == false) {
+        // Rewrite common groff-isms.
+        s = s.replace(@"\(co", "\u00A9");
+        s = s.replace(@"\-", "-");
+        
+        // Escape characters the wiki would otherwise interpret as special formatting.
+        // Note that the wiki uses backquotes for escaping, which is a bit weird.
+        // This would probably be more efficient as a regular expression, but it's hard enough to read already!
+        s = s.replace("*", @"`*`");
+        s = s.replace("_", @"`_`");
+        s = s.replace("~", @"`~`");
+        s = s.replace("^", @"`^`");
+        s = s.replace("[", @"`[`");
+        s = s.replace("]", @"`]`");
+        
+        // Translate groff font macros, but only the trivial stylized idiom I use.
+        s = s.sub(@"\\fB(.*?)\\fR", "*$1*");
+        s = s.sub(@"\\fI(.*?)\\fR", "_$1_");
+        
+        // Improve the chances that a URL embedded in a man page makes it through unscathed.
+        s = s.sub(@"<(http://.*?)>", "[$1 $1]");
+        
+        // Ignore groff comments.
+        if (s.starts_with(@'.\"')) {
+            continue;
+        }
+    }
+    
+    if ((m = s.match(@'^\.TH (\S+) (\d+)')) != null) {
+        // FIXME: should support: .TH title section date source manual
+        // FIXME: should support quotes around arguments too.
+        puts("=", m.group(1), "(", m.group(2), ") MANUAL PAGE=");
+    } else if ((m = s.match(@'^\.SH "?(.*?)"?$')) != null) {
+        puts("==", m.group(1), "==");
+        indent = "";
+    } else if ((m = s.match(@'^\.SS "?(.*?)"?$')) != null) {
+        puts("===", m.group(1), "===");
+        indent = "";
+    } else if ((m = s.match(@'^\.B "?(.*?)"?$')) != null) {
+        puts(indent, "*", m.group(1), "*");
+        puts();
+    } else if (s == ".TP") {
+        puts();
+        // .TP is a bit weird, because it begins a paragraph with a hanging indent.
+        // It resets the indentation for the next line, but causes the line after that to be indented.
+        indent = "";
+        post_indent = "  ` `";
+        // The weird ` ` is to prevent something like
+        
+        // .TP
+        // .B title
+        // description
+        
+        // from being translated into "  *title*", which the wiki will render as:
+        //   <b>itle</b>
+        
+        // Now continue so we don't apply post_indent for this line.
+        continue;
+    } else if (s == ".br") {
+        // Line break.
+        puts();
+    } else if (s == ".sp") {
+        // Ignore this, which is needed with .nf and .fi to get decent spacing for code examples with groff.
+    } else if (s == ".nf") {
+        // Begin verbatim code block.
+        puts(indent, "{{{");
+        in_verbatim = true;
+    } else if (s == ".fi") {
+        // End verbatim code block.
+        puts(indent, "}}}");
+        in_verbatim = false;
+    } else {
+        puts(indent, s);
+        if (in_verbatim == false && s.starts_with("  ")) {
+            puts();
+        }
+    }
+    
+    // Did we just deal with a hanging indent?
+    // If so, turn on the pending indent.
+    if (post_indent != null) {
+        indent = post_indent;
+        post_indent = null;
+    }
+}
+// Advertise ourselves (and, implicitly, the fact that the page the user's reading is not necessarily canonical or up to date).
+puts("----");
+puts("Automatically translated from a man page by [http://code.google.com/p/talc/source/browse/trunk/demos/man-to-wiki.talc man-to-wiki.talc].");
