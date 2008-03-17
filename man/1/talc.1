@@ -1,10 +1,10 @@
-.TH TALC "1" "" "" "User Commands"
+.TH TALC 1
 .SH NAME
 talc \- a C-family statically-typed scripting language
 .SH SYNOPSIS
 talc [--dump-class class] [-f file] [-e program]
 .SH DESCRIPTION
-The language Talc is an interpreted scripting language for quick and easy programming. It is simple, straightforward, and aimed at aficionados of the C family, despite its Pascal-inspired declarations. Particularly notable features are static typing, mostly C-like syntax, and the all-important curly braces. (As Dennis Ritchie said, "C's intellectual influence on the semantic design of new languages has been small. On the other hand, it has influenced notation: even pseudo-code these days tends to contain curly braces.")
+The language Talc is a scripting language for quick and easy programming. It is simple, straightforward, and aimed at aficionados of the C family, despite its Pascal-inspired declarations. Particularly notable features are static typing, mostly C-like syntax, and the all-important curly braces. (As Dennis Ritchie said, "C's intellectual influence on the semantic design of new languages has been small. On the other hand, it has influenced notation: even pseudo-code these days tends to contain curly braces.")
 
 If you want a convenient language for quick little jobs, love the C family, like static typing, dislike Perl's complexity and obscurity, dislike Python's needless breaks from tradition, have been disappointed by Ruby's irregularities, and most of all don't want to throw the baby of good compile-time error checking out with the bathwater of verbosity of simple tasks, Talc may be the language for you.
 
@@ -12,14 +12,14 @@ Talc offers broad C, C++, and Java expression compatibility where possible, with
 .SH FEATURES
 Talc's features are best understood in comparison to other scripting languages:
 .TP
-.B "Interpreted"
-Talc is an interpreted language, so you don't have to recompile programs before executing them.
+.B "Run-time compiled"
+Talc is a compiled language, but you don't have to recompile programs before executing them. From the user's perspective, it's interpreted, but behind the scenes, the interpreter works by compiling to JVM bytecode. This process is very fast, and the short time it takes is quickly made up by the performance of the compiled code, which is much faster than the old interpreter.
 .TP
 .B "Variables have types (static typing)"
 Variables (rather than just values) have associated types. Consequently, it has stronger compile time checking, and most errors are found earlier and quicker, and with less need for testing.
 .TP
 .B "Simple syntax"
-Talc has simple syntax similar to the C-family languages, with the exception of declarations, which use a Pascal-inspired syntax.
+Talc has simple syntax similar to other C-family languages, with the exception of declarations, which use a Pascal-inspired syntax.
 .TP
 .B "No manual memory management"
 Talc has automatic memory management. Objects no longer referenced from anywhere are automatically collected by the garbage collector.
@@ -28,7 +28,7 @@ Talc has automatic memory management. Objects no longer referenced from anywhere
 Talc is a purely object-oriented language, and was ever so. Even "primitive" types such as integers are seen as objects.
 .TP
 .B "Class, inheritance, and methods"
-As an object-oriented language, Talc has such basic features like classes, inheritance, and methods. (FIXME: not yet implemented.)
+As an object-oriented language, Talc has such basic features like classes, inheritance, and methods. (FIXME: not yet fully implemented.)
 .TP
 .B "Text processing and regular expressions"
 Talc has a bunch of text processing features equivalent to those you'd find in post-Perl scripting languages.
@@ -37,33 +37,36 @@ Talc has a bunch of text processing features equivalent to those you'd find in p
 All integer arithmetic is performed to arbitrary precision. For example, calculating 400! is trivial.
 .TP
 .B "Direct access to the OS"
-Talc can access most Unix facilities.
+Talc can access most Unix facilities. (FIXME: not yet fully implemented.)
 .SH OPTIONS
 With no arguments, interactive mode is entered. Expressions will be read from standard input, evaluated, and their results output on standard output.
 .TP
-\-\-\fBdump\-class \fIclass
+\-\-\fBdump\-class\fR \fIclass\fR
 Dumps a synopsis of the given \fIclass\fR to standard output.
 Details include the class name, superclass, and declared member functions and member variables.
 .TP
-\-\-\fBdump\-classes
+\-\-\fBdump\-classes\fR
 Dumps a synopsis for every built-in class, sorted into alphabetical order.
 .TP
-\-\fBe \fIprogram
+\-\fBe\fR \fIprogram\fR
 Inline mode.
 The \fIprogram\fR is evaluated.
 No special rules apply.
 No output will be produced unless the program calls an output function.
 .TP
-\-\fBf \fIfile
+\-\fBf\fR \fIfile\fR
 File mode.
 Program text is read from \fIfile\fR instead of entering interactive mode.
 .SH LEXICAL STRUCTURE
 .SS Comments
-Comments begin with a # and extend to the end of the line.
+Shell-like comments begin with a # and extend to the end of the line. C++-like comments begin with // and extend to the end of the line. Other than the use of # and //, shell\- and C++\-style comments are treated identically to one another.
+
+Block comments begin with /* and extend to the next */. Block comments do not nest. Block comments make it possible to easily comment out large numbers of lines or comment out text within a line. Most scripting languages rely on dynamism and some kind of "if (false)" notation for the former use case and fail to support the latter.
+
 .SS Keywords
 The following are all keywords: "break", "class", "continue", "do", "else", "extends", "false", "final", "for", "function", "if", "implements", "in", "new", "null", "return", "true", "void", "while".
 
-In the grand tradition of the C family, not all words reserved as keywords are necessarily in use. Currently "class" is reserved but unused.
+In the grand tradition of the C family, not all words reserved as keywords are necessarily in use. Currently "class", "extends", and "implements" are reserved but unused.
 .SS Types
 The basic types are "bool", "int", "object", "real", "string", and "void". The type "object" is the root of the class hierarchy. All other types have "object" as an ancestor. The type "void" is used as the return type for functions that return no value.
 .SS Null literal
@@ -177,7 +180,7 @@ The type inference seen here has nothing to do with the unsafe implicit type con
 
 Although ":=" reduces the amount of keyboarding, the program remains every bit as statically-typed as it would have been with an explicit type. It is recommended that you still use explicit types in cases where the inferred type isn't obvious, or where an explicit type seems to function as documentation. (The most important case is where the initializer is "null", but the inferred type of "object" probably wouldn't be sufficient there anyway.)
 
-As proof that this isn't unsafe, note that the usual case where you can't use the inferred type is when you actually want a *less* specific type than would be inferred, such as "o: object = 123", which would otherwise give "o" type "int".
+As proof that this isn't unsafe, note that the usual case where you can't use the inferred type is when you actually want a \fBless\fR specific type than would be inferred, such as "o: object = 123", which would otherwise give "o" type "int".
 .SS Function definitions
 A function definition looks like this:
 .nf
@@ -291,7 +294,7 @@ A for-each loop iterates over a collection, evaluating a block once for each val
 .fi
 The expression must be of a collection type. The for-each loop has one or two loop variable names declared. If it has one, it is given the value type of the collection. If it has two, the first is given the key type of the collection and the second the value type. It is not possible to specify explicit types, nor to reverse the order of declaration.
 
-A more Java-like syntax using a ":" instead of the "in" keyword isn't possible because of the ambiguity with an explicit type declaration. Talc initially used ";" (following the D language) but it looked strange, looked overly similar to the normal for loop, and was surprisingly hard to remember. A "foreach" keyword was considered (both in conjunction with ":" and "in"), but rejected as not being a real word. (Though in some ways that's ideal for a keyword.)
+A more Java-like syntax using a ":" instead of the "in" keyword isn't possible because of the ambiguity with an explicit type declaration. Talc initially used ";" (following the D language) but it looked strange, looked overly similar to the normal for loop, and was surprisingly hard to remember. A "foreach" keyword was considered (both in conjunction with ":" and "in"), but rejected as not being a real word. Though in some ways that's an ideal property for something as disruptive as a keyword.
 .SS Break statements
 A "break" statement transfers control out of the innermost enclosing "do", "for", or "while" statement.
 .SS Continue statements
@@ -382,7 +385,7 @@ int : object
 
 list<T> : object
   __get_item__(index: int) : T
-  __set_item__(index: int, value: T) : void
+  __set_item__(index: int, value: T) : T
   add_all(others: list<T>) : list<T>
   clear() : list<T>
   contains(value: T) : bool
@@ -406,7 +409,7 @@ list<T> : object
 
 map<K,V> : object
   __get_item__(key: K) : V
-  __set_item__(key: K, value: V) : void
+  __set_item__(key: K, value: V) : V
   clear() : map<K,V>
   has_key(key: K) : bool
   has_value(value: V) : bool
@@ -512,17 +515,15 @@ Talc arose out of dissatisfaction with existing scripting languages, in particul
 .SH BUGS
 Talc is not yet ready for production use.
 
-The GUI should probably be split out into a separate package. It would be nice if the interactive interfaces saved their histories somewhere. Also, we should offer custom tab-completion for functions and variables.
+It would be nice if the interactive interface saved its readline history somewhere. Also, we should offer custom tab-completion for functions and variables.
 .SS LANGUAGE CHANGES/EXTENSIONS UNDER CONSIDERATION
 A shorthand "function f() { ... }" for void functions, instead of "function f() : void { ... }".
 
 Losing the "function" keyword completely. As long as you have to write the parentheses for empty formal argument lists, functions and variables aren't ambiguous because at any given scope, only one or the other is valid. "function" is potentially useful for expressing function types, such as the first argument to a functional "map", for example.
 
-Support for // and /* */ comments. The latter would be a particular advantage over most scripting languages, which don't support multi-line comments or comments within lines.
-
 It might also be useful to support both "mod" and and "rem", though the likely confusion inherent in the fact that % is actually "rem" but generally called mod speaks against this. VHDL users report that the "mod"/"rem" distinction isn't very useful, but they're unlikely to be using signed values in the first place.
 .SH "REPORTING BUGS"
-Report bugs to <software@jessies.org>.
+Report bugs at <http://code.google.com/p/talc/issues/list>.
 .SH COPYRIGHT
 Copyright \(co 2007-2008 Elliott Hughes.
 Parts copyright \(co 2000-2007 INRIA, France Telecom.
