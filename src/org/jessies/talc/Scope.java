@@ -127,15 +127,15 @@ public class Scope {
     public static void initGlobalScope(StringValue argv0, ListValue args) {
         builtInScope = new Scope(null);
         // Built-in functions.
-        builtInScope.addFunction(new Functions.backquote());
-        builtInScope.addFunction(new Functions.Exit());
-        builtInScope.addFunction(new Functions.Getenv());
-        builtInScope.addFunction(new Functions.Gets());
-        builtInScope.addFunction(new Functions.Print());
-        builtInScope.addFunction(new Functions.Puts());
-        builtInScope.addFunction(new Functions.shell());
-        builtInScope.addFunction(new Functions.system());
-        builtInScope.addFunction(new Functions.time_ms());
+        builtInScope.addFunction(new BuiltInFunction("backquote", Arrays.asList("command"), Arrays.asList(TalcType.STRING), TalcType.STRING));
+        builtInScope.addFunction(new BuiltInFunction("exit", Arrays.asList("status"), Arrays.asList(TalcType.INT), TalcType.VOID));
+        builtInScope.addFunction(new BuiltInFunction("getenv", Arrays.asList("name"), Arrays.asList(TalcType.STRING), TalcType.STRING));
+        builtInScope.addFunction(new BuiltInFunction("gets", TalcType.STRING));
+        builtInScope.addFunction(new BuiltInFunction("print", null, null, TalcType.VOID));
+        builtInScope.addFunction(new BuiltInFunction("puts", null, null, TalcType.VOID));
+        builtInScope.addFunction(new BuiltInFunction("shell", Arrays.asList("command"), Arrays.asList(TalcType.STRING), TalcType.INT));
+        builtInScope.addFunction(new BuiltInFunction("system", Arrays.asList("command"), Arrays.asList(TalcType.LIST_OF_STRING), TalcType.INT));
+        builtInScope.addFunction(new BuiltInFunction("time_ms", TalcType.INT));
         // Built-in constants.
         builtInScope.addVariable(new BuiltInConstant("ARGV0", TalcType.STRING, argv0));
         builtInScope.addVariable(new BuiltInConstant("ARGS", TalcType.LIST_OF_STRING, args));

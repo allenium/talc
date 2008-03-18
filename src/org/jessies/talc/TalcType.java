@@ -62,9 +62,9 @@ public class TalcType {
         
         addClass(BOOL);
         
+        addConstructor(FILE, new BuiltInFunction("file", Arrays.asList("filename"), Arrays.asList(TalcType.STRING), TalcType.FILE));
         addMemberFunction(FILE, new BuiltInFunction("append", Arrays.asList("content"), Arrays.asList(TalcType.STRING), TalcType.VOID));
         addMemberFunction(FILE, new BuiltInFunction("exists", TalcType.BOOL));
-        addMemberFunction(FILE, new Functions.File_file());
         addMemberFunction(FILE, new BuiltInFunction("is_directory", TalcType.BOOL));
         addMemberFunction(FILE, new BuiltInFunction("is_executable", TalcType.BOOL));
         addMemberFunction(FILE, new BuiltInFunction("mkdir", TalcType.BOOL));
@@ -79,10 +79,11 @@ public class TalcType {
         addMemberFunction(INT, new BuiltInFunction("signum", TalcType.INT));
         addMemberFunction(INT, new BuiltInFunction("to_base", Arrays.asList("base"), Arrays.asList(TalcType.INT), TalcType.STRING));
         addMemberFunction(INT, new BuiltInFunction("to_char", TalcType.STRING));
-        addMemberFunction(INT, new Functions.Numeric_to_i());
-        addMemberFunction(INT, new Functions.Numeric_to_r());
+        addMemberFunction(INT, new BuiltInFunction("to_i", TalcType.INT));
+        addMemberFunction(INT, new BuiltInFunction("to_r", TalcType.REAL));
         addClass(INT);
         
+        addConstructor(LIST_OF_T, new BuiltInFunction("list", TalcType.LIST_OF_T));
         addMemberFunction(LIST_OF_T, new BuiltInFunction("__get_item__", Arrays.asList("index"), Arrays.asList(TalcType.INT), TalcType.T));
         addMemberFunction(LIST_OF_T, new BuiltInFunction("__set_item__", Arrays.asList("index", "value"), Arrays.asList(TalcType.INT, TalcType.T), TalcType.T));
         addMemberFunction(LIST_OF_T, new BuiltInFunction("add_all", Arrays.asList("others"), Arrays.asList(TalcType.LIST_OF_T), TalcType.LIST_OF_T));
@@ -91,7 +92,6 @@ public class TalcType {
         addMemberFunction(LIST_OF_T, new BuiltInFunction("is_empty", TalcType.BOOL));
         addMemberFunction(LIST_OF_T, new BuiltInFunction("join", Arrays.asList("separator"), Arrays.asList(TalcType.STRING), TalcType.STRING));
         addMemberFunction(LIST_OF_T, new BuiltInFunction("length", TalcType.INT));
-        addMemberFunction(LIST_OF_T, new Functions.List_list());
         addMemberFunction(LIST_OF_T, new BuiltInFunction("peek_back", TalcType.T));
         addMemberFunction(LIST_OF_T, new BuiltInFunction("peek_front", TalcType.T));
         addMemberFunction(LIST_OF_T, new BuiltInFunction("pop_back", TalcType.T));
@@ -109,6 +109,7 @@ public class TalcType {
         LIST_OF_V = LIST_OF_T.duplicateWithDifferentKeyType(V);
         addClass(LIST_OF_T);
         
+        addConstructor(MAP_OF_K_V, new BuiltInFunction("map", TalcType.MAP_OF_K_V));
         addMemberFunction(MAP_OF_K_V, new BuiltInFunction("__get_item__", Arrays.asList("key"), Arrays.asList(TalcType.K), TalcType.V));
         addMemberFunction(MAP_OF_K_V, new BuiltInFunction("__set_item__", Arrays.asList("key", "value"), Arrays.asList(TalcType.K, TalcType.V), TalcType.V));
         addMemberFunction(MAP_OF_K_V, new BuiltInFunction("clear", TalcType.MAP_OF_K_V));
@@ -116,7 +117,6 @@ public class TalcType {
         addMemberFunction(MAP_OF_K_V, new BuiltInFunction("has_value", Arrays.asList("value"), Arrays.asList(TalcType.V), TalcType.BOOL));
         addMemberFunction(MAP_OF_K_V, new BuiltInFunction("keys", TalcType.LIST_OF_K));
         addMemberFunction(MAP_OF_K_V, new BuiltInFunction("length", TalcType.INT));
-        addMemberFunction(MAP_OF_K_V, new Functions.Map_map());
         addMemberFunction(MAP_OF_K_V, new BuiltInFunction("remove", Arrays.asList("key"), Arrays.asList(TalcType.K), TalcType.MAP_OF_K_V));
         addMemberFunction(MAP_OF_K_V, new BuiltInFunction("values", TalcType.LIST_OF_V));
         addClass(MAP_OF_K_V);
@@ -130,8 +130,8 @@ public class TalcType {
         addMemberFunction(REAL, new BuiltInFunction("logE", TalcType.REAL));
         addMemberFunction(REAL, new BuiltInFunction("signum", TalcType.REAL));
         addMemberFunction(REAL, new BuiltInFunction("sqrt", TalcType.REAL));
-        addMemberFunction(REAL, new Functions.Numeric_to_i());
-        addMemberFunction(REAL, new Functions.Numeric_to_r());
+        addMemberFunction(REAL, new BuiltInFunction("to_i", TalcType.INT));
+        addMemberFunction(REAL, new BuiltInFunction("to_r", TalcType.REAL));
         addClass(REAL);
         
         addMemberFunction(STRING, new BuiltInFunction("contains", Arrays.asList("substring"), Arrays.asList(TalcType.STRING), TalcType.BOOL));
@@ -220,6 +220,11 @@ public class TalcType {
     
     public static void addClass(TalcType t) {
         documentedTypes.put(t.name, t);
+    }
+    
+    private static void addConstructor(TalcType type, AstNode.FunctionDefinition f) {
+        f.markAsConstructor();
+        addMemberFunction(type, f);
     }
     
     private static void addMemberFunction(TalcType type, AstNode.FunctionDefinition f) {
