@@ -194,6 +194,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         // Their initializers should appear at the start of the constructor.
         for (AstNode.VariableDefinition builtInVariableDefinition : Scope.builtInVariableDefinitions()) {
             builtInVariableDefinition.accept(this);
+            popAnythingLeftBy(builtInVariableDefinition);
         }
         
         // ListValue result = new ListValue();
