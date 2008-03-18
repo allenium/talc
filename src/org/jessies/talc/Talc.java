@@ -46,7 +46,7 @@ public class Talc {
             text += ";";
         }
         
-        List<Object> values = parseAndEvaluate(null, new ListValue(), new Lexer(text));
+        List<Object> values = parseAndEvaluate(null, new String[0], new Lexer(text));
         StringBuilder result = new StringBuilder();
         for (Object value : values) {
             result.append(value);
@@ -70,14 +70,14 @@ public class Talc {
         }
     }
     
-    private List<Object> parseAndEvaluate(StringValue argv0, ListValue args, Lexer lexer) {
+    private List<Object> parseAndEvaluate(StringValue argv0, String[] args, Lexer lexer) {
         // 1. Parse.
         long parse0 = System.nanoTime();
         List<AstNode> ast = new Parser(lexer).parse();
         reportTime("parsing", System.nanoTime() - parse0);
         
         // 1a. Insert values for built-in constants.
-        Scope.initGlobalScope(argv0, args);
+        Scope.initGlobalScope(argv0);
         
         // 2. Compile-time checking.
         // 2a. Set up the symbol table.
@@ -103,8 +103,7 @@ public class Talc {
         long execution0 = System.nanoTime();
         try {
             Class<?> generatedClass = loader.getClass("GeneratedClass");
-            Object program = generatedClass.getConstructor(new Class[0]).newInstance();
-            //generatedClass.getMethod("main").invoke(program);
+            generatedClass.getMethod("main", String[].class).invoke(null, (Object) args);
         } catch (Throwable th) {
             th.printStackTrace();
         }
@@ -138,12 +137,12 @@ public class Talc {
     
     private void parseArguments(String[] args) throws IOException {
         String scriptFilename = null;
-        ListValue scriptArgs = new ListValue();
+        ArrayList<String> scriptArgs = new ArrayList<String>();
         boolean inScriptArgs = false;
         boolean didSomethingUseful = false;
         for (int i = 0; i < args.length; ++i) {
             if (inScriptArgs) {
-                scriptArgs.push_back(new StringValue(args[i]));
+                scriptArgs.add(args[i]);
             } else if (args[i].equals("--copyright")) {
                 System.out.println("talc - Copyright (C) 2007-2008 Elliott Hughes.");
                 System.out.println("ASM bytecode library copyright (C) 2000-2007 INRIA, France Telecom.");
@@ -175,7 +174,7 @@ public class Talc {
                 didSomethingUseful = true;
             } else if (args[i].equals("-e")) {
                 String expression = args[++i];
-                parseAndEvaluate(null, new ListValue(), new Lexer(expression));
+                parseAndEvaluate(null, new String[0], new Lexer(expression));
                 didSomethingUseful = true;
             } else if (args[i].equals("--")) {
                 inScriptArgs = true;
@@ -194,7 +193,7 @@ public class Talc {
                 die("no script filename supplied");
             }
         }
-        parseAndEvaluate(new StringValue(scriptFilename), scriptArgs, new Lexer(new File(scriptFilename)));
+        parseAndEvaluate(new StringValue(scriptFilename), scriptArgs.toArray(new String[scriptArgs.size()]), new Lexer(new File(scriptFilename)));
     }
     
     private static void die(String message) {

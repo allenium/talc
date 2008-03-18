@@ -72,7 +72,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     // The method we're currently emitting code for (which may or may not be globalMethod).
     private GeneratorAdapter mg;
     
-    private int nextLocal = 1; // FIXME: this is 1 because we know we generate a non-static method first.
+    private int nextLocal = -1;
     
     private class JvmLocalVariableAccessor implements VariableAccessor {
         private int localSlot;
@@ -155,6 +155,13 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         
         cv.visit(Opcodes.V1_5, Opcodes.ACC_PUBLIC, "GeneratedClass", null, "java/lang/Object", null);
         
+        // It's convenient to be able to run the class, so we can point an arbitrary JVM at it to see what it thinks.
+        // To enable that, generate a "public static void main(String[] args)" method.
+        mg = new GeneratorAdapter(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, Method.getMethod("void main(String[])"), null, null, cv);
+        mg.visitCode();
+        emitMainMethod();
+        mg.endMethod();
+        
         // Create the implicit constructor.
         Method m = Method.getMethod("void <init>()");
         mg = globalMethod = new GeneratorAdapter(Opcodes.ACC_PUBLIC, m, null, null, cv);
@@ -162,11 +169,8 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         mg.loadThis();
         mg.invokeConstructor(javaLangObjectType, m);
         
-        // Create the static fields corresponding to the built-in variables.
-        // Their initializers should appear at the start of the constructor.
-        for (AstNode.VariableDefinition builtInVariableDefinition : Scope.builtInVariableDefinitions()) {
-            builtInVariableDefinition.accept(this);
-        }
+        // We're in a non-static method, so local 0 is taken by 'this'.
+        nextLocal = 1;
         
         // Now generate code for the user's global-scope code.
         for (AstNode node : ast) {
@@ -176,16 +180,66 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         mg.returnValue();
         mg.endMethod();
         
-        // It's convenient to be able to run the class, so we can point an arbitrary JVM at it to see what it thinks.
-        // FIXME: should we wire up the passed-in arguments as ARGV?
-        mg = new GeneratorAdapter(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, Method.getMethod("void main(String[])"), null, null, cv);
-        mg.visitCode();
+        cv.visitEnd();
+    }
+    
+    private void emitMainMethod() {
+        // Our local variable slots.
+        int argsLocal = 0; // (String[] args)
+        int listLocal = 1; // ListValue list;
+        int iLocal = 2;    // int i;
+        nextLocal = 3;
+        
+        // Create the static fields corresponding to the built-in variables.
+        // Their initializers should appear at the start of the constructor.
+        for (AstNode.VariableDefinition builtInVariableDefinition : Scope.builtInVariableDefinitions()) {
+            builtInVariableDefinition.accept(this);
+        }
+        
+        // ListValue result = new ListValue();
+        mg.newInstance(listValueType);
+        mg.dup();
+        mg.invokeConstructor(listValueType, Method.getMethod("void <init>()"));
+        mg.visitVarInsn(Opcodes.ASTORE, listLocal);
+        
+        // int i = 0;
+        mg.push(0);
+        mg.visitVarInsn(Opcodes.ISTORE, iLocal);
+        // head:
+        Label headLabel = mg.newLabel();
+        Label doneLabel = mg.newLabel();
+        mg.mark(headLabel);
+        // if (i >= args.length) goto done;
+        mg.visitVarInsn(Opcodes.ILOAD, iLocal);
+        mg.visitVarInsn(Opcodes.ALOAD, argsLocal);
+        mg.arrayLength();
+        mg.ifICmp(GeneratorAdapter.GE, doneLabel);
+        // new StringValue(args[i])
+        mg.newInstance(stringValueType);
+        mg.dup();
+        mg.visitVarInsn(Opcodes.ALOAD, argsLocal);
+        mg.visitVarInsn(Opcodes.ILOAD, iLocal);
+        mg.visitInsn(Opcodes.AALOAD);
+        mg.invokeConstructor(stringValueType, Method.getMethod("void <init>(String)"));
+        // list.push_back(...);
+        mg.visitVarInsn(Opcodes.ALOAD, listLocal);
+        mg.swap();
+        mg.invokeVirtual(listValueType, Method.getMethod("org.jessies.talc.ListValue push_back(java.lang.Object)"));
+        mg.pop();
+        mg.visitIincInsn(iLocal, 1);
+        mg.goTo(headLabel);
+        // done:
+        mg.mark(doneLabel);
+        
+        // ARGS = list;
+        mg.visitVarInsn(Opcodes.ALOAD, listLocal);
+        mg.putStatic(generatedClassType, "ARGS", listValueType);
+        
+        // new GeneratedClass();
         mg.newInstance(generatedClassType);
         mg.invokeConstructor(generatedClassType, Method.getMethod("void <init>()"));
-        mg.returnValue();
-        mg.endMethod();
         
-        cv.visitEnd();
+        mg.returnValue();
     }
     
     public Void visitBinaryOperator(AstNode.BinaryOperator binOp) {
@@ -415,31 +469,6 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
             mg.dup();
             mg.push(constant.constant().toString());
             mg.invokeConstructor(stringValueType, Method.getMethod("void <init>(String)"));
-        } else if (constantType.rawName().equals("list")) {
-            // FIXME: this is a hack to support the ARGS built-in global uniformly between the interpreter and compiler.
-            // A side-effect of this hack is that ARGS will have been hard-wired in any generated class stored on disk.
-            // This code (or code like it) should be in our generated "main".
-            // Maybe then we should consider calling the generated code via "main" rather than by constructing a new instance?
-            
-            // ListValue result = new ListValue();
-            mg.newInstance(listValueType);
-            mg.dup();
-            mg.invokeConstructor(listValueType, Method.getMethod("void <init>()"));
-            
-            ListValue list = (ListValue) constant.constant();
-            int max = list.length().intValue();
-            for (int i = 0; i < max; ++i) {
-                mg.dup();
-                
-                // new StringValue(ARGS[i])
-                mg.newInstance(stringValueType);
-                mg.dup();
-                mg.push(list.__get_item__(new IntegerValue(i)).toString());
-                mg.invokeConstructor(stringValueType, Method.getMethod("void <init>(String)"));
-                
-                // result.push_back(...);
-                mg.invokeVirtual(listValueType, Method.getMethod("org.jessies.talc.ListValue push_back(java.lang.Object)"));
-            }
         } else {
             throw new TalcError(constant, "don't know how to generate code for constants of type " + constantType);
         }
