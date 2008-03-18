@@ -25,12 +25,4 @@ public abstract class BuiltInFunction extends AstNode.FunctionDefinition {
     public BuiltInFunction(String functionName, List<String> formalParameterNames, List<TalcType> formalParameterTypes, TalcType returnType) {
         super(null, functionName, formalParameterNames, formalParameterTypes, returnType, AstNode.Block.EMPTY_BLOCK);
     }
-    
-    // Step in at invocation time and do what we have to do.
-    @Override
-    public Object invoke(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
-        return invokeBuiltIn(evaluator, instance, arguments);
-    }
-    
-    public abstract Object invokeBuiltIn(AstEvaluator evaluator, Object instance, AstNode[] arguments);
 }

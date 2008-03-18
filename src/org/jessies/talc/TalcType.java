@@ -333,10 +333,6 @@ public class TalcType {
         return members;
     }
     
-    public Object newInstance(AstEvaluator evaluator) {
-        return members().initializeNewInstance(new UserDefinedClassValue(this), evaluator);
-    }
-    
     public boolean equals(Object o) {
         if (this == o) {
             return true;

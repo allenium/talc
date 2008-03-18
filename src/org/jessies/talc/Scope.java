@@ -51,15 +51,6 @@ public class Scope {
         variables.put(v.identifier(), v);
     }
     
-    public UserDefinedClassValue initializeNewInstance(UserDefinedClassValue instance, AstEvaluator evaluator) {
-        if (variables != null) {
-            for (AstNode.VariableDefinition var : variables.values()) {
-                instance.putField(var.identifier(), var.initializer().accept(evaluator));
-            }
-        }
-        return instance;
-    }
-    
     public AstNode.FunctionDefinition findFunction(String name) {
         if (functions != null) {
             AstNode.FunctionDefinition f = functions.get(name);

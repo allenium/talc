@@ -552,11 +552,6 @@ public abstract class AstNode {
             return body;
         }
         
-        public Object invoke(AstEvaluator evaluator, Object instance, AstNode[] arguments) {
-            // FIXME: this is a bit of a hack. It would be nicer if we didn't "evaluate" functions by putting them in an Environment.
-            return evaluator.invokeFunction(this, instance, arguments);
-        }
-        
         public String signature() {
             StringBuilder result = new StringBuilder();
             result.append(functionName);

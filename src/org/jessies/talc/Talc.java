@@ -25,7 +25,6 @@ public class Talc {
     private static final boolean[] debuggingFlags = new boolean[127];
     private static final String[] debuggingFlagNames = new String[127];
     static {
-        debuggingFlagNames['c'] = "turns on the JVM bytecode compiler";
         debuggingFlagNames['i'] = "shows each inferred type as it's fixed up";
         debuggingFlagNames['l'] = "shows each token returned by the lexer";
         debuggingFlagNames['p'] = "shows information about parsing as it progresses, and the AST for each completed parse";
@@ -93,18 +92,6 @@ public class Talc {
         // 2d. Simplification.
         AstSimplifier simplifier = new AstSimplifier(ast);
         reportTime("simplification", System.nanoTime() - simplifier.creationTime());
-        
-        if (Talc.debugging('c') == false) {
-            long execution0 = System.nanoTime();
-            Environment rho = new Environment();
-            AstEvaluator evaluator = new AstEvaluator(rho);
-            ArrayList<Object> result = new ArrayList<Object>();
-            for (AstNode node : ast) {
-                result.add(node.accept(evaluator));
-            }
-            reportTime("interpretation", System.nanoTime() - execution0);
-            return result;
-        }
         
         // 3. Byte-code generation.
         long codeGeneration0 = System.nanoTime();

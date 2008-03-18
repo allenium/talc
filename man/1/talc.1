@@ -13,7 +13,7 @@ Talc offers broad C, C++, and Java expression compatibility where possible, with
 Talc's features are best understood in comparison to other scripting languages:
 .TP
 .B "Run-time compiled"
-Talc is a compiled language, but you don't have to recompile programs before executing them. From the user's perspective, it's interpreted, but behind the scenes, the interpreter works by compiling to JVM bytecode. This process is very fast, and the short time it takes is quickly made up by the performance of the compiled code, which is much faster than the old interpreter.
+Talc is a compiled language, but you don't have to recompile programs before executing them. From the user's perspective, it's interpreted, but behind the scenes, the interpreter works by compiling to JVM bytecode. This process is very fast, and the short time it takes is quickly made up by the performance of the compiled code, which is much faster than the old AST-walking interpreter.
 .TP
 .B "Variables have types (static typing)"
 Variables (rather than just values) have associated types. Consequently, it has stronger compile time checking, and most errors are found earlier and quicker, and with less need for testing.
@@ -310,7 +310,7 @@ There are a few global variables:
 The name of the invoked script.
 .TP
 .B ARGS: final list<string>
-The arguments to the script. Arguments to the interpreter itself aren't visible to the script.
+The arguments to the script. Arguments to Talc itself aren't visible to the script.
 .TP
 .B FILE_SEPARATOR: final string
 The underlying platform's native filename component separator. (On Unix, this is "/"; Windows uses "\\".)
@@ -324,7 +324,7 @@ There are a handful of global functions:
 Captures the output of the given command as a string.
 .TP
 .B exit(status: int) : void
-Exits the interpreter, reporting the given status to the parent process.
+Exits the running program, reporting the given status to the parent process.
 .TP
 .B getenv(name: string) : string
 Returns the value of the given environment variable, or null.
