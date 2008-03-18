@@ -20,9 +20,18 @@ package org.jessies.talc;
 
 import java.util.*;
 
-public abstract class BuiltInFunction extends AstNode.FunctionDefinition {
-    // Pretend that built-in functions are user-defined functions with empty bodies, so they take advantage of the normal compile-time checks.
+/**
+ * Lets us pretend that built-in functions are user-defined functions with
+ * empty bodies, so they take advantage of the normal compile-time checks.
+ */ 
+public class BuiltInFunction extends AstNode.FunctionDefinition {
+    // The full monty: a function with a name, parameters, and a return type.
     public BuiltInFunction(String functionName, List<String> formalParameterNames, List<TalcType> formalParameterTypes, TalcType returnType) {
         super(null, functionName, formalParameterNames, formalParameterTypes, returnType, AstNode.Block.EMPTY_BLOCK);
+    }
+    
+    // A common special case: a function with no parameters.
+    public BuiltInFunction(String functionName, TalcType returnType) {
+        this(functionName, Collections.<String>emptyList(), Collections.<TalcType>emptyList(), returnType);
     }
 }
