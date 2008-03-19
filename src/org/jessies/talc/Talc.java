@@ -27,6 +27,7 @@ public class Talc {
     static {
         debuggingFlagNames['i'] = "shows each inferred type as it's fixed up";
         debuggingFlagNames['l'] = "shows each token returned by the lexer";
+        debuggingFlagNames['n'] = "doesn't execute the generated code";
         debuggingFlagNames['p'] = "shows information about parsing as it progresses, and the AST for each completed parse";
         debuggingFlagNames['t'] = "shows timing information for each phase of compilation/execution";
         debuggingFlagNames['T'] = "shows information helpful when debugging the type checker";
@@ -100,6 +101,10 @@ public class Talc {
         reportTime("code generation", System.nanoTime() - codeGeneration0);
         
         // 4. Execution.
+        if (Talc.debugging('n')) {
+            System.err.println("[talc] (not executing generated code because of -D n.)");
+            return null;
+        }
         long execution0 = System.nanoTime();
         try {
             Class<?> generatedClass = loader.getClass("GeneratedClass");
