@@ -19,16 +19,17 @@
 package org.jessies.talc;
 
 public class RealValue implements NumericValue {
+    public static RealValue ZERO = new RealValue(0.0);
     public static RealValue ONE = new RealValue(1.0);
     
-    private Double value;
+    private double value;
     
     public RealValue(String digits) {
-        this.value = new Double(digits);
+        this.value = Double.parseDouble(digits);
     }
     
     public RealValue(double value) {
-        this.value = new Double(value);
+        this.value = value;
     }
     
     public RealValue abs() {
@@ -36,31 +37,31 @@ public class RealValue implements NumericValue {
     }
     
     public NumericValue add(NumericValue rhs) {
-        return new RealValue(value.doubleValue() + ((RealValue) rhs).value.doubleValue());
+        return new RealValue(value + ((RealValue) rhs).value);
     }
     
     public NumericValue subtract(NumericValue rhs) {
-        return new RealValue(value.doubleValue() - ((RealValue) rhs).value.doubleValue());
+        return new RealValue(value - ((RealValue) rhs).value);
     }
     
     public NumericValue multiply(NumericValue rhs) {
-        return new RealValue(value.doubleValue() * ((RealValue) rhs).value.doubleValue());
+        return new RealValue(value * ((RealValue) rhs).value);
     }
     
     public NumericValue divide(NumericValue rhs) {
-        return new RealValue(value.doubleValue() / ((RealValue) rhs).value.doubleValue());
+        return new RealValue(value / ((RealValue) rhs).value);
     }
     
     public NumericValue pow(NumericValue rhs) {
-        return new RealValue(Math.pow(value.doubleValue(), ((RealValue) rhs).doubleValue()));
+        return new RealValue(Math.pow(value, ((RealValue) rhs).value));
     }
     
     public NumericValue negate() {
-        return new RealValue(new Double(-value.doubleValue()));
+        return new RealValue(-value);
     }
     
     public int compareTo(NumericValue rhs) {
-        return value.compareTo(((RealValue) rhs).value);
+        return Double.compare(value, ((RealValue) rhs).value);
     }
     
     public RealValue log(RealValue base) {
@@ -85,21 +86,32 @@ public class RealValue implements NumericValue {
     
     public boolean equals(Object o) {
         if (o instanceof RealValue) {
-            return value.equals(((RealValue) o).value);
+            return Double.doubleToLongBits(value) == Double.doubleToLongBits(((RealValue) o).value);
         }
         return false;
     }
     
+    // Match java.lang.Double's behavior.
     public int hashCode() {
-        return value.hashCode();
+        long bits = Double.doubleToLongBits(value);
+        return (int)(bits ^ (bits >>> 32));
     }
     
     public double doubleValue() {
-        return value.doubleValue();
+        return value;
+    }
+    
+    public static RealValue valueOf(double d) {
+        if (d == 0.0) {
+            return ZERO;
+        } else if (d == 1.0) {
+            return ONE;
+        }
+        return new RealValue(d);
     }
     
     public IntegerValue to_i() {
-        return new IntegerValue((long) value.doubleValue());
+        return new IntegerValue((long) value);
     }
     
     public RealValue to_r() {
@@ -107,7 +119,7 @@ public class RealValue implements NumericValue {
     }
     
     public String toString() {
-        return value.toString();
+        return String.valueOf(value);
     }
     
     public TalcType type() {
