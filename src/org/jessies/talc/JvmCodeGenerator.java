@@ -155,6 +155,11 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         
         cv.visit(Opcodes.V1_5, Opcodes.ACC_PUBLIC, "GeneratedClass", null, "java/lang/Object", null);
         
+        globalMethod = mg = new GeneratorAdapter(Opcodes.ACC_STATIC, new Method("<clinit>", Type.VOID_TYPE, new Type[0]), null, null, cv);
+        mg.visitCode();
+        emitClassInitializer();
+        mg.endMethod();
+        
         // It's convenient to be able to run the class, so we can point an arbitrary JVM at it to see what it thinks.
         // To enable that, generate a "public static void main(String[] args)" method.
         globalMethod = mg = new GeneratorAdapter(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, Method.getMethod("void main(String[])"), null, null, cv);
@@ -165,57 +170,26 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         cv.visitEnd();
     }
     
-    private void emitMainMethod(List<AstNode> ast) {
-        // Our local variable slots.
-        int argsLocal = 0; // (String[] args)
-        int listLocal = 1; // ListValue list;
-        int iLocal = 2;    // int i;
-        nextLocal = 3;
-        
+    private void emitClassInitializer() {
         // Create the static fields corresponding to the built-in variables.
         // Their initializers should appear at the start of the constructor.
         for (AstNode.VariableDefinition builtInVariableDefinition : Scope.builtInVariableDefinitions()) {
             builtInVariableDefinition.accept(this);
             popAnythingLeftBy(builtInVariableDefinition);
         }
+        mg.returnValue();
+    }
+    
+    private void emitMainMethod(List<AstNode> ast) {
+        // main has a (String[] args) argument.
+        int argsLocal = 0;
+        nextLocal = 1;
         
-        // ListValue result = new ListValue();
+        // ARGS = new ListValue(args);
         mg.newInstance(listValueType);
         mg.dup();
-        mg.invokeConstructor(listValueType, Method.getMethod("void <init>()"));
-        mg.visitVarInsn(Opcodes.ASTORE, listLocal);
-        
-        // int i = 0;
-        mg.push(0);
-        mg.visitVarInsn(Opcodes.ISTORE, iLocal);
-        // head:
-        Label headLabel = mg.newLabel();
-        Label doneLabel = mg.newLabel();
-        mg.mark(headLabel);
-        // if (i >= args.length) goto done;
-        mg.visitVarInsn(Opcodes.ILOAD, iLocal);
         mg.visitVarInsn(Opcodes.ALOAD, argsLocal);
-        mg.arrayLength();
-        mg.ifICmp(GeneratorAdapter.GE, doneLabel);
-        // new StringValue(args[i])
-        mg.newInstance(stringValueType);
-        mg.dup();
-        mg.visitVarInsn(Opcodes.ALOAD, argsLocal);
-        mg.visitVarInsn(Opcodes.ILOAD, iLocal);
-        mg.visitInsn(Opcodes.AALOAD);
-        mg.invokeConstructor(stringValueType, Method.getMethod("void <init>(String)"));
-        // list.push_back(...);
-        mg.visitVarInsn(Opcodes.ALOAD, listLocal);
-        mg.swap();
-        mg.invokeVirtual(listValueType, Method.getMethod("org.jessies.talc.ListValue push_back(java.lang.Object)"));
-        mg.pop();
-        mg.visitIincInsn(iLocal, 1);
-        mg.goTo(headLabel);
-        // done:
-        mg.mark(doneLabel);
-        
-        // ARGS = list;
-        mg.visitVarInsn(Opcodes.ALOAD, listLocal);
+        mg.invokeConstructor(listValueType, new Method("<init>", Type.VOID_TYPE, new Type[] { Type.getType(String[].class) }));
         mg.putStatic(generatedClassType, "ARGS", listValueType);
         
         // Compile the user code.
