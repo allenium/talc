@@ -157,33 +157,15 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         
         // It's convenient to be able to run the class, so we can point an arbitrary JVM at it to see what it thinks.
         // To enable that, generate a "public static void main(String[] args)" method.
-        mg = new GeneratorAdapter(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, Method.getMethod("void main(String[])"), null, null, cv);
+        globalMethod = mg = new GeneratorAdapter(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, Method.getMethod("void main(String[])"), null, null, cv);
         mg.visitCode();
-        emitMainMethod();
-        mg.endMethod();
-        
-        // Create the implicit constructor.
-        Method m = Method.getMethod("void <init>()");
-        mg = globalMethod = new GeneratorAdapter(Opcodes.ACC_PUBLIC, m, null, null, cv);
-        mg.visitCode();
-        mg.loadThis();
-        mg.invokeConstructor(javaLangObjectType, m);
-        
-        // We're in a non-static method, so local 0 is taken by 'this'.
-        nextLocal = 1;
-        
-        // Now generate code for the user's global-scope code.
-        for (AstNode node : ast) {
-            node.accept(this);
-        }
-        
-        mg.returnValue();
+        emitMainMethod(ast);
         mg.endMethod();
         
         cv.visitEnd();
     }
     
-    private void emitMainMethod() {
+    private void emitMainMethod(List<AstNode> ast) {
         // Our local variable slots.
         int argsLocal = 0; // (String[] args)
         int listLocal = 1; // ListValue list;
@@ -236,9 +218,10 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         mg.visitVarInsn(Opcodes.ALOAD, listLocal);
         mg.putStatic(generatedClassType, "ARGS", listValueType);
         
-        // new GeneratedClass();
-        mg.newInstance(generatedClassType);
-        mg.invokeConstructor(generatedClassType, Method.getMethod("void <init>()"));
+        // Compile the user code.
+        for (AstNode node : ast) {
+            node.accept(this);
+        }
         
         mg.returnValue();
     }
@@ -461,10 +444,8 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
             mg.push(10);
             mg.invokeConstructor(integerValueType, Method.getMethod("void <init>(String, int)"));
         } else if (constantType == TalcType.REAL) {
-            mg.newInstance(realValueType);
-            mg.dup();
             mg.push(((RealValue) constant.constant()).doubleValue());
-            mg.invokeConstructor(realValueType, Method.getMethod("void <init>(double)"));
+            mg.invokeStatic(realValueType, new Method("valueOf", realValueType, new Type[] { Type.DOUBLE_TYPE }));
         } else if (constantType == TalcType.STRING) {
             mg.newInstance(stringValueType);
             mg.dup();
