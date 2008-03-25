@@ -20,8 +20,8 @@ package org.jessies.talc;
 
 import java.util.regex.*;
 
-public final class StringValue {
-    private StringValue() {
+public final class StringFunctions {
+    private StringFunctions() {
     }
     
     public static BooleanValue contains(String s, String substring) {

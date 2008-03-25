@@ -41,9 +41,9 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     private final Type matchValueType = Type.getType(MatchValue.class);
     private final Type numericValueType = Type.getType(NumericValue.class);
     private final Type realValueType = Type.getType(RealValue.class);
-    private final Type stringValueType = Type.getType(StringValue.class);
     
     private final Type orgJessiesTalcFunctionsType = Type.getType(Functions.class);
+    private final Type stringFunctionsType = Type.getType(StringFunctions.class);
     
     private final Type generatedClassType = Type.getType("LGeneratedClass;");
     
@@ -576,7 +576,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         Type proxyType = null;
         Type proxyFirstArgumentType = null;
         if (containingType == javaLangStringType) {
-            proxyType = stringValueType;
+            proxyType = stringFunctionsType;
             proxyFirstArgumentType = containingType;
         }
         
