@@ -88,8 +88,6 @@
 
 * [future] should the "for" initialization be as general as in similar languages? how can we do that without the hateful comma operator?
 
-* [future] remove StringValue in favor of java.lang.String. probably RealValue -> Double too. (no point throwing away even a little bit of performance unless having our "value" classes buys us something. the only thing i can think of that it buys us is somewhere we could put Functions.String_match and so forth. plus BooleanValue is more convenient than Boolean because we know there are only two instances and can compare them by identity.)
-
 LIBRARY
 
 http://www.ferite.org/ - quite nice; good documentation. future plans smelled of overcomplexificationing. wonder what it died of? and how Talc can avoid the same fate?
@@ -215,3 +213,11 @@ if (x.starts_with("/")) {
 * implementation: is it a mistake to generate the global code in the constructor? should it be in "main" instead? (or at least some kind of secondary static void method to keep the generated boilerplate of main distinct.)
 
 * implementation: ARGS might be cleaner if, at least internally, we could express a VariableDefinition with no initializer. maybe the other built-in variables would be better like that?
+
+* implementation: globals are very slow. moving X and Y inside the loop (!) in mandelbrot.talc makes it 5x faster. not all globals need to be represented as static fields: we could recognize ones that escape, and make the rest local to the generated global method, or we could recognize ones that aren't modified after initialization and turn them into constants (even without constant inlining or hand-made "constant pool", that's still a win).
+
+* implementation: should have an arbitrary-arity string concatenation AstNode. the simplifier should collect them up, and then the code generator can generate optimal code. (though the current simple scheme does pretty well. i wonder how long chains of string concatenation get in real-life code?)
+
+* implementation: we could replace RealValue with java.lang.Double but we'd need to put all the RealValue implementations of the NumericValue methods somewhere. more useful would be replacing LRealValue; with D. it's not too hard to treat "real" as a primitive double and call static (DD)D methods in RealValue (i've done it, as proof). the awkward bits would be __get_item__/__set_item__ and methods that would like to work on any numeric type (which is easy given the current plan of exposing NumericValue in the language, though that actually opens up a can of worms because of the potential for mixed-mode arithmetic).
+
+* implementation: BooleanValue is more convenient than Boolean because we know there are only two instances and can compare them by identity. given the price of getstatic, it might be worth investigating converting BooleanValue to I in generated loops and conditionals (where generated boilerplate is the consumer of the BooleanValue).
