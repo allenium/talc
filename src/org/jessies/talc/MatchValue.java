@@ -34,8 +34,8 @@ public class MatchValue {
         return false;
     }
     
-    public StringValue group(IntegerValue i) {
-        return new StringValue(matcher.group(i.intValue()));
+    public String group(IntegerValue i) {
+        return matcher.group(i.intValue());
     }
     
     public IntegerValue groupCount() {

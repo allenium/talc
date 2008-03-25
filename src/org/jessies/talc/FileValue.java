@@ -24,11 +24,11 @@ import java.nio.*;
 public class FileValue {
     private File file;
     
-    public FileValue(StringValue filename) {
-        this.file = new File(filename.toString());
+    public FileValue(String filename) {
+        this.file = new File(filename);
     }
     
-    public void append(StringValue content) {
+    public void append(String content) {
         writeOrAppend(content, true);
     }
     
@@ -52,7 +52,7 @@ public class FileValue {
         return BooleanValue.valueOf(file.mkdirs());
     }
     
-    public StringValue read() {
+    public String read() {
         // salma-hayek has a more sophisticated implementation (that copes with other charsets) but I'm still trying to avoid the dependency.
         try {
             DataInputStream dataInputStream = null;
@@ -61,7 +61,7 @@ public class FileValue {
                 dataInputStream = new DataInputStream(new FileInputStream(file));
                 ByteBuffer byteBuffer = ByteBuffer.wrap(new byte[(int) file.length()]);
                 dataInputStream.readFully(byteBuffer.array());
-                return new StringValue(new String(byteBuffer.array(), "UTF-8"));
+                return new String(byteBuffer.array(), "UTF-8");
             } finally {
                 if (dataInputStream != null) {
                     dataInputStream.close();
@@ -73,7 +73,7 @@ public class FileValue {
     }
     
     public ListValue read_lines() {
-        String contents = read().toString();
+        String contents = read();
         // The empty file clearly contains no lines but Java's split (unlike Ruby's) would give us a singleton array containing the empty string.
         // FIXME: should we modify Talc's "string.split" so this isn't necessary and users can just go "lines := f.read().split("\n");"?
         if (contents.length() == 0) {
@@ -84,23 +84,23 @@ public class FileValue {
     
     public FileValue realpath() {
         try {
-            return new FileValue(new StringValue(file.getCanonicalPath()));
+            return new FileValue(file.getCanonicalPath());
         } catch (IOException ex) {
             // FIXME: what do we want to do with errors?
             throw new RuntimeException(ex);
         }
     }
     
-    public void write(StringValue content) {
+    public void write(String content) {
         writeOrAppend(content, false);
     }
     
-    private void writeOrAppend(StringValue content, boolean shouldAppend) {
+    private void writeOrAppend(String content, boolean shouldAppend) {
         try {
             Writer out = null;
             try {
                 out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file, shouldAppend), "UTF-8"));
-                out.write(content.toString());
+                out.write(content);
             } finally {
                 if (out != null) {
                     out.close();

@@ -156,12 +156,12 @@ public class IntegerValue implements NumericValue {
         return value.toString();
     }
     
-    public StringValue to_base(IntegerValue base) {
-        return new StringValue(value.toString(base.intValue()));
+    public String to_base(IntegerValue base) {
+        return value.toString(base.intValue());
     }
     
-    public StringValue to_char() {
-        return new StringValue(String.valueOf((char) intValue()));
+    public String to_char() {
+        return String.valueOf((char) intValue());
     }
     
     public TalcType type() {

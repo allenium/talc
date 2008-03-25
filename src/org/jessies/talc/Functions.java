@@ -36,25 +36,24 @@ public class Functions {
         return BooleanValue.valueOf(!lhs.equals(rhs));
     }
     
-    public static StringValue backquote(StringValue command) {
-        ProcessBuilder processBuilder = new ProcessBuilder("bash", "-c", command.toString());
+    public static String backquote(String command) {
+        ProcessBuilder processBuilder = new ProcessBuilder("bash", "-c", command);
         StringWriter output = new StringWriter();
         IntegerValue status = runProcessBuilder(processBuilder, output);
         // FIXME: make the status available somehow.
-        return new StringValue(output.toString());
+        return output.toString();
     }
     
     public static void exit(IntegerValue status) {
         System.exit(status.intValue());
     }
     
-    public static StringValue getenv(StringValue name) {
-        String value = System.getenv(name.toString());
-        return (value != null) ? new StringValue(value) : null;
+    public static String getenv(String name) {
+        return System.getenv(name);
     }
     
     private static java.io.BufferedReader stdin; // FIXME: is there a better home for this?
-    public static StringValue gets() {
+    public static String gets() {
         // You might like the idea of using System.console() here, but it only works for /dev/tty.
         // It's pretty normal for scripts to work on redirected input, so System.console() is no good to us.
         String result = null;
@@ -66,7 +65,7 @@ public class Functions {
         } catch (java.io.IOException ex) {
             // FIXME: does swallowing the exception and returning null make sense?
         }
-        return (result != null) ? new StringValue(result) : null;
+        return result;
     }
     
     public static void print(Object value) {
@@ -115,8 +114,8 @@ public class Functions {
         return new IntegerValue(status);
     }
     
-    public static IntegerValue shell(StringValue command) {
-        ProcessBuilder processBuilder = new ProcessBuilder("bash", "-c", command.toString());
+    public static IntegerValue shell(String command) {
+        ProcessBuilder processBuilder = new ProcessBuilder("bash", "-c", command);
         return runProcessBuilder(processBuilder, System.out);
     }
     

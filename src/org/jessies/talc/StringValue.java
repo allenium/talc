@@ -20,87 +20,64 @@ package org.jessies.talc;
 
 import java.util.regex.*;
 
-public class StringValue {
-    private String value;
-    
-    public StringValue(String value) {
-        this.value = value;
+public final class StringValue {
+    private StringValue() {
     }
     
-    public StringValue(StringValue lhs, StringValue rhs) {
-        this(lhs.toString() + rhs.toString());
+    public static BooleanValue contains(String s, String substring) {
+        return BooleanValue.valueOf(s.contains(substring));
     }
     
-    public BooleanValue contains(StringValue substring) {
-        return BooleanValue.valueOf(value.contains(substring.value));
+    public static BooleanValue ends_with(String s, String suffix) {
+        return BooleanValue.valueOf(s.endsWith(suffix));
     }
     
-    public BooleanValue ends_with(StringValue suffix) {
-        return BooleanValue.valueOf(value.endsWith(suffix.value));
+    public static String escape_html(String s) {
+        return s.replace("&", "&amp;").replace("\"", "&quot;").replace(">", "&gt;").replace("<", "&lt;");
     }
     
-    public boolean equals(Object o) {
-        if (o instanceof StringValue) {
-            return value.equals(((StringValue) o).value);
-        }
-        return false;
+    public static String gsub(String s, String pattern, String replacement) {
+        return s.replaceAll(pattern, replacement);
     }
     
-    public StringValue escape_html() {
-        return new StringValue(value.replace("&", "&amp;").replace("\"", "&quot;").replace(">", "&gt;").replace("<", "&lt;"));
+    public static String lc(String s) {
+        return s.toLowerCase();
     }
     
-    public StringValue gsub(StringValue pattern, StringValue replacement) {
-        return new StringValue(value.replaceAll(pattern.value, replacement.value));
+    public static String lc_first(String s) {
+        return s.toLowerCase().substring(0, 1) + s.substring(1);
     }
     
-    public StringValue lc() {
-        return new StringValue(value.toLowerCase());
+    public static IntegerValue length(String s) {
+        return new IntegerValue(s.length());
     }
     
-    public StringValue lc_first() {
-        return new StringValue(value.toLowerCase().substring(0, 1) + value.substring(1));
-    }
-    
-    public IntegerValue length() {
-        return new IntegerValue(value.length());
-    }
-    
-    public MatchValue match(StringValue pattern) {
-        Pattern p = Pattern.compile(pattern.value);
-        Matcher m = p.matcher(value);
+    public static MatchValue match(String s, String pattern) {
+        Pattern p = Pattern.compile(pattern);
+        Matcher m = p.matcher(s);
         if (m.find()) {
             return new MatchValue(m);
         }
         return null;
     }
     
-    public int hashCode() {
-        return value.hashCode();
+    public static String replace(String s, String oldSubstring, String newSubstring) {
+        return s.replace(oldSubstring, newSubstring);
     }
     
-    public StringValue replace(StringValue oldSubstring, StringValue newSubstring) {
-        return new StringValue(value.replace(oldSubstring.value, newSubstring.value));
+    public static ListValue split(String s, String pattern) {
+        return new ListValue(s.split(pattern));
     }
     
-    public ListValue split(StringValue pattern) {
-        return new ListValue(value.split(pattern.value));
+    public static BooleanValue starts_with(String s, String prefix) {
+        return BooleanValue.valueOf(s.startsWith(prefix));
     }
     
-    public BooleanValue starts_with(StringValue prefix) {
-        return BooleanValue.valueOf(value.startsWith(prefix.value));
+    public static String sub(String s, String pattern, String replacement) {
+        return s.replaceFirst(pattern, replacement);
     }
     
-    public StringValue sub(StringValue pattern, StringValue replacement) {
-        return new StringValue(value.replaceFirst(pattern.value, replacement.value));
-    }
-    
-    public String toString() {
-        return value;
-    }
-    
-    public IntegerValue to_i() {
-        String s = value;
+    public static IntegerValue to_i(String s) {
         int base = 10;
         if (s.startsWith("0x")) {
             base = 16;
@@ -115,23 +92,19 @@ public class StringValue {
         return new IntegerValue(s, base);
     }
     
-    public RealValue to_r() {
-        return new RealValue(value);
+    public static RealValue to_r(String s) {
+        return new RealValue(s);
     }
     
-    public StringValue trim() {
-        return new StringValue(value.trim());
+    public static String trim(String s) {
+        return s.trim();
     }
     
-    public TalcType type() {
-        return TalcType.STRING;
+    public static String uc(String s) {
+        return s.toUpperCase();
     }
     
-    public StringValue uc() {
-        return new StringValue(value.toUpperCase());
-    }
-    
-    public StringValue uc_first() {
-        return new StringValue(value.toUpperCase().substring(0, 1) + value.substring(1));
+    public static String uc_first(String s) {
+        return s.toUpperCase().substring(0, 1) + s.substring(1);
     }
 }

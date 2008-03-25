@@ -124,7 +124,7 @@ public class Scope {
         return globalScope;
     }
     
-    public static void initGlobalScope(StringValue argv0) {
+    public static void initGlobalScope(String argv0) {
         builtInScope = new Scope(null);
         // Built-in functions.
         builtInScope.addFunction(new BuiltInFunction("backquote", Arrays.asList("command"), Arrays.asList(TalcType.STRING), TalcType.STRING));
@@ -139,8 +139,8 @@ public class Scope {
         // Built-in constants.
         builtInScope.addVariable(new BuiltInConstant("ARGV0", TalcType.STRING, argv0));
         builtInScope.addVariable(new BuiltInConstant("ARGS", TalcType.LIST_OF_STRING, null));
-        builtInScope.addVariable(new BuiltInConstant("FILE_SEPARATOR", TalcType.STRING, new StringValue(java.io.File.separator)));
-        builtInScope.addVariable(new BuiltInConstant("PATH_SEPARATOR", TalcType.STRING, new StringValue(java.io.File.pathSeparator)));
+        builtInScope.addVariable(new BuiltInConstant("FILE_SEPARATOR", TalcType.STRING, java.io.File.separator));
+        builtInScope.addVariable(new BuiltInConstant("PATH_SEPARATOR", TalcType.STRING, java.io.File.pathSeparator));
         
         // Note that we have to surround the built-in scope with a scope for user-defined globals.
         // Both things are "global", but it's important not to confuse the two.

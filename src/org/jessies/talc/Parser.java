@@ -660,7 +660,7 @@ public class Parser {
             lexer.nextToken();
             primary = constant;
         } else if (op == Token.STRING_LITERAL) {
-            AstNode constant = new AstNode.Constant(location, new StringValue(lexer.identifier()), TalcType.STRING);
+            AstNode constant = new AstNode.Constant(location, lexer.identifier(), TalcType.STRING);
             lexer.nextToken();
             primary = constant;
         } else if (op == Token.OPEN_BRACKET) {

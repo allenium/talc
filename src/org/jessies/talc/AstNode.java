@@ -216,7 +216,7 @@ public abstract class AstNode {
         }
         
         public String toString() {
-            if (constant instanceof StringValue) {
+            if (constant instanceof String) {
                 return "\"" + constant + "\"";
             }
             return (constant != null) ? constant.toString() : "null";

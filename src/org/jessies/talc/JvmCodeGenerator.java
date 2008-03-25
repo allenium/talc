@@ -48,6 +48,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     private final Type generatedClassType = Type.getType("LGeneratedClass;");
     
     private final Type javaLangObjectType = Type.getType(Object.class);
+    private final Type javaLangStringType = Type.getType(String.class);
     
     // We need the ability to track active loops to implement "break" and "continue".
     private static class LoopInfo { Label breakLabel, continueLabel; }
@@ -138,7 +139,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
             if (Talc.debugging('V')) {
                 String command = "java -cp /usr/share/java/bcel-5.2.jar:" + filename.getParent() + ":" + System.getProperty("java.class.path") + " org.apache.bcel.verifier.Verifier GeneratedClass";
                 System.err.println("talc: verifying with:\n" + "  " + command);
-                Functions.shell(new StringValue(command));
+                Functions.shell(command);
             }
         } catch (Exception ex) {
             System.err.println("talc: warning: couldn't write generated class file to \"" + filename + "\".");
@@ -260,11 +261,10 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     
     private void numericAddOrStringConcatenation(AstNode.BinaryOperator binOp) {
         if (binOp.type() == TalcType.STRING) {
-            mg.newInstance(stringValueType);
-            mg.dup();
+            // FIXME: should generalize to cope with arbitrary chains of concatenation (though probably above this level).
             binOp.lhs().accept(this);
             binOp.rhs().accept(this);
-            mg.invokeConstructor(stringValueType, Method.getMethod("void <init>(org.jessies.talc.StringValue, org.jessies.talc.StringValue)"));
+            mg.invokeVirtual(javaLangStringType, new Method("concat", javaLangStringType, new Type[] { javaLangStringType }));
         } else {
             invokeBinaryOp(binOp, numericValueType, "add");
         }
@@ -421,10 +421,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
             mg.push(((RealValue) constant.constant()).doubleValue());
             mg.invokeStatic(realValueType, new Method("valueOf", realValueType, new Type[] { Type.DOUBLE_TYPE }));
         } else if (constantType == TalcType.STRING) {
-            mg.newInstance(stringValueType);
-            mg.dup();
             mg.push(constant.constant().toString());
-            mg.invokeConstructor(stringValueType, Method.getMethod("void <init>(String)"));
         } else {
             throw new TalcError(constant, "don't know how to generate code for constants of type " + constantType);
         }
@@ -575,6 +572,14 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
             containingType = orgJessiesTalcFunctionsType;
         }
         
+        // FIXME: generalize this.
+        Type proxyType = null;
+        Type proxyFirstArgumentType = null;
+        if (containingType == javaLangStringType) {
+            proxyType = stringValueType;
+            proxyFirstArgumentType = containingType;
+        }
+        
         if (definition.isVarArgs()) {
             if (arguments.length == 1) {
                 arguments[0].accept(this);
@@ -592,15 +597,11 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
                 mg.invokeStatic(containingType, Method.getMethod("void " + functionName + " (java.lang.Object[])"));
             }
         } else {
-            Method method = methodForFunctionDefinition(definition);
             if (functionCall.instance() != null) {
                 if (functionName.equals("to_s")) {
                     // A special case: for Java compatibility to_s is toString underneath.
-                    mg.newInstance(stringValueType);
-                    mg.dup();
                     functionCall.instance().accept(this);
                     mg.invokeVirtual(javaLangObjectType, Method.getMethod("java.lang.String toString()"));
-                    mg.invokeConstructor(stringValueType, Method.getMethod("void <init>(java.lang.String)"));
                     return null;
                 } else {
                     functionCall.instance().accept(this);
@@ -615,12 +616,15 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
                 mg.dup();
             }
             
+            Method method = methodForFunctionDefinition(definition, proxyFirstArgumentType);
             Type[] methodArgumentTypes = method.getArgumentTypes();
             for (int i = 0; i < arguments.length; ++i) {
                 arguments[i].accept(this);
                 mg.checkCast(methodArgumentTypes[i]);
             }
-            if (functionCall.instance() != null) {
+            if (proxyType != null) {
+                mg.invokeStatic(proxyType, method);
+            } else if (functionCall.instance() != null) {
                 mg.invokeVirtual(containingType, method);
             } else if (definition.isConstructor()) {
                 mg.invokeConstructor(containingType, method);
@@ -654,7 +658,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         } else if (talcType == TalcType.REAL) {
             return realValueType;
         } else if (talcType == TalcType.STRING) {
-            return stringValueType;
+            return javaLangStringType;
         } else if (talcType == TalcType.VOID) {
             return Type.VOID_TYPE;
         } else if (talcType == TalcType.T || talcType == TalcType.K || talcType == TalcType.V) {
@@ -668,11 +672,22 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         }
     }
     
-    private Method methodForFunctionDefinition(AstNode.FunctionDefinition definition) {
+    /**
+     * Creates an ASM Method corresponding to the FunctionDefinition AstNode.
+     * If proxyFirstArgumentType is non-null, you intend to use the Method on
+     * a proxy class, which means it's static method, which means you need an
+     * extra first argument to take the place of "this", and proxyFirstArgumentType
+     * is the type of that argument, *not* the type of the class containing
+     * the method.
+     */
+    private Method methodForFunctionDefinition(AstNode.FunctionDefinition definition, Type proxyFirstArgumentType) {
         List<TalcType> talcTypes = definition.formalParameterTypes();
-        Type[] argumentTypes = new Type[talcTypes.size()];
-        for (int i = 0; i < argumentTypes.length; ++i) {
-            argumentTypes[i] = typeForTalcType(talcTypes.get(i));
+        ArrayList<Type> argumentTypes = new ArrayList<Type>(talcTypes.size());
+        if (proxyFirstArgumentType != null) {
+            argumentTypes.add(proxyFirstArgumentType);
+        }
+        for (TalcType talcType : talcTypes) {
+            argumentTypes.add(typeForTalcType(talcType));
         }
         String name;
         Type returnType;
@@ -683,11 +698,11 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
             name = definition.functionName();
             returnType = typeForTalcType(definition.returnType());
         }
-        return new Method(name, returnType, argumentTypes);
+        return new Method(name, returnType, argumentTypes.toArray(new Type[argumentTypes.size()]));
     }
     
     public Void visitFunctionDefinition(AstNode.FunctionDefinition functionDefinition) {
-        Method m = methodForFunctionDefinition(functionDefinition);
+        Method m = methodForFunctionDefinition(functionDefinition, null);
         mg = new GeneratorAdapter(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, m, null, null, cv);
         
         // FIXME: this should be 1 for non-static methods!

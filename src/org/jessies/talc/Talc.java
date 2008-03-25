@@ -71,7 +71,7 @@ public class Talc {
         }
     }
     
-    private List<Object> parseAndEvaluate(StringValue argv0, String[] args, Lexer lexer) {
+    private List<Object> parseAndEvaluate(String argv0, String[] args, Lexer lexer) {
         // 1. Parse.
         long parse0 = System.nanoTime();
         List<AstNode> ast = new Parser(lexer).parse();
@@ -198,7 +198,7 @@ public class Talc {
                 die("no script filename supplied");
             }
         }
-        parseAndEvaluate(new StringValue(scriptFilename), scriptArgs.toArray(new String[scriptArgs.size()]), new Lexer(new File(scriptFilename)));
+        parseAndEvaluate(scriptFilename, scriptArgs.toArray(new String[scriptArgs.size()]), new Lexer(new File(scriptFilename)));
     }
     
     private static void die(String message) {

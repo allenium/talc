@@ -30,7 +30,7 @@ public class ListValue {
     public ListValue(String[] strings) {
         list.ensureCapacity(strings.length);
         for (String string : strings) {
-            push_back(new StringValue(string));
+            push_back(string);
         }
     }
     
@@ -65,16 +65,15 @@ public class ListValue {
         return BooleanValue.valueOf(list.size() == 0);
     }
     
-    public StringValue join(StringValue separator) {
-        String separatorString = separator.toString();
+    public String join(String separator) {
         StringBuilder result = new StringBuilder();
         for (int i = 0; i < list.size(); ++i) {
             if (i > 0) {
-                result.append(separatorString);
+                result.append(separator);
             }
             result.append(list.get(i));
         }
-        return new StringValue(result.toString());
+        return result.toString();
     }
     
     public IntegerValue length() {
@@ -154,7 +153,7 @@ public class ListValue {
     public String toString() {
         StringBuilder result = new StringBuilder();
         result.append("[");
-        result.append(join(new StringValue(", ")));
+        result.append(join(", "));
         result.append("]");
         return result.toString();
     }
