@@ -67,8 +67,8 @@ public class Talc {
         if (Talc.debugging('t')) {
             double s = ns/1000000000.0;
             System.err.println("[talc] " + new java.text.DecimalFormat("#.####").format(s) + "s " + task);
-            // GCJ's String.format seems to be broken at the moment, preventing me from using this:
-            //System.err.println(String.format("%s took %.4f s", task, s);
+            // GNU Classpath's String.format seems to be broken at the moment, preventing me from using this:
+            //System.err.println(String.format("[talc] %.4fs %s", s, task));
         }
     }
     
