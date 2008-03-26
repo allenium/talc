@@ -23,20 +23,28 @@ import java.util.*;
 public class AstSimplifier implements AstVisitor<AstNode> {
     private long creationTime;
     
-    public AstSimplifier(List<AstNode> ast) {
+    public AstSimplifier() {
         creationTime = System.nanoTime();
-        for (AstNode node : ast) {
-            node.accept(this);
-        }
     }
     
     public long creationTime() {
         return creationTime;
     }
     
+    public List<AstNode> simplify(List<AstNode> ast) {
+        ArrayList<AstNode> newAst = new ArrayList<AstNode>();
+        for (AstNode node : ast) {
+            newAst.add(node.accept(this));
+        }
+        return newAst;
+    }
+    
     public AstNode visitBinaryOperator(AstNode.BinaryOperator binOp) {
         AstNode lhs = binOp.lhs().accept(this);
+        binOp.setLhs(lhs);
         AstNode rhs = simplifyIfNotNull(binOp.rhs());
+        binOp.setRhs(rhs);
+        
         Token op = binOp.op();
         // We only simplify integer expressions.
         // Section 12.3.2 of Muchnick's "Advanced Compiler Design & Implementation" claims replacing division-by-constant with multiplication is the only valid floating-point algebraic simplification.
@@ -49,6 +57,14 @@ public class AstSimplifier implements AstVisitor<AstNode> {
             // x + 0 == x
             if (isZero(rhs)) {
                 return lhs;
+            }
+            // We can concatenate string constants at compile time.
+            if (isStringConstant(lhs) && isStringConstant(rhs)) {
+                String lhsString = ((String) ((AstNode.Constant) lhs).constant());
+                String rhsString = ((String) ((AstNode.Constant) rhs).constant());
+                if (lhsString != null && rhsString != null) {
+                    return new AstNode.Constant(binOp.location(), lhsString + rhsString, TalcType.STRING);
+                }
             }
         }
         if (op == Token.SUB) {
@@ -92,7 +108,7 @@ public class AstSimplifier implements AstVisitor<AstNode> {
                 return lhs;
             }
         }
-        return new AstNode.BinaryOperator(binOp.location(), op, lhs, rhs);
+        return binOp;
     }
     
     private static boolean isEqualToIntegerConstant(AstNode node, IntegerValue value) {
@@ -115,6 +131,14 @@ public class AstSimplifier implements AstVisitor<AstNode> {
         return isEqualToIntegerConstant(node, IntegerValue.ONE);
     }
     
+    private static boolean isStringConstant(AstNode node) {
+        if (node instanceof AstNode.Constant == false) {
+            return false;
+        }
+        AstNode.Constant constant = (AstNode.Constant) node;
+        return (constant.constant() instanceof String);
+    }
+    
     public AstNode visitBlock(AstNode.Block block) {
         if (block == AstNode.Block.EMPTY_BLOCK) {
             return block;
@@ -131,7 +155,8 @@ public class AstSimplifier implements AstVisitor<AstNode> {
             return newStatements.get(0);
         } else {
             // This is a complicated enough block to be worth keeping.
-            return new AstNode.Block(block.location(), newStatements);
+            block.setStatements(newStatements);
+            return block;
         }
     }
     
@@ -154,9 +179,9 @@ public class AstSimplifier implements AstVisitor<AstNode> {
     }
     
     public AstNode visitClassDefinition(AstNode.ClassDefinition classDefinition) {
-        List<AstNode.VariableDefinition> newFields = simplifyAstNodeList(classDefinition.fields());
-        List<AstNode.FunctionDefinition> newMethods = simplifyAstNodeList(classDefinition.methods());
-        return new AstNode.ClassDefinition(classDefinition.location(), classDefinition.className(), newFields, newMethods);
+        classDefinition.setFields(simplifyAstNodeList(classDefinition.fields()));
+        classDefinition.setMethods(simplifyAstNodeList(classDefinition.methods()));
+        return classDefinition;
     }
     
     public AstNode visitConstant(AstNode.Constant node) {
@@ -168,55 +193,61 @@ public class AstSimplifier implements AstVisitor<AstNode> {
     }
     
     public AstNode visitDoStatement(AstNode.DoStatement doStatement) {
-        return new AstNode.DoStatement(doStatement.location(), doStatement.body().accept(this), doStatement.expression().accept(this));
+        doStatement.setBody(doStatement.body().accept(this));
+        doStatement.setExpression(doStatement.expression().accept(this));
+        return doStatement;
     }
     
     public AstNode visitForStatement(AstNode.ForStatement forStatement) {
-        AstNode.VariableDefinition newInitializer = simplifyIfNotNull(forStatement.initializer());
-        AstNode newConditionExpression = forStatement.conditionExpression().accept(this);
-        AstNode newUpdateExpression = forStatement.updateExpression().accept(this);
-        return new AstNode.ForStatement(forStatement.location(), newInitializer, newConditionExpression, newUpdateExpression, forStatement.body().accept(this));
+        forStatement.setInitializer(simplifyIfNotNull(forStatement.initializer()));
+        forStatement.setConditionExpression(forStatement.conditionExpression().accept(this));
+        forStatement.setUpdateExpression(forStatement.updateExpression().accept(this));
+        forStatement.setBody(forStatement.body().accept(this));
+        return forStatement;
     }
     
     public AstNode visitForEachStatement(AstNode.ForEachStatement forEachStatement) {
-        return new AstNode.ForEachStatement(forEachStatement.location(), forEachStatement.loopVariableDefinitions(), forEachStatement.expression().accept(this), forEachStatement.body().accept(this));
+        forEachStatement.setExpression(forEachStatement.expression().accept(this));
+        forEachStatement.setBody(forEachStatement.body().accept(this));
+        return forEachStatement;
     }
     
     public AstNode visitFunctionCall(AstNode.FunctionCall call) {
-        AstNode[] arguments = call.arguments();
-        AstNode[] newArguments = new AstNode[arguments.length];
-        for (int i = arguments.length - 1; i >= 0; --i) {
-            AstNode argument = arguments[i];
-            newArguments[i] = argument.accept(this);
+        AstNode[] oldArguments = call.arguments();
+        AstNode[] newArguments = new AstNode[oldArguments.length];
+        for (int i = oldArguments.length - 1; i >= 0; --i) {
+            newArguments[i] = oldArguments[i].accept(this);
         }
-        return new AstNode.FunctionCall(call.location(), call.functionName(), simplifyIfNotNull(call.instance()), newArguments);
+        call.setArguments(newArguments);
+        call.setInstance(simplifyIfNotNull(call.instance()));
+        return call;
     }
     
     public AstNode visitFunctionDefinition(AstNode.FunctionDefinition function) {
-        return new AstNode.FunctionDefinition(function.location(), function.functionName(), function.formalParameterNames(), function.formalParameterTypes(), function.returnType(), function.body().accept(this));
+        function.setBody(function.body().accept(this));
+        return function;
     }
     
     public AstNode visitIfStatement(AstNode.IfStatement ifStatement) {
-        List<AstNode> newExpressions = simplifyAstNodeList(ifStatement.expressions());
-        List<AstNode> newBodies = simplifyAstNodeList(ifStatement.bodies());
-        AstNode newElseBlock = ifStatement.elseBlock().accept(this);
-        return new AstNode.IfStatement(ifStatement.location(), newExpressions, newBodies, newElseBlock);
+        ifStatement.setExpressions(simplifyAstNodeList(ifStatement.expressions()));
+        ifStatement.setBodies(simplifyAstNodeList(ifStatement.bodies()));
+        ifStatement.setElseBlock(ifStatement.elseBlock().accept(this));
+        return ifStatement;
     }
     
     public AstNode visitListLiteral(AstNode.ListLiteral listLiteral) {
-        List<AstNode> newExpressions = simplifyAstNodeList(listLiteral.expressions());
-        return new AstNode.ListLiteral(listLiteral.location(), newExpressions);
+        listLiteral.setExpressions(simplifyAstNodeList(listLiteral.expressions()));
+        return listLiteral;
     }
     
     public AstNode visitReturnStatement(AstNode.ReturnStatement returnStatement) {
-        if (returnStatement.expression() != null) {
-            return new AstNode.ReturnStatement(returnStatement.location(), returnStatement.expression().accept(this));
-        }
+        returnStatement.setExpression(simplifyIfNotNull(returnStatement.expression()));
         return returnStatement;
     }
     
     public AstNode visitVariableDefinition(AstNode.VariableDefinition var) {
-        return new AstNode.VariableDefinition(var.location(), var.identifier(), var.type(), var.initializer().accept(this), var.isFinal());
+        var.setInitializer(var.initializer().accept(this));
+        return var;
     }
     
     public AstNode visitVariableName(AstNode.VariableName node) {
@@ -224,6 +255,8 @@ public class AstSimplifier implements AstVisitor<AstNode> {
     }
     
     public AstNode visitWhileStatement(AstNode.WhileStatement whileStatement) {
-        return new AstNode.WhileStatement(whileStatement.location(), whileStatement.expression().accept(this), whileStatement.body().accept(this));
+        whileStatement.setExpression(whileStatement.expression().accept(this));
+        whileStatement.setBody(whileStatement.body().accept(this));
+        return whileStatement;
     }
 }

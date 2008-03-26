@@ -28,6 +28,7 @@ public class Talc {
         debuggingFlagNames['i'] = "shows each inferred type as it's fixed up";
         debuggingFlagNames['l'] = "shows each token returned by the lexer";
         debuggingFlagNames['n'] = "doesn't execute the generated code";
+        debuggingFlagNames['o'] = "doesn't optimize the AST before generating code";
         debuggingFlagNames['p'] = "shows information about parsing as it progresses, and the AST for each completed parse";
         debuggingFlagNames['t'] = "shows timing information for each phase of compilation/execution";
         debuggingFlagNames['T'] = "shows information helpful when debugging the type checker";
@@ -91,8 +92,11 @@ public class Talc {
         AstErrorChecker errorChecker = new AstErrorChecker(ast);
         reportTime("other checking", System.nanoTime() - errorChecker.creationTime());
         // 2d. Simplification.
-        AstSimplifier simplifier = new AstSimplifier(ast);
-        reportTime("simplification", System.nanoTime() - simplifier.creationTime());
+        if (Talc.debugging('o') == false) {
+            AstSimplifier simplifier = new AstSimplifier();
+            ast = simplifier.simplify(ast);
+            reportTime("simplification", System.nanoTime() - simplifier.creationTime());
+        }
         
         // 3. Byte-code generation.
         long codeGeneration0 = System.nanoTime();

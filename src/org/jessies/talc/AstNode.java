@@ -63,8 +63,16 @@ public abstract class AstNode {
             return lhs;
         }
         
+        public void setLhs(AstNode lhs) {
+            this.lhs = lhs;
+        }
+        
         public AstNode rhs() {
             return rhs;
+        }
+        
+        public void setRhs(AstNode rhs) {
+            this.rhs = rhs;
         }
         
         public void setType(TalcType type) {
@@ -96,6 +104,10 @@ public abstract class AstNode {
         
         public List<AstNode> statements() {
             return statements;
+        }
+        
+        public void setStatements(List<AstNode> statements) {
+            this.statements = statements;
         }
         
         public String toString() {
@@ -150,8 +162,16 @@ public abstract class AstNode {
             return fields;
         }
         
+        public void setFields(List<AstNode.VariableDefinition> fields) {
+            this.fields = fields;
+        }
+        
         public List<AstNode.FunctionDefinition> methods() {
             return methods;
+        }
+        
+        public void setMethods(List<AstNode.FunctionDefinition> methods) {
+            this.methods = methods;
         }
         
         public void setType(TalcType newType) {
@@ -241,8 +261,16 @@ public abstract class AstNode {
             return expression;
         }
         
+        public void setExpression(AstNode expression) {
+            this.expression = expression;
+        }
+        
         public AstNode body() {
             return body;
+        }
+        
+        public void setBody(AstNode body) {
+            this.body = body;
         }
         
         public String toString() {
@@ -274,8 +302,16 @@ public abstract class AstNode {
             return expression;
         }
         
+        public void setExpression(AstNode expression) {
+            this.expression = expression;
+        }
+        
         public AstNode body() {
             return body;
+        }
+        
+        public void setBody(AstNode body) {
+            this.body = body;
         }
         
         public String toString() {
@@ -317,16 +353,32 @@ public abstract class AstNode {
             return variableDefinition;
         }
         
+        public void setInitializer(VariableDefinition variableDefinition) {
+            this.variableDefinition = variableDefinition;
+        }
+        
         public AstNode conditionExpression() {
             return conditionExpression;
+        }
+        
+        public void setConditionExpression(AstNode conditionExpression) {
+            this.conditionExpression = conditionExpression;
         }
         
         public AstNode updateExpression() {
             return updateExpression;
         }
         
+        public void setUpdateExpression(AstNode updateExpression) {
+            this.updateExpression = updateExpression;
+        }
+        
         public AstNode body() {
             return body;
+        }
+        
+        public void setBody(AstNode body) {
+            this.body = body;
         }
         
         public String toString() {
@@ -381,12 +433,20 @@ public abstract class AstNode {
             return instance;
         }
         
+        public void setInstance(AstNode instance) {
+            this.instance = instance;
+        }
+        
         public TalcTypeDescriptor classTypeDescriptor() {
             return classTypeDescriptor;
         }
         
         public AstNode[] arguments() {
             return arguments;
+        }
+        
+        public void setArguments(AstNode[] arguments) {
+            this.arguments = arguments;
         }
         
         public void setDefinition(FunctionDefinition definition) {
@@ -552,6 +612,10 @@ public abstract class AstNode {
             return body;
         }
         
+        public void setBody(AstNode body) {
+            this.body = body;
+        }
+        
         public String signature() {
             StringBuilder result = new StringBuilder();
             result.append(functionName);
@@ -601,12 +665,24 @@ public abstract class AstNode {
             return expressions;
         }
         
+        public void setExpressions(List<AstNode> expressions) {
+            this.expressions = expressions;
+        }
+        
         public List<AstNode> bodies() {
             return bodies;
         }
         
+        public void setBodies(List<AstNode> bodies) {
+            this.bodies = bodies;
+        }
+        
         public AstNode elseBlock() {
             return elseBlock;
+        }
+        
+        public void setElseBlock(AstNode elseBlock) {
+            this.elseBlock = elseBlock;
         }
         
         public String toString() {
@@ -641,6 +717,10 @@ public abstract class AstNode {
             return expressions;
         }
         
+        public void setExpressions(List<AstNode> expressions) {
+            this.expressions = expressions;
+        }
+        
         public String toString() {
             StringBuilder result = new StringBuilder();
             result.append("[");
@@ -671,6 +751,10 @@ public abstract class AstNode {
         
         public AstNode expression() {
             return expression;
+        }
+        
+        public void setExpression(AstNode expression) {
+            this.expression = expression;
         }
         
         public void setReturnType(TalcType returnType) {
@@ -763,6 +847,10 @@ public abstract class AstNode {
             return initializer;
         }
         
+        public void setInitializer(AstNode initializer) {
+            this.initializer = initializer;
+        }
+        
         public void setAccessor(VariableAccessor accessor) {
             this.accessor = accessor;
         }
@@ -848,8 +936,16 @@ public abstract class AstNode {
             return expression;
         }
         
+        public void setExpression(AstNode expression) {
+            this.expression = expression;
+        }
+        
         public AstNode body() {
             return body;
+        }
+        
+        public void setBody(AstNode body) {
+            this.body = body;
         }
         
         public String toString() {
