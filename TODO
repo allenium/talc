@@ -221,3 +221,9 @@ if (x.starts_with("/")) {
 * implementation: we could replace RealValue with java.lang.Double but we'd need to put all the RealValue implementations of the NumericValue methods somewhere. more useful would be replacing LRealValue; with D. it's not too hard to treat "real" as a primitive double and call static (DD)D methods in RealValue (i've done it, as proof). the awkward bits would be __get_item__/__set_item__ and methods that would like to work on any numeric type (which is easy given the current plan of exposing NumericValue in the language, though that actually opens up a can of worms because of the potential for mixed-mode arithmetic).
 
 * implementation: BooleanValue is more convenient than Boolean because we know there are only two instances and can compare them by identity. given the price of getstatic, it might be worth investigating converting BooleanValue to I in generated loops and conditionals (where generated boilerplate is the consumer of the BooleanValue).
+
+* implementation: we need our own "constant pool". if we're boxing everything but "string" (as we are at the time of writing) we're only getting the advantage of the real constant pool for strings. (we're partially getting it for RealValue, because we use a (D)LRealValue; constructor, and the primitive doubles go into the constant pool.)
+
+* implementation: we could automatically recognize "final" variables and inline their values, even if we don't have a notion of "final" in the language (yet?).
+
+* implementation: there's plenty more work we could do in AstSimplifier. we can evaluate constant expressions at compile time.
