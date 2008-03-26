@@ -421,6 +421,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
             mg.push(((RealValue) constant.constant()).doubleValue());
             mg.invokeStatic(realValueType, new Method("valueOf", realValueType, new Type[] { Type.DOUBLE_TYPE }));
         } else if (constantType == TalcType.STRING) {
+            // FIXME: .class files have 64KiB limits on UTF-8 constants, so we might want to break long strings up.
             mg.push(constant.constant().toString());
         } else {
             throw new TalcError(constant, "don't know how to generate code for constants of type " + constantType);
