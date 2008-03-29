@@ -121,8 +121,4 @@ public class RealValue implements NumericValue {
     public String toString() {
         return String.valueOf(value);
     }
-    
-    public TalcType type() {
-        return TalcType.REAL;
-    }
 }

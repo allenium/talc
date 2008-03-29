@@ -49,8 +49,4 @@ public class MatchValue {
     public String toString() {
         return matcher.toString();
     }
-    
-    public TalcType type() {
-        return TalcType.MATCH;
-    }
 }

@@ -158,10 +158,6 @@ public class ListValue {
         return result.toString();
     }
     
-    public TalcType type() {
-        return TalcType.LIST_OF_T;
-    }
-    
     public ListValue uniq() {
         ListValue result = new ListValue();
         result.list.addAll(new LinkedHashSet<Object>(list));

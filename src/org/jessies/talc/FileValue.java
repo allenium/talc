@@ -114,8 +114,4 @@ public class FileValue {
     public String toString() {
         return file.toString();
     }
-    
-    public TalcType type() {
-        return TalcType.FILE;
-    }
 }

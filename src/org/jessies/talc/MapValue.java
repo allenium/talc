@@ -60,10 +60,6 @@ public class MapValue {
         return this;
     }
     
-    public TalcType type() {
-        return TalcType.MAP_OF_K_V;
-    }
-    
     public String toString() {
         return map.toString();
     }

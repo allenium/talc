@@ -40,8 +40,4 @@ public class BooleanValue {
     public String toString() {
         return (booleanValue() ? "true" : "false");
     }
-    
-    public TalcType type() {
-        return TalcType.BOOL;
-    }
 }

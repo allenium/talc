@@ -163,8 +163,4 @@ public class IntegerValue implements NumericValue {
     public String to_char() {
         return String.valueOf((char) intValue());
     }
-    
-    public TalcType type() {
-        return TalcType.INT;
-    }
 }
