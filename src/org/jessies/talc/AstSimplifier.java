@@ -32,11 +32,7 @@ public class AstSimplifier implements AstVisitor<AstNode> {
     }
     
     public List<AstNode> simplify(List<AstNode> ast) {
-        ArrayList<AstNode> newAst = new ArrayList<AstNode>();
-        for (AstNode node : ast) {
-            newAst.add(node.accept(this));
-        }
-        return newAst;
+        return simplifyAstNodeList(ast);
     }
     
     public AstNode visitBinaryOperator(AstNode.BinaryOperator binOp) {
