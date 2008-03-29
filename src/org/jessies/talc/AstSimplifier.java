@@ -70,7 +70,9 @@ public class AstSimplifier implements AstVisitor<AstNode> {
         if (op == Token.SUB) {
             // 0 - x == -x
             if (isZero(lhs)) {
-                return new AstNode.BinaryOperator(binOp.location(), Token.NEG, rhs, null);
+                AstNode.BinaryOperator result = new AstNode.BinaryOperator(binOp.location(), Token.NEG, rhs, null);
+                result.setType(binOp.type());
+                return result;
             }
             // x - 0 == x
             if (isZero(rhs)) {
@@ -109,19 +111,63 @@ public class AstSimplifier implements AstVisitor<AstNode> {
                 return lhs;
             }
         }
+        
+        // If lhs and rhs are both integer constants (or this is really a unary operator), we can evaluate this operator at compile time.
+        IntegerValue lhsValue = integerConstant(lhs);
+        IntegerValue rhsValue = integerConstant(rhs);
+        if (lhsValue != null && (op == Token.B_NOT || op == Token.FACTORIAL || rhsValue != null)) {
+            Object result = evaluateIntegerExpression(binOp, lhsValue, rhsValue);
+            return new AstNode.Constant(binOp.location(), result, result instanceof IntegerValue ? TalcType.INT : TalcType.BOOL);
+        }
+        
         return binOp;
     }
     
+    private Object evaluateIntegerExpression(AstNode.BinaryOperator binOp, IntegerValue lhs, IntegerValue rhs) {
+        switch (binOp.op()) {
+            case PLUS: return lhs.add(rhs);
+            case SUB: return lhs.subtract(rhs);
+            case MUL: return lhs.multiply(rhs);
+            case POW: return lhs.pow(rhs);
+            case DIV: return lhs.divide(rhs);
+            case MOD: return lhs.mod(rhs);
+            case SHL: return lhs.shiftLeft(rhs);
+            case SHR: return lhs.shiftRight(rhs);
+            case B_AND: return lhs.and(rhs);
+            case B_NOT: return lhs.not();
+            case B_OR: return lhs.or(rhs);
+            case B_XOR: return lhs.xor(rhs);
+            case FACTORIAL: return lhs.factorial();
+            case EQ: return Functions.eq(lhs, rhs);
+            case NE: return Functions.ne(lhs, rhs);
+            case LE: return BooleanValue.valueOf(lhs.compareTo(rhs) <= 0);
+            case GE: return BooleanValue.valueOf(lhs.compareTo(rhs) >= 0);
+            case GT: return BooleanValue.valueOf(lhs.compareTo(rhs) > 0);
+            case LT: return BooleanValue.valueOf(lhs.compareTo(rhs) < 0);
+        default:
+            throw new TalcError(binOp, "don't know how to compute " + binOp + " at compile time");
+        }
+    }
+    
     private static boolean isEqualToIntegerConstant(AstNode node, IntegerValue value) {
-        if (node instanceof AstNode.Constant == false) {
+        IntegerValue constantValue = integerConstant(node);
+        if (constantValue == null) {
             return false;
+        }
+        return (constantValue.compareTo(value) == 0);
+    }
+    
+    // Returns the integer constant 'node' represents, or null if 'node' isn't an integer constant.
+    private static IntegerValue integerConstant(AstNode node) {
+        if (node instanceof AstNode.Constant == false) {
+            return null;
         }
         AstNode.Constant constant = (AstNode.Constant) node;
-        if (constant.constant() instanceof IntegerValue == false) {
-            return false;
+        Object value = constant.constant();
+        if (value instanceof IntegerValue == false) {
+            return null;
         }
-        IntegerValue constantValue = (IntegerValue) constant.constant();
-        return (constantValue.compareTo(value) == 0);
+        return (IntegerValue) value;
     }
     
     private static boolean isZero(AstNode node) {
