@@ -227,10 +227,13 @@ public class AstSimplifier implements AstVisitor<AstNode> {
     }
     
     @SuppressWarnings("unchecked")
-    private <T extends AstNode> List<T> simplifyAstNodeList(List<T> nodes) {
+    private <T extends AstNode> ArrayList<T> simplifyAstNodeList(List<T> nodes) {
         ArrayList<T> newNodes = new ArrayList<T>(nodes.size());
         for (T node : nodes) {
-            newNodes.add((T) node.accept(this));
+            T newNode = (T) node.accept(this);
+            if (newNode != null) {
+                newNodes.add(newNode);
+            }
         }
         return newNodes;
     }
@@ -295,11 +298,35 @@ public class AstSimplifier implements AstVisitor<AstNode> {
     }
     
     public AstNode visitIfStatement(AstNode.IfStatement ifStatement) {
-        // FIXME: if an expression is true, complain about unreachable code if there are more expressions/an else block.
-        // FIXME: drop bodies corresponding to expressions that are false (need to return null here and handle that in simplifyAstNodeList).
-        ifStatement.setExpressions(simplifyAstNodeList(ifStatement.expressions()));
-        ifStatement.setBodies(simplifyAstNodeList(ifStatement.bodies()));
-        ifStatement.setElseBlock(ifStatement.elseBlock().accept(this));
+        ArrayList<AstNode> expressions = simplifyAstNodeList(ifStatement.expressions());
+        ArrayList<AstNode> bodies = simplifyAstNodeList(ifStatement.bodies());
+        AstNode elseBlock = ifStatement.elseBlock().accept(this);
+        
+        // Check for constant expressions.
+        Iterator<AstNode> eIt = expressions.iterator();
+        Iterator<AstNode> bIt = bodies.iterator();
+        while (eIt.hasNext()) {
+            AstNode exp = eIt.next(); bIt.next();
+            if (constant(exp) == BooleanValue.FALSE) {
+                // Drop any false expressions and its corresponding body.
+                eIt.remove(); bIt.remove();
+            } else if (constant(exp) == BooleanValue.TRUE) {
+                // Drop *everything* after (but not including) a true expression.
+                while (eIt.hasNext()) {
+                    eIt.remove(); bIt.remove();
+                }
+                elseBlock = AstNode.Block.EMPTY_BLOCK;
+            }
+        }
+        
+        // Check whether we optimized this "if" out of existence.
+        if (expressions.size() == 0) {
+            return elseBlock;
+        }
+        
+        ifStatement.setExpressions(expressions);
+        ifStatement.setBodies(bodies);
+        ifStatement.setElseBlock(elseBlock);
         return ifStatement;
     }
     
