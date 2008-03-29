@@ -178,7 +178,7 @@ public class Lexer {
                     skipBlockComment();
                     return nextToken0();
                 }
-                reader.unread(ch);
+                reader.unread(ch2);
                 return Token.DIV;
             }
             
