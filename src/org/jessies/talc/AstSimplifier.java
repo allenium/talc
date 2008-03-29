@@ -216,11 +216,10 @@ public class AstSimplifier implements AstVisitor<AstNode> {
         if (newStatementsCount == 0) {
             // If this block ends up empty, we already have a handy empty block.
             return AstNode.Block.EMPTY_BLOCK;
-        } else if (newStatementsCount == 1 && newStatements.get(0) instanceof AstNode.VariableDefinition == false) {
-            // If this block ends up containing a single AstNode that's not a variable definition, we can elide this block and just return the child AstNode.
-            return newStatements.get(0);
         } else {
             // This is a complicated enough block to be worth keeping.
+            // You might think that if this block only contains a single AstNode that's not a variable definition, we can just return the child AstNode.
+            // Unfortunately, that's not true: it breaks our reliance on JvmCodeGenerator.visitBlock being the one to call JvmCodeGenerator.popAnythingLeftBy.
             block.setStatements(newStatements);
             return block;
         }
