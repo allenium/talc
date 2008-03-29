@@ -66,8 +66,7 @@ public class AstSimplifier implements AstVisitor<AstNode> {
                     return new AstNode.Constant(binOp.location(), lhsString + rhsString, TalcType.STRING);
                 }
             }
-        }
-        if (op == Token.SUB) {
+        } else if (op == Token.SUB) {
             // 0 - x == -x
             if (isZero(lhs)) {
                 AstNode.BinaryOperator result = new AstNode.BinaryOperator(binOp.location(), Token.NEG, rhs, null);
@@ -78,8 +77,7 @@ public class AstSimplifier implements AstVisitor<AstNode> {
             if (isZero(rhs)) {
                 return lhs;
             }
-        }
-        if (op == Token.MUL) {
+        } else if (op == Token.MUL) {
             if (isZero(lhs)) {
                 // 0 * x == 0
                 return lhs;
@@ -93,8 +91,7 @@ public class AstSimplifier implements AstVisitor<AstNode> {
                 // x * 1 == x
                 return lhs;
             }
-        }
-        if (op == Token.DIV) {
+        } else if (op == Token.DIV) {
             if (isZero(lhs)) {
                 // 0 / x == 0
                 return lhs;
@@ -103,8 +100,7 @@ public class AstSimplifier implements AstVisitor<AstNode> {
                 // x / 1 == x
                 return lhs;
             }
-        }
-        if (op == Token.SHL || op == Token.SHR) {
+        } else if (op == Token.SHL || op == Token.SHR) {
             // x << 0 == x
             // x >> 0 == x
             if (isZero(rhs)) {
@@ -112,18 +108,43 @@ public class AstSimplifier implements AstVisitor<AstNode> {
             }
         }
         
-        // If lhs and rhs are both integer constants (or this is really a unary operator), we can evaluate this operator at compile time.
-        IntegerValue lhsValue = integerConstant(lhs);
-        IntegerValue rhsValue = integerConstant(rhs);
-        if (lhsValue != null && (op == Token.B_NOT || op == Token.FACTORIAL || rhsValue != null)) {
-            Object result = evaluateIntegerExpression(binOp, lhsValue, rhsValue);
-            return new AstNode.Constant(binOp.location(), result, result instanceof IntegerValue ? TalcType.INT : TalcType.BOOL);
+        Object lhsConstant = constant(lhs);
+        Object rhsConstant = constant(rhs);
+        if ((op == Token.B_NOT || op == Token.FACTORIAL) && lhsConstant != null && lhsConstant instanceof IntegerValue) {
+            // A unary operator with an integer constant lhs. Easy.
+            return new AstNode.Constant(binOp.location(), evaluateIntegerExpression(binOp, (IntegerValue) lhsConstant, null), TalcType.INT);
+        }
+        if (lhsConstant != null && rhsConstant != null) {
+            // Relational operators on two constants can be evaluated at compile-time.
+            if (op == Token.EQ) {
+                return new AstNode.Constant(binOp.location(), Functions.eq(lhsConstant, rhsConstant), TalcType.BOOL);
+            } else if (op == Token.NE) {
+                return new AstNode.Constant(binOp.location(), Functions.ne(lhsConstant, rhsConstant), TalcType.BOOL);
+            }
+            
+            if (lhsConstant instanceof IntegerValue && rhsConstant instanceof IntegerValue) {
+                IntegerValue lhsValue = (IntegerValue) lhsConstant;
+                IntegerValue rhsValue = (IntegerValue) rhsConstant;
+                
+                if (op == Token.LE) {
+                    return new AstNode.Constant(binOp.location(), BooleanValue.valueOf(lhsValue.compareTo(rhsValue) <= 0), TalcType.BOOL);
+                } else if (op == Token.GE) {
+                    return new AstNode.Constant(binOp.location(), BooleanValue.valueOf(lhsValue.compareTo(rhsValue) >= 0), TalcType.BOOL);
+                } else if (op == Token.GT) {
+                    return new AstNode.Constant(binOp.location(), BooleanValue.valueOf(lhsValue.compareTo(rhsValue) > 0), TalcType.BOOL);
+                } else if (op == Token.LT) {
+                    return new AstNode.Constant(binOp.location(), BooleanValue.valueOf(lhsValue.compareTo(rhsValue) < 0), TalcType.BOOL);
+                }
+                
+                // Must be an "arithmetic" integer expression.
+                return new AstNode.Constant(binOp.location(), (IntegerValue) evaluateIntegerExpression(binOp, lhsValue, rhsValue), TalcType.INT);
+            }
         }
         
         return binOp;
     }
     
-    private Object evaluateIntegerExpression(AstNode.BinaryOperator binOp, IntegerValue lhs, IntegerValue rhs) {
+    private NumericValue evaluateIntegerExpression(AstNode.BinaryOperator binOp, IntegerValue lhs, IntegerValue rhs) {
         switch (binOp.op()) {
             case PLUS: return lhs.add(rhs);
             case SUB: return lhs.subtract(rhs);
@@ -138,12 +159,6 @@ public class AstSimplifier implements AstVisitor<AstNode> {
             case B_OR: return lhs.or(rhs);
             case B_XOR: return lhs.xor(rhs);
             case FACTORIAL: return lhs.factorial();
-            case EQ: return Functions.eq(lhs, rhs);
-            case NE: return Functions.ne(lhs, rhs);
-            case LE: return BooleanValue.valueOf(lhs.compareTo(rhs) <= 0);
-            case GE: return BooleanValue.valueOf(lhs.compareTo(rhs) >= 0);
-            case GT: return BooleanValue.valueOf(lhs.compareTo(rhs) > 0);
-            case LT: return BooleanValue.valueOf(lhs.compareTo(rhs) < 0);
         default:
             throw new TalcError(binOp, "don't know how to compute " + binOp + " at compile time");
         }
@@ -155,6 +170,14 @@ public class AstSimplifier implements AstVisitor<AstNode> {
             return false;
         }
         return (constantValue.compareTo(value) == 0);
+    }
+    
+    private static Object constant(AstNode node) {
+        if (node instanceof AstNode.Constant == false) {
+            return null;
+        }
+        AstNode.Constant constant = (AstNode.Constant) node;
+        return constant.constant();
     }
     
     // Returns the integer constant 'node' represents, or null if 'node' isn't an integer constant.
@@ -276,6 +299,8 @@ public class AstSimplifier implements AstVisitor<AstNode> {
     }
     
     public AstNode visitIfStatement(AstNode.IfStatement ifStatement) {
+        // FIXME: if an expression is true, complain about unreachable code if there are more expressions/an else block.
+        // FIXME: drop bodies corresponding to expressions that are false (need to return null here and handle that in simplifyAstNodeList).
         ifStatement.setExpressions(simplifyAstNodeList(ifStatement.expressions()));
         ifStatement.setBodies(simplifyAstNodeList(ifStatement.bodies()));
         ifStatement.setElseBlock(ifStatement.elseBlock().accept(this));
@@ -302,6 +327,7 @@ public class AstSimplifier implements AstVisitor<AstNode> {
     }
     
     public AstNode visitWhileStatement(AstNode.WhileStatement whileStatement) {
+        // FIXME: If the expression is false, complain about unreachable code.
         whileStatement.setExpression(whileStatement.expression().accept(this));
         whileStatement.setBody(whileStatement.body().accept(this));
         return whileStatement;
