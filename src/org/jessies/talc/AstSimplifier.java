@@ -352,7 +352,7 @@ public class AstSimplifier implements AstVisitor<AstNode> {
     public AstNode visitWhileStatement(AstNode.WhileStatement whileStatement) {
         AstNode expression = whileStatement.expression().accept(this);
         if (constant(expression) == BooleanValue.FALSE) {
-            // This is probably a mistake.
+            // The user probably didn't write a dead loop on purpose.
             throw new TalcError(whileStatement.expression(), "this \"while\" expression is always false, so the loop body is unreachable");
         }
         
