@@ -350,8 +350,13 @@ public class AstSimplifier implements AstVisitor<AstNode> {
     }
     
     public AstNode visitWhileStatement(AstNode.WhileStatement whileStatement) {
-        // FIXME: If the expression is false, complain about unreachable code.
-        whileStatement.setExpression(whileStatement.expression().accept(this));
+        AstNode expression = whileStatement.expression().accept(this);
+        if (constant(expression) == BooleanValue.FALSE) {
+            // This is probably a mistake.
+            throw new TalcError(whileStatement.expression(), "this \"while\" expression is always false, so the loop body is unreachable");
+        }
+        
+        whileStatement.setExpression(expression);
         whileStatement.setBody(whileStatement.body().accept(this));
         return whileStatement;
     }
