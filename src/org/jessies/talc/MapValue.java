@@ -51,7 +51,7 @@ public class MapValue {
         return new ListValue(map.keySet());
     }
     
-    public IntegerValue length() {
+    public IntegerValue size() {
         return new IntegerValue(map.size());
     }
     

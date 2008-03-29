@@ -162,8 +162,6 @@ access to stderr? ability to print/puts to files/sockets/pipes?
 
 how should "printf"-like functionality be implemented? string.format? (int|real|string).format methods?
 
-should we use "size" ubiquitously, rather than "length"? or does "size" have too strong a flavor of "byte count"? Objective C uses "count", which i disliked because it sounds like a verb, but then again, "size" is effectively counting the elements (imagine you have a linked list rather than an array list). "size" and "length" are the common ones that new users are going to guess, though.
-
 # the need for these is demonstrated by "binomial-triangle.talc"...
 list<T>.n_copies(n:int,item:T):list<T> # returns a new list with 'n' copies of 'item'.
 list<T>.copy():list<T> # clone/copy the list. need such a method on all mutable containers.

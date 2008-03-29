@@ -6,7 +6,7 @@
 # FIXME: until we have printf-like functionality, this helper is useful.
 function to_s16(i:int) : string {
   s := i.to_base(16);
-  if (s.length() < 2) {
+  if (s.size() < 2) {
     s = "0" + s;
   }
   return s;

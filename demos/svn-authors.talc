@@ -6,7 +6,7 @@
 
 # Copyright (C) 2008 Elliott Hughes <enh@jessies.org>.
 
-if (ARGS.length() == 0) {
+if (ARGS.size() == 0) {
   puts("usage: svn-authors FILENAME...");
   exit(1);
 }

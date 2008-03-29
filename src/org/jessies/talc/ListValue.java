@@ -76,7 +76,7 @@ public class ListValue {
         return result.toString();
     }
     
-    public IntegerValue length() {
+    public IntegerValue size() {
         return new IntegerValue(list.size());
     }
     

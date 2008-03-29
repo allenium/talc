@@ -15,7 +15,7 @@ i = 2;
 strings = [ "hello", "world" ];
 
 objects:list<object> = [ 1, 2 ];
-for (i:int = 0; i < objects.length(); ++i) {
+for (i:int = 0; i < objects.size(); ++i) {
  puts(objects[i]);
 }
 
@@ -23,6 +23,6 @@ for (i:int = 0; i < objects.length(); ++i) {
 #strings = objects;
 
 objects = strings;
-for (i:int = 0; i < objects.length(); ++i) {
+for (i:int = 0; i < objects.size(); ++i) {
  puts(objects[i]);
 }

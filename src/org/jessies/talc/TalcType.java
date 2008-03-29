@@ -91,7 +91,6 @@ public class TalcType {
         addMemberFunction(LIST_OF_T, new BuiltInFunction("contains", Arrays.asList("value"), Arrays.asList(TalcType.T), TalcType.BOOL));
         addMemberFunction(LIST_OF_T, new BuiltInFunction("is_empty", TalcType.BOOL));
         addMemberFunction(LIST_OF_T, new BuiltInFunction("join", Arrays.asList("separator"), Arrays.asList(TalcType.STRING), TalcType.STRING));
-        addMemberFunction(LIST_OF_T, new BuiltInFunction("length", TalcType.INT));
         addMemberFunction(LIST_OF_T, new BuiltInFunction("peek_back", TalcType.T));
         addMemberFunction(LIST_OF_T, new BuiltInFunction("peek_front", TalcType.T));
         addMemberFunction(LIST_OF_T, new BuiltInFunction("pop_back", TalcType.T));
@@ -102,6 +101,7 @@ public class TalcType {
         addMemberFunction(LIST_OF_T, new BuiltInFunction("remove_at", Arrays.asList("index"), Arrays.asList(TalcType.INT), TalcType.LIST_OF_T));
         addMemberFunction(LIST_OF_T, new BuiltInFunction("remove_first", Arrays.asList("value"), Arrays.asList(TalcType.T), TalcType.BOOL));
         addMemberFunction(LIST_OF_T, new BuiltInFunction("reverse", TalcType.LIST_OF_T));
+        addMemberFunction(LIST_OF_T, new BuiltInFunction("size", TalcType.INT));
         addMemberFunction(LIST_OF_T, new BuiltInFunction("sort", TalcType.LIST_OF_T));
         addMemberFunction(LIST_OF_T, new BuiltInFunction("to_s", TalcType.STRING));
         addMemberFunction(LIST_OF_T, new BuiltInFunction("uniq", TalcType.LIST_OF_T));
@@ -116,8 +116,8 @@ public class TalcType {
         addMemberFunction(MAP_OF_K_V, new BuiltInFunction("has_key", Arrays.asList("key"), Arrays.asList(TalcType.K), TalcType.BOOL));
         addMemberFunction(MAP_OF_K_V, new BuiltInFunction("has_value", Arrays.asList("value"), Arrays.asList(TalcType.V), TalcType.BOOL));
         addMemberFunction(MAP_OF_K_V, new BuiltInFunction("keys", TalcType.LIST_OF_K));
-        addMemberFunction(MAP_OF_K_V, new BuiltInFunction("length", TalcType.INT));
         addMemberFunction(MAP_OF_K_V, new BuiltInFunction("remove", Arrays.asList("key"), Arrays.asList(TalcType.K), TalcType.MAP_OF_K_V));
+        addMemberFunction(MAP_OF_K_V, new BuiltInFunction("size", TalcType.INT));
         addMemberFunction(MAP_OF_K_V, new BuiltInFunction("values", TalcType.LIST_OF_V));
         addClass(MAP_OF_K_V);
         
@@ -140,9 +140,9 @@ public class TalcType {
         addMemberFunction(STRING, new BuiltInFunction("gsub", Arrays.asList("pattern", "replacement"), Arrays.asList(TalcType.STRING, TalcType.STRING), TalcType.STRING));
         addMemberFunction(STRING, new BuiltInFunction("lc", TalcType.STRING));
         addMemberFunction(STRING, new BuiltInFunction("lc_first", TalcType.STRING));
-        addMemberFunction(STRING, new BuiltInFunction("length", TalcType.INT));
         addMemberFunction(STRING, new BuiltInFunction("match", Arrays.asList("pattern"), Arrays.asList(TalcType.STRING), TalcType.MATCH));
         addMemberFunction(STRING, new BuiltInFunction("replace", Arrays.asList("old", "new"), Arrays.asList(TalcType.STRING, TalcType.STRING), TalcType.STRING));
+        addMemberFunction(STRING, new BuiltInFunction("size", TalcType.INT));
         addMemberFunction(STRING, new BuiltInFunction("split", Arrays.asList("pattern"), Arrays.asList(TalcType.STRING), TalcType.LIST_OF_STRING));
         addMemberFunction(STRING, new BuiltInFunction("starts_with", Arrays.asList("prefix"), Arrays.asList(TalcType.STRING), TalcType.BOOL));
         addMemberFunction(STRING, new BuiltInFunction("sub", Arrays.asList("pattern", "replacement"), Arrays.asList(TalcType.STRING, TalcType.STRING), TalcType.STRING));

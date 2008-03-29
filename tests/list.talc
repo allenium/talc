@@ -33,7 +33,7 @@ puts(reals);
 
 words:list<string> = [ "monkey", "list", "literal", "world" ];
 words[0] = "hello";
-for (i := 0; i < words.length(); ++i) {
+for (i := 0; i < words.size(); ++i) {
  word := words[i];
  puts(word);
 }

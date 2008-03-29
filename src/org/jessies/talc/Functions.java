@@ -123,7 +123,7 @@ public class Functions {
         // Convert the talc arguments into native arguments.
         List<String> args = new ArrayList<String>();
         // FIXME: we need a better way to iterate over a ListValue.
-        final int max = talcArgs.length().intValue();
+        final int max = talcArgs.size().intValue();
         for (int i = 0; i < max; ++i) {
             args.add(talcArgs.__get_item__(new IntegerValue(i)).toString());
         }

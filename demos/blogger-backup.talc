@@ -1,6 +1,6 @@
 #!/usr/bin/talc
 
-if (ARGS.length() != 1) {
+if (ARGS.size() != 1) {
   puts("usage: blogger-backup.rb <blog-name>");
   exit(1);
 }

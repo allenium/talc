@@ -518,7 +518,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         
         // max: int = collection.length();
         JvmLocalVariableAccessor max = new JvmLocalVariableAccessor(nextLocal++);
-        mg.invokeVirtual(listValueType, new Method("length", integerValueType, new Type[0]));
+        mg.invokeVirtual(listValueType, new Method("size", integerValueType, new Type[0]));
         max.emitPut();
         
         VariableAccessor k = loopVariables.get(0).accessor();

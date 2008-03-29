@@ -11,10 +11,10 @@ nums.push_back(1);
 puts(nums);
 
 function f(words:list<string>) : string {
- for (i := 0; i < words.length(); ++i) {
+ for (i := 0; i < words.size(); ++i) {
   puts(words[i]);
  }
- return words.length().to_s();
+ return words.size().to_s();
 }
 puts(f(words));
 f([]);

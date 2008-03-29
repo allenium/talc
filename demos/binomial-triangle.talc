@@ -17,7 +17,7 @@ function n_zeros(n: int) : list<int> {
 # FIXME: list (and any other mutable containers) should have something like copy().
 function copy(l: list<int>) : list<int> {
     result: list<int> = [];
-    for (i := 0; i< l.length(); ++i) {
+    for (i := 0; i< l.size(); ++i) {
         result.push_back(l[i]);
     }
     return result;
@@ -42,7 +42,7 @@ for (i := 0; i < size-1; ++i) {
             next[j] = prev[j] + prev[j-1];
             # FIXME: we could do with some kind of "format using" here.
             s := next[j].to_s();
-            s = n_spaces(6 - s.length()) + s;
+            s = n_spaces(6 - s.size()) + s;
             print(s);
         }
     }

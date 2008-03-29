@@ -391,7 +391,7 @@ list<T> : object
   contains(value: T) : bool
   is_empty() : bool
   join(separator: string) : string
-  length() : int
+  size() : int
   list() : list<T>
   peek_back() : T
   peek_front() : T
@@ -414,7 +414,7 @@ map<K,V> : object
   has_key(key: K) : bool
   has_value(value: V) : bool
   keys() : list<K>
-  length() : int
+  size() : int
   map() : map<K,V>
   remove(key: K) : map<K,V>
   values() : list<V>
@@ -442,7 +442,7 @@ string : object
   gsub(pattern: string, replacement: string) : string
   lc() : string
   lc_first() : string
-  length() : int
+  size() : int
   match(pattern: string) : match
   replace(old: string, new: string) : string
   split(pattern: string) : list<string>

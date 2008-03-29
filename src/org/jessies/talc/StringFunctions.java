@@ -48,7 +48,7 @@ public final class StringFunctions {
         return s.toLowerCase().substring(0, 1) + s.substring(1);
     }
     
-    public static IntegerValue length(String s) {
+    public static IntegerValue size(String s) {
         return new IntegerValue(s.length());
     }
     
