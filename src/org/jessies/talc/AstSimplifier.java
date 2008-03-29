@@ -68,12 +68,14 @@ public class AstSimplifier implements AstVisitor<AstNode> {
             }
         }
         if (op == Token.SUB) {
+            // 0 - x == -x
+            if (isZero(lhs)) {
+                return new AstNode.BinaryOperator(binOp.location(), Token.NEG, rhs, null);
+            }
             // x - 0 == x
             if (isZero(rhs)) {
                 return lhs;
             }
-            // FIXME: is "0 - x == -x" worth doing, in our context?
-            // FIXME: if lhs equals rhs, return 0.
         }
         if (op == Token.MUL) {
             if (isZero(lhs)) {
@@ -99,7 +101,6 @@ public class AstSimplifier implements AstVisitor<AstNode> {
                 // x / 1 == x
                 return lhs;
             }
-            // FIXME: if lhs equals rhs, return 1.
         }
         if (op == Token.SHL || op == Token.SHR) {
             // x << 0 == x
