@@ -44,7 +44,6 @@ public class AstSimplifier implements AstVisitor<AstNode> {
         Token op = binOp.op();
         // We only simplify integer expressions.
         // Section 12.3.2 of Muchnick's "Advanced Compiler Design & Implementation" claims replacing division-by-constant with multiplication is the only valid floating-point algebraic simplification.
-        // FIXME: simplify boolean expressions too.
         if (op == Token.PLUS) {
             // 0 + x == x
             if (isZero(lhs)) {
@@ -107,6 +106,24 @@ public class AstSimplifier implements AstVisitor<AstNode> {
                 return new AstNode.Constant(binOp.location(), ((IntegerValue) lhsConstant).negate(), TalcType.INT);
             } else if (lhsConstant instanceof RealValue) {
                 return new AstNode.Constant(binOp.location(), ((RealValue) lhsConstant).negate(), TalcType.REAL);
+            }
+        } else if (op == Token.L_AND) {
+            // true && x = x
+            if (constant(lhs) == BooleanValue.TRUE) {
+                return rhs;
+            }
+            // false && x = false
+            if (constant(lhs) == BooleanValue.FALSE) {
+                return lhs;
+            }
+        } else if (op == Token.L_OR) {
+            // true || x = true
+            if (constant(lhs) == BooleanValue.TRUE) {
+                return lhs;
+            }
+            // false || x = x
+            if (constant(lhs) == BooleanValue.FALSE) {
+                return rhs;
             }
         }
         
