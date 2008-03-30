@@ -102,6 +102,14 @@ public class AstSimplifier implements AstVisitor<AstNode> {
             if (isZero(rhs)) {
                 return lhs;
             }
+        } else if (op == Token.NEG) {
+            // We can do compile-time negation of numeric constants.
+            Object lhsConstant = constant(lhs);
+            if (lhsConstant instanceof IntegerValue) {
+                return new AstNode.Constant(binOp.location(), ((IntegerValue) lhsConstant).negate(), TalcType.INT);
+            } else if (lhsConstant instanceof RealValue) {
+                return new AstNode.Constant(binOp.location(), ((RealValue) lhsConstant).negate(), TalcType.REAL);
+            }
         }
         
         Object lhsConstant = constant(lhs);
