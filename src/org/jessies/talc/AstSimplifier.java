@@ -55,12 +55,10 @@ public class AstSimplifier implements AstVisitor<AstNode> {
                 return lhs;
             }
             // We can concatenate string constants at compile time.
-            if (isStringConstant(lhs) && isStringConstant(rhs)) {
-                String lhsString = ((String) ((AstNode.Constant) lhs).constant());
-                String rhsString = ((String) ((AstNode.Constant) rhs).constant());
-                if (lhsString != null && rhsString != null) {
-                    return new AstNode.Constant(binOp.location(), lhsString + rhsString, TalcType.STRING);
-                }
+            String lhsString = stringConstant(lhs);
+            String rhsString = stringConstant(rhs);
+            if (lhsString != null && rhsString != null) {
+                return new AstNode.Constant(binOp.location(), lhsString + rhsString, TalcType.STRING);
             }
         } else if (op == Token.SUB) {
             // 0 - x == -x
@@ -197,20 +195,25 @@ public class AstSimplifier implements AstVisitor<AstNode> {
         return (IntegerValue) value;
     }
     
+    // Returns the string constant 'node' represents, or null if 'node' isn't an string constant.
+    private static String stringConstant(AstNode node) {
+        if (node instanceof AstNode.Constant == false) {
+            return null;
+        }
+        AstNode.Constant constant = (AstNode.Constant) node;
+        Object value = constant.constant();
+        if (value instanceof String == false) {
+            return null;
+        }
+        return (String) value;
+    }
+    
     private static boolean isZero(AstNode node) {
         return isEqualToIntegerConstant(node, IntegerValue.ZERO);
     }
     
     private static boolean isOne(AstNode node) {
         return isEqualToIntegerConstant(node, IntegerValue.ONE);
-    }
-    
-    private static boolean isStringConstant(AstNode node) {
-        if (node instanceof AstNode.Constant == false) {
-            return false;
-        }
-        AstNode.Constant constant = (AstNode.Constant) node;
-        return (constant.constant() instanceof String);
     }
     
     public AstNode visitBlock(AstNode.Block block) {
