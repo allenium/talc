@@ -30,22 +30,20 @@
 
 * [medium] add map literals.
 
-* [medium] simplifier should know about types other than integers:
-           simplifier should know about "bool" and use this to simplify "if" statements and loops.
-           simplifier should know about "string" and concatenate literals at compile-time.
-
 * [medium] implement the ? : ternary operator.
 
 * [medium] implement regexp (type, literals (?), and basic operations). (a literal would give us compile-time regexp checking and ahead-of-time/once-off Pattern compilation.) go back over core library and see where we could usefully use regexp instead of string. (overloading might be handy.)
 
 * [medium] finish user-defined classes.
+ + instance fields
+ + instance methods
+ + class methods
+ + class fields
+ + final/synchronized methods (?)
  + "final" (and make all built-in classes final?)
  + "extends"
  + check for inheritance cycles.
  + "implements"
- + class methods
- + class fields (?)
- + final methods (?)
 
 * [medium] overloaded methods/functions. useful for "system". probably some restriction like "no ambiguous/confusing overloads (ones where compile-time selection of an overload could produce different results than you'd expect if you thought overloads were selected at run-time)". http://www.informit.com/articles/article.aspx?p=31551&seqNum=4&rl=1
 
@@ -60,7 +58,7 @@
 
 * [future] consider "to_b" to make the "match" idiom even more comfortable. too liable to be abused?
 
-* [future] Pike talks about reducing "stutter" in Sawzall, which is certainly a problem in Java (especially since generics), though not yet in Talc thanks to type inference and richer literals:
+* [future] Pike talks about reducing "stutter" in Sawzall, which is certainly a problem in Java (especially since generics), though not yet in Talc thanks to type inference and richer literals. Here's what Pike said:
   Conversion operators translate values from one type to another, and encapsulate a wide range of conversions. For instance, to extract the ﬂoating point number represented by a string, one simply converts the value:
     f: float;
     s: string = "1.234";
