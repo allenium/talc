@@ -1,13 +1,10 @@
 * [easy] documentation!
  + make sure all errors we can emit are documented.
- + mini comparisons against Java, Perl, Python, and Ruby.
+ + mini comparisons with Java, Perl, Python, and Ruby (meant as tutorials for experienced programmers, rather than stupid "language X is better than Y" nonsense).
+ + tutorial.
  + add some way to doc-comment class, function, and variable definitions. documentation should be available at run-time, and should be available for automatic dumping (like --dump-classes or a  better version of Ruby's ri).
 
 * [easy] better tests/demos.
-
-* [medium] optimize integer literals:
- + never call "new IntegerValue"; always use IntegerValue.valueOf (in generated code and hand-written code alike), and implement caching like in java.lang.Integer.
- + for some number of the most important values (-1, 0, and 1?), have them available as fields in IntegerValue, and have the code generator use getstatic instead of calling IntegerValue.valueOf.
 
 * [medium] replace "prelude.txt" with some kind of textual "include" system. (note: the prelude is currently broken and disabled.)
  + add the remaining prelude math functions in "math.talc" as a trivial example.
@@ -134,6 +131,25 @@ url.read():string # read entire url as one string so people don't have to mess w
 string.substring(offset:int, length:int):string # or startIndex/endIndex? is this actually useful?
 string.chomp():string # remove trailing newline; do we need this, given trim? Python doesn't seem to. mad mentions having had to fix a bug in a script relating to chomp ignoring '\r'.
 
+# convenient tty interface. not sure about the exact API. "no worse than basic".
+tty.clear():void
+tty.at(x:int, y:int):void # move cursor
+tty.fg() / tty.bg() # change colors? how to specify black/red/green/yellow/blue/magenta/cyan/white? (also distinguish default from black.)
+tty.isatty():bool
+tty.readline() # some kind of interface to GNU readline; maybe fall back to a stupid implementation
+tty.input_int(), tty.input_real() # specializations for numeric input, refusing bad input?
+
+# convenient graphics interface ("picture"?) for PNG/SVG, and so on.
+color.color(r:int,g:int,b:int,a:int):color # and so forth
+picture.fg(c:color):void / picture.bg(c:color):void
+picture.move_to(x:int,y:int):void
+picture.line_to(x:int,y:int):void
+picture.move_by(dx:int,dy:int):void
+picture.line_by(dx:int,dy:int):void
+picture.font(family:string, size:int):void # how best to specify style?
+# ...plus rectangles, circles, ellipses, filled/outline.
+# some notion of paints for gradients?
+
 # random class backed by java.util.Random
 random.reset(seed:int):void
 random.nextInt(n:int):int
@@ -142,8 +158,20 @@ RANDOM:random # convenience instance
 int.random(n:int):int # convenience using global RANDOM
 real.random():real # convenience using global RANDOM
 
+# primitive access to the underlying JVM?
+jvm.new_instance(class_name:string, args:list<object>):object # what about overloading?
+jvm.get_field(instance:object, field_name:string):object
+jvm.put_field(instance:object, field_name:string, value:object):void
+jvm.get_static(class_name:string, field_name:string):object
+jvm.put_static(class_name:string, field_name:string, value:object):void
+jvm.invoke_static(class_name:string, method_name:string, args:list<object>):object # what about overloading?
+jvm.invoke_method(class_name:string, method_name:string, instance:object, args:list<object>):object # what about overloading?
+
 # should we have a "math" class of static methods, or a "math" library of global functions?
 # the latter is less Java-like, but probably more popular and convenient for the intended users.
+# either way, i think this stuff could trivially be implemented in the language using the "jvm" class.
+math.e => Math.E
+math.pi => Math.PI
 math.sin => Math.sin
 math.cos => Math.cos
 math.tan => Math.tan
@@ -182,6 +210,9 @@ should we have list<T>.find(e:T):int ? should it take a start_index:int too, or 
 should FILE_SEPARATOR and PATH_SEPARATOR be in class "file"?
 
 make sure all "value" classes return sensible hashCodes!
+
+
+IMPLEMENTATION
 
 * language defect:
       a[i] = 0;        # OK
