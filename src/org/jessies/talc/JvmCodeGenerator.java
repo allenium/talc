@@ -38,6 +38,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     private final Type fileValueType = Type.getType(FileValue.class);
     private final Type integerValueType = Type.getType(IntegerValue.class);
     private final Type listValueType = Type.getType(ListValue.class);
+    private final Type mapValueType = Type.getType(MapValue.class);
     private final Type matchValueType = Type.getType(MatchValue.class);
     private final Type numericValueType = Type.getType(NumericValue.class);
     private final Type realValueType = Type.getType(RealValue.class);
@@ -668,6 +669,9 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         } else if (talcType.rawName().equals("list")) {
             // FIXME: this is a particularly big hack.
             return listValueType;
+        } else if (talcType.rawName().equals("map")) {
+            // FIXME: this is a particularly big hack.
+            return mapValueType;
         } else {
             throw new RuntimeException("don't know how to represent TalcType " + talcType);
         }
