@@ -816,7 +816,11 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         if (variableDefinition.scope() == Scope.globalScope() || variableDefinition.scope() == Scope.builtInScope()) {
             // If we're at global scope, we may need to back variables with fields.
             // Escape analysis would tell us whether or not we do, but we don't do any of that, so we have to assume the worst.
-            cv.visitField(Opcodes.ACC_PRIVATE | Opcodes.ACC_STATIC, variableDefinition.identifier(), type.getDescriptor(), null, null);
+            int access = Opcodes.ACC_PRIVATE | Opcodes.ACC_STATIC;
+            if (variableDefinition.isFinal()) {
+                access |= Opcodes.ACC_FINAL;
+            }
+            cv.visitField(access, variableDefinition.identifier(), type.getDescriptor(), null, null);
             accessor = new JvmStaticFieldAccessor(generatedClassType, variableDefinition.identifier(), type);
         } else {
             // If we're at local scope, we can back variables with locals.
