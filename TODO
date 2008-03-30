@@ -1,38 +1,32 @@
-* [easy] documentation!
- + make sure all errors we can emit are documented.
- + mini comparisons with Java, Perl, Python, and Ruby (meant as tutorials for experienced programmers, rather than stupid "language X is better than Y" nonsense).
- + tutorial.
- + add some way to doc-comment class, function, and variable definitions. documentation should be available at run-time, and should be available for automatic dumping (like --dump-classes or a  better version of Ruby's ri).
+DOCUMENTATION
 
-* [easy] better tests/demos.
+* make sure all errors we can emit are documented.
 
-* [medium] replace "prelude.txt" with some kind of textual "include" system. (note: the prelude is currently broken and disabled.)
- + add the remaining prelude math functions in "math.talc" as a trivial example.
- + add "set.talc" as an example, implementing the equivalent of Java's HashSet. (would require user-defined parametric types!)
- + should have some kind of "include path" (accessible in scripts as a list<string>?) that by default includes something like /usr/share/talc/<major-version?>/ so third-parties can add their libraries to the system independently of talc.
+* mini comparisons with Java, Perl, Python, and Ruby (meant as tutorials for experienced programmers, rather than stupid "language X is better than Y" nonsense).
 
-* [medium] improve Lexer.getLocation so we provide the start and end line/column rather than just the end (even just the start would be better than just the end, as we have at the moment; error messages point to the end of the problem where the start would be more natural).
+* tutorial.
 
-* [easy] "assert" statements.
- + fix the "tests" to actually use these, so we get assertion failures if anything goes wrong.
+* add some way to doc-comment class, function, and variable definitions. documentation should be available at run-time, and should be available for automatic dumping (like --dump-classes or a  better version of Ruby's ri).
 
-* [medium] should add an "Iterable" interface, change for-each to expect its expression has that type and then invoke "Iterable.iterator()" and use it. (though how does that get us keys as well as values? maybe not "Iterable" so much as "ForEachAble<K,V>"? "has_next() : bool", "key() : K", and "value() : V"?)
+* more demos.
 
-* [medium] warnings about hiding? what kinds are okay and what kinds aren't?
+* semi-automate the generation of the "built-in functions" section in the man page, as with the class summary.
 
-* [easy] FunctionDefinition and VariableDefinition should have a common ancestor so we can treat them more uniformly. This will probably simplify some of the code.
+* semi-automate the generation of the "built-in variables" section in the man page, as with the class summary.
 
-* [medium] improve globals handling.
- + have the pre-execution constant-folding/constant-propagation ensure that all global constants have been fully inlined?
- + automate the generation of the globals section in the man page.
 
-* [medium] can we use List<VariableDefinition> (with null initializers?) in AstNode.FunctionDefinition for the parameter list?
 
-* [medium] add map literals.
+TESTING
 
-* [medium] implement the ? : ternary operator.
+* add "assert" statements.
 
-* [medium] implement regexp (type, literals (?), and basic operations). (a literal would give us compile-time regexp checking and ahead-of-time/once-off Pattern compilation.) go back over core library and see where we could usefully use regexp instead of string. (overloading might be handy.)
+* fix the "tests" to actually use these, so we get assertion failures if anything goes wrong.
+
+* increase test coverage.
+
+
+
+MISSING FEATURES
 
 * [medium] finish user-defined classes.
  + instance fields
@@ -45,6 +39,23 @@
  + check for inheritance cycles.
  + "implements"
 
+* [medium] add map literals.
+
+* [medium] implement the ? : ternary operator.
+
+* [hard] exceptions, try-catch-finally, throw.
+
+* replace "prelude.txt" with some kind of textual "include" system. (note: the prelude is currently broken and disabled.)
+ + add the remaining prelude math functions in "math.talc" as a trivial example.
+ + add "set.talc" as an example, implementing the equivalent of Java's HashSet. (would require user-defined parametric types!)
+ + should have some kind of "include path" (accessible in scripts as a list<string>?) that by default includes something like /usr/share/talc/<major-version?>/ so third-parties can add their libraries to the system independently of talc.
+
+* should add an "Iterable" interface, change for-each to expect its expression has that type and then invoke "Iterable.iterator()" and use it. (though how does that get us keys as well as values? maybe not "Iterable" so much as "ForEachAble<K,V>"? "has_next() : bool", "key() : K", and "value() : V"?)
+
+* warnings about hiding? what kinds are okay and what kinds aren't?
+
+* [medium] implement regexp (type, literals (?), and basic operations). (a literal would give us compile-time regexp checking and ahead-of-time/once-off Pattern compilation.) go back over core library and see where we could usefully use regexp instead of string. (overloading might be handy.)
+
 * [medium] overloaded methods/functions. useful for "system". probably some restriction like "no ambiguous/confusing overloads (ones where compile-time selection of an overload could produce different results than you'd expect if you thought overloads were selected at run-time)". http://www.informit.com/articles/article.aspx?p=31551&seqNum=4&rl=1
 
 * [hard] function types, so we can add something like list<T>.map(function(e:T):T):list<T>.
@@ -53,8 +64,6 @@
 * [hard] operator overloading?
 
 * [hard] check that you can't drop off the bottom of a non-void function (i.e. must "return").
-
-* [hard] exceptions, try-catch-finally, throw.
 
 * [future] consider "to_b" to make the "match" idiom even more comfortable. too liable to be abused?
 
@@ -77,11 +86,13 @@
 
 * [future] is a "switch" statement sufficiently useful to be worth adding? what kind?
 
+* [future] should the "for" initialization be as general as in similar languages? how can we do that without the hateful comma operator?
+
 * [future] do we need a "char" primitive type? scripting languages' higher-level string operations make most char-grubbing unnecessary. single-character strings might be sufficient. explicit char support might be clearer/more natural for the target audience. (but if we give them char, will they waste time doing C-like string manipulation instead of learning the higher-level stuff?) or int.to_char():string and string.asc():int (like Perl chr/ord)? we currently have the former but not the latter, and it actually works okay, though the name is a bit awkward.
 
 * [future] if we're going to have varargs "print" and "puts" built-ins, should we offer the same to user-defined functions? note that print and puts are special not only in that they can have any number of arguments, but also in that each argument can have a different type (though we could say they take object... [or whatever our notation is] because we call to_s on each argument; this would be cleaner and simpler). note that C-style varargs have problems compared to passing around a list, so really i'm talking about Java-like syntactic sugar (removing the need for [ and ] around the expression list), though at a loss of expressiveness and increase in complication. i think this is a questionable idea, but so is having magic "print" and "puts", but their functionality is invaluable in easing people into the water.
 
-* [future] should the "for" initialization be as general as in similar languages? how can we do that without the hateful comma operator?
+
 
 LIBRARY
 
@@ -165,6 +176,16 @@ jvm.put_static(class_name:string, field_name:string, value:object):void
 jvm.invoke_static(class_name:string, method_name:string, args:list<object>):object # what about overloading?
 jvm.invoke_method(class_name:string, method_name:string, instance:object, args:list<object>):object # what about overloading?
 
+# primitive access to the C library/POSIX/arbitrary shared libraries?
+dl.open(library_name:string):object # return some kind of object representing the library? or void?
+dl.invoke(library:object, function_name:string, args:list<object>):object # or pass the library name each time?
+dl.close() # worth offering? bad usefulness/safety trade-off?
+# slightly higher-level, safer, and more convenient would be an interface to libffi.
+# most trivially:
+ffi.call(function_name: string, return_type_descriptor:string, argument_type_descriptors:list<string>, args:list<object>):object
+# but it might be nice to offer the same "ffi_prep_cif"/"ffi_call" distinction as libffi.
+# it would also be awesome to offer an interface to ffi_type, and the ability to pass/return structs.
+
 # should we have a "math" class of static methods, or a "math" library of global functions?
 # the latter is less Java-like, but probably more popular and convenient for the intended users.
 # either way, i think this stuff could trivially be implemented in the language using the "jvm" class.
@@ -210,7 +231,10 @@ should FILE_SEPARATOR and PATH_SEPARATOR be in class "file"?
 make sure all "value" classes return sensible hashCodes!
 
 
+
 IMPLEMENTATION
+
+* would gnu.bytecode be a better choice for us than ASM? it seems like it might be more convenient for compilation than ASM (which carries a lot of baggage for fiddling with existing classes).
 
 * language defect:
       a[i] = 0;        # OK
@@ -235,22 +259,26 @@ if (x.starts_with("/")) {
 
 * report sensible error when global function used before definition. (or cope, as we do with methods? global variables obviously shouldn't be treated like fields in terms of usability before definition, and global functions can refer to global variables, so presumably we should treat global functions specially to avoid this kind of weirdness?)
 
+* improve Lexer.getLocation so we provide the start and end line/column rather than just the end (even just the start would be better than just the end, as we have at the moment; error messages point to the end of the problem where the start would be more natural).
+
 * in the JVM code generator, we should try to reuse local variable slots when variables go out of scope. at the moment, we have really large numbers of locals which (a) makes verifier output hard to read and (b) isn't very Java-like, which may mean Hotspot isn't adapted to it. we probably need to switch to a BitSet to implement this correctly.
 
-* implementation: is it a mistake to generate the global code in the constructor? should it be in "main" instead? (or at least some kind of secondary static void method to keep the generated boilerplate of main distinct.)
+* is it a mistake to generate the global code in the constructor? should it be in "main" instead? (or at least some kind of secondary static void method to keep the generated boilerplate of main distinct.)
 
-* implementation: ARGS might be cleaner if, at least internally, we could express a VariableDefinition with no initializer. maybe the other built-in variables would be better like that?
+* FunctionDefinition and VariableDefinition should have a common ancestor so we can treat them more uniformly. This will probably simplify some of the code.
 
-* implementation: globals are very slow. moving X and Y inside the loop (!) in mandelbrot.talc makes it 5x faster. not all globals need to be represented as static fields: we could recognize ones that escape, and make the rest local to the generated global method, or we could recognize ones that aren't modified after initialization and turn them into constants (even without constant inlining or hand-made "constant pool", that's still a win).
+* should we use List<VariableDefinition> (with null initializers?) in AstNode.FunctionDefinition for the parameter list?
 
-* implementation: should have an arbitrary-arity string concatenation AstNode. the simplifier should collect them up, and then the code generator can generate optimal code. (though the current simple scheme does pretty well. i wonder how long chains of string concatenation get in real-life code?)
+* globals are very slow. moving X and Y inside the loop (!) in mandelbrot.talc makes it 5x faster. not all globals need to be represented as static fields: we could recognize ones that escape, and make the rest local to the generated global method, or we could recognize ones that aren't modified after initialization and turn them into constants (even without constant inlining or hand-made "constant pool", that's still a win).
 
-* implementation: we could replace RealValue with java.lang.Double but we'd need to put all the RealValue implementations of the NumericValue methods somewhere. more useful would be replacing LRealValue; with D. it's not too hard to treat "real" as a primitive double and call static (DD)D methods in RealValue (i've done it, as proof). the awkward bits would be __get_item__/__set_item__ and methods that would like to work on any numeric type (which is easy given the current plan of exposing NumericValue in the language, though that actually opens up a can of worms because of the potential for mixed-mode arithmetic).
+* should have an arbitrary-arity string concatenation AstNode. the simplifier should collect them up, and then the code generator can generate optimal code. (though the current simple scheme does pretty well. i wonder how long chains of string concatenation get in real-life code?)
 
-* implementation: BooleanValue is more convenient than Boolean because we know there are only two instances and can compare them by identity. given the price of getstatic, it might be worth investigating converting BooleanValue to I in generated loops and conditionals (where generated boilerplate is the consumer of the BooleanValue).
+* we could replace RealValue with java.lang.Double but we'd need to put all the RealValue implementations of the NumericValue methods somewhere. more useful would be replacing LRealValue; with D. it's not too hard to treat "real" as a primitive double and call static (DD)D methods in RealValue (i've done it, as proof). the awkward bits would be __get_item__/__set_item__ and methods that would like to work on any numeric type (which is easy given the current plan of exposing NumericValue in the language, though that actually opens up a can of worms because of the potential for mixed-mode arithmetic).
 
-* implementation: we need our own "constant pool". if we're boxing everything but "string" (as we are at the time of writing) we're only getting the advantage of the real constant pool for strings. (we're partially getting it for RealValue, because we use a (D)LRealValue; constructor, and the primitive doubles go into the constant pool.)
+* BooleanValue is more convenient than Boolean because we know there are only two instances and can compare them by identity. given the price of getstatic, it might be worth investigating converting BooleanValue to I in generated loops and conditionals (where generated boilerplate is the consumer of the BooleanValue).
 
-* implementation: we could automatically recognize "final" variables and inline their values, even if we don't have a notion of "final" in the language (yet?).
+* we need our own "constant pool". if we're boxing everything but "string" (as we are at the time of writing) we're only getting the advantage of the real constant pool for strings. (we're partially getting it for RealValue, because we use a (D)LRealValue; constructor, and the primitive doubles go into the constant pool.)
 
-* implementation: there's plenty more work we could do in AstSimplifier. we can evaluate constant expressions at compile time.
+* we could automatically recognize "final" variables and inline their values, even if we don't have a notion of "final" in the language (yet?). (inlining constants turns out to be expensive. as the previous item says, we need a constant pool!)
+
+* add a native (C++) driver so we can put a binary in /usr/bin and use Talc directly in executable scripts.
