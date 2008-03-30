@@ -19,8 +19,8 @@
 package org.jessies.talc;
 
 public class RealValue implements NumericValue {
-    public static RealValue ZERO = new RealValue(0.0);
-    public static RealValue ONE = new RealValue(1.0);
+    private static final RealValue ZERO = new RealValue(0.0);
+    private static final RealValue ONE = new RealValue(1.0);
     
     private double value;
     
@@ -111,7 +111,7 @@ public class RealValue implements NumericValue {
     }
     
     public IntegerValue to_i() {
-        return new IntegerValue((long) value);
+        return IntegerValue.valueOf((long) value);
     }
     
     public RealValue to_r() {

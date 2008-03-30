@@ -39,7 +39,7 @@ public class MatchValue {
     }
     
     public IntegerValue groupCount() {
-        return new IntegerValue(matcher.groupCount());
+        return IntegerValue.valueOf(matcher.groupCount());
     }
     
     public int hashCode() {

@@ -54,8 +54,8 @@ public class Talc {
             result.append(value);
             if (value instanceof IntegerValue) {
                 IntegerValue integerValue = (IntegerValue) value;
-                if (integerValue.compareTo(IntegerValue.NINE) > 0) {
-                    result.append(" (0x" + integerValue.to_base(new IntegerValue(16)) + ")");
+                if (integerValue.compareTo(IntegerValue.valueOf(9)) > 0) {
+                    result.append(" (0x" + integerValue.to_base(IntegerValue.valueOf(16)) + ")");
                 }
             }
             result.append('\n');

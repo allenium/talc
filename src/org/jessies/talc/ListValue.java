@@ -77,7 +77,7 @@ public class ListValue {
     }
     
     public IntegerValue size() {
-        return new IntegerValue(list.size());
+        return IntegerValue.valueOf(list.size());
     }
     
     public Object peek_back() {

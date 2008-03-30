@@ -307,15 +307,21 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     private void prePostIncrementDecrement(AstNode.BinaryOperator binOp, boolean isPre, boolean isIncrement) {
         // Get the initial value on the stack.
         binOp.lhs().accept(this);
-        // For post-increment/decrement, we want to return this.
+        // For post-increment/decrement, we want to return the value we currently have on the top of the stack.
         if (isPre == false) {
             mg.dup();
         }
-        // Add/subtract 1.
-        Type type = (binOp.type() == TalcType.INT) ? integerValueType : realValueType;
-        mg.getStatic(type, "ONE", type);
+        // Push the appropriate "1".
+        if (binOp.type() == TalcType.INT) {
+            mg.push(1);
+            mg.invokeStatic(integerValueType, new Method("valueOf", integerValueType, new Type[] { Type.LONG_TYPE }));
+        } else {
+            mg.push(1.0);
+            mg.invokeStatic(realValueType, new Method("valueOf", realValueType, new Type[] { Type.DOUBLE_TYPE }));
+        }
+        // Add/subtract it.
         mg.invokeInterface(numericValueType, new Method(isIncrement ? "add" : "subtract", numericValueType, new Type[] { numericValueType }));
-        // For pre-increment/decrement, we want to return this.
+        // For pre-increment/decrement, we want to return the value we currently have on the top of the stack.
         if (isPre) {
             mg.dup();
         }
@@ -499,7 +505,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         ArrayList<AstNode.VariableDefinition> loopVariables = (ArrayList<AstNode.VariableDefinition>) forEachStatement.loopVariableDefinitions();
         if (loopVariables.size() == 1) {
             // The user didn't ask for the key, but we'll be needing it, so synthesize it before visiting the loop variable definitions.
-            AstNode.VariableDefinition k = new AstNode.VariableDefinition(null, null, TalcType.INT, new AstNode.Constant(null, new IntegerValue(0), TalcType.INT), false);
+            AstNode.VariableDefinition k = new AstNode.VariableDefinition(null, null, TalcType.INT, new AstNode.Constant(null, IntegerValue.valueOf(0), TalcType.INT), false);
             loopVariables.add(0, k);
         }
         for (AstNode.VariableDefinition loopVariable : loopVariables) {

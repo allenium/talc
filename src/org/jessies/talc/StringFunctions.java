@@ -49,7 +49,7 @@ public final class StringFunctions {
     }
     
     public static IntegerValue size(String s) {
-        return new IntegerValue(s.length());
+        return IntegerValue.valueOf(s.length());
     }
     
     public static MatchValue match(String s, String pattern) {

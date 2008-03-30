@@ -52,7 +52,7 @@ public class MapValue {
     }
     
     public IntegerValue size() {
-        return new IntegerValue(map.size());
+        return IntegerValue.valueOf(map.size());
     }
     
     public MapValue remove(Object key) {

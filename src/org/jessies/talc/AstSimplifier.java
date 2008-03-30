@@ -209,11 +209,11 @@ public class AstSimplifier implements AstVisitor<AstNode> {
     }
     
     private static boolean isZero(AstNode node) {
-        return isEqualToIntegerConstant(node, IntegerValue.ZERO);
+        return isEqualToIntegerConstant(node, IntegerValue.valueOf(0));
     }
     
     private static boolean isOne(AstNode node) {
-        return isEqualToIntegerConstant(node, IntegerValue.ONE);
+        return isEqualToIntegerConstant(node, IntegerValue.valueOf(1));
     }
     
     public AstNode visitBlock(AstNode.Block block) {

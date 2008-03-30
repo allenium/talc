@@ -21,11 +21,23 @@ package org.jessies.talc;
 import java.math.*;
 
 public class IntegerValue implements NumericValue {
-    public static final IntegerValue ZERO = new IntegerValue(BigInteger.ZERO);
-    public static final IntegerValue ONE = new IntegerValue(BigInteger.ONE);
-    public static final IntegerValue NINE = new IntegerValue(BigInteger.valueOf(9));
+    // Cache common values, equivalent to what the JLS mandates for boxed integers in Java.
+    private static final IntegerValue[] cache = new IntegerValue[-(-128) + 127 + 1];
+    private static final int CACHE_OFFSET = 128;
+    static {
+        for(int i = 0; i < cache.length; ++i) {
+            cache[i] = new IntegerValue(i - CACHE_OFFSET);
+        }
+    }
     
     private BigInteger value;
+    
+    public static IntegerValue valueOf(long l) {
+        if (l >= -128 && l <= 127) {
+            return cache[CACHE_OFFSET + (int) l];
+        }
+        return new IntegerValue(l);
+    }
     
     public IntegerValue(String digits, int base) {
         this.value = new BigInteger(digits, base);
@@ -35,7 +47,7 @@ public class IntegerValue implements NumericValue {
         this.value = value;
     }
     
-    public IntegerValue(long value) {
+    private IntegerValue(long value) {
         this.value = BigInteger.valueOf(value);
     }
     
@@ -103,7 +115,7 @@ public class IntegerValue implements NumericValue {
     }
     
     public IntegerValue signum() {
-        return new IntegerValue(value.signum());
+        return IntegerValue.valueOf(value.signum());
     }
     
     public boolean equals(Object o) {
@@ -133,7 +145,7 @@ public class IntegerValue implements NumericValue {
     
     // Used to implement for-each loops, so it's not unreasonable to assume the value will fit in 32 bits.
     public IntegerValue inc() {
-        return new IntegerValue(value.intValue() + 1);
+        return IntegerValue.valueOf(value.intValue() + 1);
     }
     
     public int intValue() {

@@ -111,7 +111,7 @@ public class Functions {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        return new IntegerValue(status);
+        return IntegerValue.valueOf(status);
     }
     
     public static IntegerValue shell(String command) {
@@ -125,13 +125,13 @@ public class Functions {
         // FIXME: we need a better way to iterate over a ListValue.
         final int max = talcArgs.size().intValue();
         for (int i = 0; i < max; ++i) {
-            args.add(talcArgs.__get_item__(new IntegerValue(i)).toString());
+            args.add(talcArgs.__get_item__(IntegerValue.valueOf(i)).toString());
         }
         ProcessBuilder processBuilder = new ProcessBuilder(args);
         return runProcessBuilder(processBuilder, System.out);
     }
     
     public static IntegerValue time_ms() {
-        return new IntegerValue(System.currentTimeMillis());
+        return IntegerValue.valueOf(System.currentTimeMillis());
     }
 }
