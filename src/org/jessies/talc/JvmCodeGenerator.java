@@ -725,7 +725,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     }
     
     // Implements "if" statements.
-    // The structure we generate is, I think, unusual, chosen because it seemed simplest to me.
+    // The structure we generate is, I think, unusual; chosen because it seemed simplest to me.
     public Void visitIfStatement(AstNode.IfStatement ifStatement) {
         List<AstNode> expressions = ifStatement.expressions();
         List<AstNode> bodies = ifStatement.bodies();
@@ -762,6 +762,10 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         ifStatement.elseBlock().accept(this);
         
         mg.mark(doneLabel);
+        // We need this in case this "if" is the last statement in a method.
+        // If it is, then a goto to doneLabel would jump past the end of the code.
+        // The ASM and BCEL verifiers don't mind (perhaps because they can see the gotos aren't taken), but the JVM verifier rejects such code.
+        mg.visitInsn(Opcodes.NOP);
         
         return null;
     }
