@@ -110,6 +110,14 @@ public class IntegerValue implements NumericValue {
         return new IntegerValue(value.negate());
     }
     
+    public NumericValue decrement() {
+        return new IntegerValue(value.subtract(BigInteger.ONE));
+    }
+    
+    public NumericValue increment() {
+        return new IntegerValue(value.add(BigInteger.ONE));
+    }
+    
     public int compareTo(NumericValue rhs) {
         return value.compareTo(((IntegerValue) rhs).value);
     }

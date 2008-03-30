@@ -311,16 +311,8 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         if (isPre == false) {
             mg.dup();
         }
-        // Push the appropriate "1".
-        if (binOp.type() == TalcType.INT) {
-            mg.push(1);
-            mg.invokeStatic(integerValueType, new Method("valueOf", integerValueType, new Type[] { Type.LONG_TYPE }));
-        } else {
-            mg.push(1.0);
-            mg.invokeStatic(realValueType, new Method("valueOf", realValueType, new Type[] { Type.DOUBLE_TYPE }));
-        }
-        // Add/subtract it.
-        mg.invokeInterface(numericValueType, new Method(isIncrement ? "add" : "subtract", numericValueType, new Type[] { numericValueType }));
+        // Increment/decrement.
+        mg.invokeInterface(numericValueType, new Method(isIncrement ? "increment" : "decrement", numericValueType, new Type[0]));
         // For pre-increment/decrement, we want to return the value we currently have on the top of the stack.
         if (isPre) {
             mg.dup();

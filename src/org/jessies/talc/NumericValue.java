@@ -26,6 +26,9 @@ public interface NumericValue {
     public NumericValue pow(NumericValue rhs);
     public NumericValue negate();
     
+    public NumericValue decrement();
+    public NumericValue increment();
+    
     /** Returns the equivalent IntegerValue, or throws an exception. */
     public IntegerValue to_i();
     /** Returns the equivalent RealValue, or throws an exception. */

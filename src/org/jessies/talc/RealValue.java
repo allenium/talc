@@ -60,6 +60,14 @@ public class RealValue implements NumericValue {
         return new RealValue(-value);
     }
     
+    public NumericValue decrement() {
+        return new RealValue(value - 1.0);
+    }
+    
+    public NumericValue increment() {
+        return new RealValue(value + 1.0);
+    }
+    
     public int compareTo(NumericValue rhs) {
         return Double.compare(value, ((RealValue) rhs).value);
     }
