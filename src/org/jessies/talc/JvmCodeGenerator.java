@@ -50,6 +50,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     
     private final Type javaLangObjectType = Type.getType(Object.class);
     private final Type javaLangStringType = Type.getType(String.class);
+    private final Type array_javaLangObjectType = Type.getType(Object[].class);
     
     // We need the ability to track active loops to implement "break" and "continue".
     private static class LoopInfo { Label breakLabel, continueLabel; }
@@ -75,6 +76,8 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     private GeneratorAdapter mg;
     
     private int nextLocal = -1;
+    
+    private JvmTalcConstantPool talcConstantPool;
     
     private class JvmLocalVariableAccessor implements VariableAccessor {
         private int localSlot;
@@ -109,6 +112,89 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         
         public void emitPut() {
             mg.putStatic(owner, name, type);
+        }
+    }
+    
+    /**
+     * JVM constant pools can only contain primitives or java.lang.Strings.
+     * We make use of that (via ASM), but Talc "int" and "real" constants,
+     * being boxed in IntegerValue and RealValue, can't be stored in the
+     * constant pool.
+     * 
+     * To work round this, we have our own "Talc constant pool", implemented
+     * as a "private static final Object[]" field. We collect constants during
+     * code generation, add a call to <clinit> to a special __init_constants__
+     * method, and generate code to write the constants into the array after
+     * we're finished generating user code.
+     */
+    private class JvmTalcConstantPool {
+        private final String name = "$__talc_constants";
+        private final Method initializerMethod = new Method("__init_constants__", Type.VOID_TYPE, new Type[0]);
+        
+        private Type owner;
+        private int nextConstant = 0;
+        private ArrayList<Object> constants = new ArrayList<Object>();
+        
+        private JvmTalcConstantPool(Type owner) {
+            this.owner = owner;
+        }
+        
+        public void integerConstant(IntegerValue integerValue) {
+            emitGet(nextConstant++, integerValueType);
+            constants.add(integerValue);
+        }
+        
+        public void realConstant(RealValue realValue) {
+            emitGet(nextConstant++, realValueType);
+            constants.add(realValue);
+        }
+        
+        private void emitGet(int index, Type type) {
+            mg.getStatic(owner, name, array_javaLangObjectType);
+            mg.push(index);
+            mg.visitInsn(Opcodes.AALOAD);
+            mg.checkCast(type);
+        }
+        
+        public void emitCallToTalcConstantPoolInitializer() {
+            mg.invokeStatic(owner, initializerMethod);
+        }
+        
+        public void emitTalcConstantPoolInitializer() {
+            GeneratorAdapter mg = new GeneratorAdapter(Opcodes.ACC_PRIVATE | Opcodes.ACC_STATIC, initializerMethod, null, null, cv);
+            mg.visitCode();
+            
+            // private static final Object[] $talc_constants = new Object[constants.size()];
+            int access = Opcodes.ACC_PRIVATE | Opcodes.ACC_STATIC | Opcodes.ACC_FINAL;
+            cv.visitField(access, name, "[Ljava/lang/Object;", null, null);
+            mg.push(constants.size());
+            mg.newArray(javaLangObjectType);
+            
+            for (int i = 0; i < constants.size(); ++i) {
+                mg.dup();
+                mg.push(i);
+                
+                Object constant = constants.get(i);
+                if (constant instanceof RealValue) {
+                    RealValue realValue = ((RealValue) constant);
+                    mg.push(realValue.doubleValue());
+                    mg.invokeStatic(realValueType, new Method("valueOf", realValueType, new Type[] { Type.DOUBLE_TYPE }));
+                } else {
+                    IntegerValue integerValue = ((IntegerValue) constant);
+                    mg.newInstance(integerValueType);
+                    mg.dup();
+                    // FIXME: we should choose valueOf(long) where possible (which will be in almost every case).
+                    mg.push(integerValue.toString());
+                    mg.push(10);
+                    mg.invokeConstructor(integerValueType, Method.getMethod("void <init>(String, int)"));
+                }
+                
+                mg.visitInsn(Opcodes.AASTORE);
+            }
+            mg.putStatic(owner, name, array_javaLangObjectType);
+            
+            mg.returnValue();
+            mg.endMethod();
         }
     }
     
@@ -169,10 +255,16 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         emitMainMethod(ast);
         mg.endMethod();
         
+        talcConstantPool.emitTalcConstantPoolInitializer();
+        
         cv.visitEnd();
     }
     
     private void emitClassInitializer() {
+        // Create a constant pool for Talc-level constants.
+        talcConstantPool = new JvmTalcConstantPool(generatedClassType);
+        talcConstantPool.emitCallToTalcConstantPoolInitializer();
+        
         // Create the static fields corresponding to the built-in variables.
         // Their initializers should appear at the start of the constructor.
         for (AstNode.VariableDefinition builtInVariableDefinition : Scope.builtInVariableDefinitions()) {
@@ -411,15 +503,9 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         } else if (constantType == TalcType.BOOL) {
             mg.getStatic(booleanValueType, (constant.constant() == BooleanValue.TRUE) ? "TRUE" : "FALSE", booleanValueType);
         } else if (constantType == TalcType.INT) {
-            mg.newInstance(integerValueType);
-            mg.dup();
-            // FIXME: we should choose the <init>(long) constructor where possible (which will be in almost every case).
-            mg.push(constant.constant().toString());
-            mg.push(10);
-            mg.invokeConstructor(integerValueType, Method.getMethod("void <init>(String, int)"));
+            talcConstantPool.integerConstant((IntegerValue) constant.constant());
         } else if (constantType == TalcType.REAL) {
-            mg.push(((RealValue) constant.constant()).doubleValue());
-            mg.invokeStatic(realValueType, new Method("valueOf", realValueType, new Type[] { Type.DOUBLE_TYPE }));
+            talcConstantPool.realConstant((RealValue) constant.constant());
         } else if (constantType == TalcType.STRING) {
             // FIXME: .class files have 64KiB limits on UTF-8 constants, so we might want to break long strings up.
             mg.push(constant.constant().toString());
