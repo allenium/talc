@@ -25,6 +25,7 @@ public class Talc {
     private static final boolean[] debuggingFlags = new boolean[127];
     private static final String[] debuggingFlagNames = new String[127];
     static {
+        debuggingFlagNames['C'] = "doesn't use a synthetic 'constant pool' for int and real constants";
         debuggingFlagNames['i'] = "shows each inferred type as it's fixed up";
         debuggingFlagNames['l'] = "shows each token returned by the lexer";
         debuggingFlagNames['n'] = "doesn't execute the generated code";

@@ -139,14 +139,13 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
             this.owner = owner;
         }
         
-        public void integerConstant(IntegerValue integerValue) {
-            emitGet(nextConstant++, integerValueType);
-            constants.add(integerValue);
-        }
-        
-        public void realConstant(RealValue realValue) {
-            emitGet(nextConstant++, realValueType);
-            constants.add(realValue);
+        public void addConstantAndEmitCode(Object constant, Type type) {
+            if (Talc.debugging('C')) {
+                emitConstant(constant);
+            } else {
+                emitGet(nextConstant++, type);
+                constants.add(constant);
+            }
         }
         
         private void emitGet(int index, Type type) {
@@ -157,11 +156,19 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         }
         
         public void emitCallToTalcConstantPoolInitializer() {
+            if (Talc.debugging('C')) {
+                return;
+            }
+                
             mg.invokeStatic(owner, initializerMethod);
         }
         
         public void emitTalcConstantPoolInitializer() {
-            GeneratorAdapter mg = new GeneratorAdapter(Opcodes.ACC_PRIVATE | Opcodes.ACC_STATIC, initializerMethod, null, null, cv);
+            if (Talc.debugging('C')) {
+                return;
+            }
+            
+            mg = new GeneratorAdapter(Opcodes.ACC_PRIVATE | Opcodes.ACC_STATIC, initializerMethod, null, null, cv);
             mg.visitCode();
             
             // private static final Object[] $talc_constants = new Object[constants.size()];
@@ -173,28 +180,29 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
             for (int i = 0; i < constants.size(); ++i) {
                 mg.dup();
                 mg.push(i);
-                
-                Object constant = constants.get(i);
-                if (constant instanceof RealValue) {
-                    RealValue realValue = ((RealValue) constant);
-                    mg.push(realValue.doubleValue());
-                    mg.invokeStatic(realValueType, new Method("valueOf", realValueType, new Type[] { Type.DOUBLE_TYPE }));
-                } else {
-                    IntegerValue integerValue = ((IntegerValue) constant);
-                    mg.newInstance(integerValueType);
-                    mg.dup();
-                    // FIXME: we should choose valueOf(long) where possible (which will be in almost every case).
-                    mg.push(integerValue.toString());
-                    mg.push(10);
-                    mg.invokeConstructor(integerValueType, Method.getMethod("void <init>(String, int)"));
-                }
-                
+                emitConstant(constants.get(i));
                 mg.visitInsn(Opcodes.AASTORE);
             }
             mg.putStatic(owner, name, array_javaLangObjectType);
             
             mg.returnValue();
             mg.endMethod();
+        }
+        
+        private void emitConstant(Object constant) {
+            if (constant instanceof RealValue) {
+                RealValue realValue = ((RealValue) constant);
+                mg.push(realValue.doubleValue());
+                mg.invokeStatic(realValueType, new Method("valueOf", realValueType, new Type[] { Type.DOUBLE_TYPE }));
+            } else {
+                IntegerValue integerValue = ((IntegerValue) constant);
+                mg.newInstance(integerValueType);
+                mg.dup();
+                // FIXME: we should choose valueOf(long) where possible (which will be in almost every case).
+                mg.push(integerValue.toString());
+                mg.push(10);
+                mg.invokeConstructor(integerValueType, Method.getMethod("void <init>(String, int)"));
+            }
         }
     }
     
@@ -503,9 +511,9 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         } else if (constantType == TalcType.BOOL) {
             mg.getStatic(booleanValueType, (constant.constant() == BooleanValue.TRUE) ? "TRUE" : "FALSE", booleanValueType);
         } else if (constantType == TalcType.INT) {
-            talcConstantPool.integerConstant((IntegerValue) constant.constant());
+            talcConstantPool.addConstantAndEmitCode((IntegerValue) constant.constant(), integerValueType);
         } else if (constantType == TalcType.REAL) {
-            talcConstantPool.realConstant((RealValue) constant.constant());
+            talcConstantPool.addConstantAndEmitCode((RealValue) constant.constant(), realValueType);
         } else if (constantType == TalcType.STRING) {
             // FIXME: .class files have 64KiB limits on UTF-8 constants, so we might want to break long strings up.
             mg.push(constant.constant().toString());
