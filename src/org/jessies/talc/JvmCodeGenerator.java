@@ -143,6 +143,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
             if (Talc.debugging('C')) {
                 emitConstant(constant);
             } else {
+                // FIXME: don't store duplicates.
                 emitGet(nextConstant++, type);
                 constants.add(constant);
             }

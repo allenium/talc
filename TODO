@@ -276,3 +276,5 @@ if (x.starts_with("/")) {
 * BooleanValue is more convenient than Boolean because we know there are only two instances and can compare them by identity. given the price of getstatic, it might be worth investigating converting BooleanValue to I in generated loops and conditionals (where generated boilerplate is the consumer of the BooleanValue).
 
 * add a native (C++) driver so we can put a binary in /usr/bin and use Talc directly in executable scripts.
+
+* JvmTalcConstantPool shouldn't store duplicates.
