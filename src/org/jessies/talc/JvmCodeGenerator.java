@@ -197,6 +197,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         // Compile the user code.
         for (AstNode node : ast) {
             node.accept(this);
+            popAnythingLeftBy(node);
         }
         
         mg.returnValue();
