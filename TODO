@@ -271,10 +271,10 @@ if (x.starts_with("/")) {
 
 * should have an arbitrary-arity string concatenation AstNode. the simplifier should collect them up, and then the code generator can generate optimal code. (though the current simple scheme does pretty well. i wonder how long chains of string concatenation get in real-life code?)
 
-* we could replace RealValue with java.lang.Double but we'd need to put all the RealValue implementations of the NumericValue methods somewhere. more useful would be replacing LRealValue; with D. it's not too hard to treat "real" as a primitive double and call static (DD)D methods in RealValue (i've done it, as proof). the awkward bits would be __get_item__/__set_item__ and methods that would like to work on any numeric type (which is easy given the current plan of exposing NumericValue in the language, though that actually opens up a can of worms because of the potential for mixed-mode arithmetic).
+* we could replace RealValue with java.lang.Double but we'd need to put all the RealValue methods somewhere. more useful would be replacing LRealValue; with D. it's not too hard to treat "real" as a primitive double and call static (DD)D methods in RealValue (i've done it, as proof), but boxing and unboxing where necessary to maintain the illusion that "real" is an object type might be hard.
 
 * BooleanValue is more convenient than Boolean because we know there are only two instances and can compare them by identity. given the price of getstatic, it might be worth investigating converting BooleanValue to I in generated loops and conditionals (where generated boilerplate is the consumer of the BooleanValue).
 
 * add a native (C++) driver so we can put a binary in /usr/bin and use Talc directly in executable scripts.
 
-* JvmTalcConstantPool shouldn't store duplicates.
+* JvmTalcConstantPool shouldn't store duplicates. (how important is that? the constant pool itself isn't a particularly convincing performance win. maybe optimizing IntegerValue construction would have been more useful? or implementing SmallIntegerValue and LargeIntegerValue or somesuch.)
