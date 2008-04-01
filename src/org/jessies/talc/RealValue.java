@@ -18,7 +18,7 @@
 
 package org.jessies.talc;
 
-public class RealValue implements NumericValue {
+public class RealValue implements Comparable<RealValue> {
     private static final RealValue ZERO = new RealValue(0.0);
     private static final RealValue ONE = new RealValue(1.0);
     
@@ -36,40 +36,44 @@ public class RealValue implements NumericValue {
         return new RealValue(Math.abs(value));
     }
     
-    public NumericValue add(NumericValue rhs) {
-        return new RealValue(value + ((RealValue) rhs).value);
+    public RealValue add(RealValue rhs) {
+        return new RealValue(value + rhs.value);
     }
     
-    public NumericValue subtract(NumericValue rhs) {
-        return new RealValue(value - ((RealValue) rhs).value);
+    public RealValue subtract(RealValue rhs) {
+        return new RealValue(value - rhs.value);
     }
     
-    public NumericValue multiply(NumericValue rhs) {
-        return new RealValue(value * ((RealValue) rhs).value);
+    public RealValue multiply(RealValue rhs) {
+        return new RealValue(value * rhs.value);
     }
     
-    public NumericValue divide(NumericValue rhs) {
-        return new RealValue(value / ((RealValue) rhs).value);
+    public RealValue divide(RealValue rhs) {
+        return new RealValue(value / rhs.value);
     }
     
-    public NumericValue pow(NumericValue rhs) {
-        return new RealValue(Math.pow(value, ((RealValue) rhs).value));
+    public RealValue pow(RealValue rhs) {
+        return new RealValue(Math.pow(value, rhs.value));
     }
     
-    public NumericValue negate() {
+    public RealValue negate() {
         return new RealValue(-value);
     }
     
-    public NumericValue decrement() {
+    public RealValue decrement() {
         return new RealValue(value - 1.0);
     }
     
-    public NumericValue increment() {
+    public RealValue increment() {
         return new RealValue(value + 1.0);
     }
     
-    public int compareTo(NumericValue rhs) {
-        return Double.compare(value, ((RealValue) rhs).value);
+    /**
+     * Returns -1, 0 or 1 if this RealValue is less than, equal to, or greater than rhs.
+     * The suggested idiom for performing any boolean comparison 'op' is: (x.compareTo(y) op 0).
+     */
+    public int compareTo(RealValue rhs) {
+        return Double.compare(value, rhs.value);
     }
     
     public RealValue log(RealValue base) {
@@ -118,10 +122,12 @@ public class RealValue implements NumericValue {
         return new RealValue(d);
     }
     
+    /** Returns the equivalent IntegerValue, or throws an exception. */
     public IntegerValue to_i() {
         return IntegerValue.valueOf((long) value);
     }
     
+    /** Returns the equivalent RealValue, or throws an exception. */
     public RealValue to_r() {
         return this;
     }

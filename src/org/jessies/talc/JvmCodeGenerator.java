@@ -40,7 +40,6 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     private final Type listValueType = Type.getType(ListValue.class);
     private final Type mapValueType = Type.getType(MapValue.class);
     private final Type matchValueType = Type.getType(MatchValue.class);
-    private final Type numericValueType = Type.getType(NumericValue.class);
     private final Type realValueType = Type.getType(RealValue.class);
     
     private final Type orgJessiesTalcFunctionsType = Type.getType(Functions.class);
@@ -48,6 +47,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     
     private final Type generatedClassType = Type.getType("LGeneratedClass;");
     
+    private final Type javaLangComparableType = Type.getType(Comparable.class);
     private final Type javaLangObjectType = Type.getType(Object.class);
     private final Type javaLangStringType = Type.getType(String.class);
     private final Type array_javaLangObjectType = Type.getType(Object[].class);
@@ -306,29 +306,29 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     
     public Void visitBinaryOperator(AstNode.BinaryOperator binOp) {
         switch (binOp.op()) {
-            case NEG:       invokeUnaryOp(binOp, numericValueType, "negate"); break;
+            case NEG:       invokeUnaryOp(binOp, "negate"); break;
             
             case PLUS:      numericAddOrStringConcatenation(binOp); break;
             
-            case SUB:       invokeBinaryOp(binOp, numericValueType, "subtract"); break;
-            case MUL:       invokeBinaryOp(binOp, numericValueType, "multiply"); break;
-            case POW:       invokeBinaryOp(binOp, numericValueType, "pow"); break;
-            case DIV:       invokeBinaryOp(binOp, numericValueType, "divide"); break;
-            case MOD:       invokeBinaryOp(binOp, integerValueType, "mod"); break;
+            case SUB:       invokeBinaryOp(binOp, "subtract"); break;
+            case MUL:       invokeBinaryOp(binOp, "multiply"); break;
+            case POW:       invokeBinaryOp(binOp, "pow"); break;
+            case DIV:       invokeBinaryOp(binOp, "divide"); break;
+            case MOD:       invokeBinaryOp(binOp, "mod"); break;
             
-            case SHL:       invokeBinaryOp(binOp, integerValueType, "shiftLeft"); break;
-            case SHR:       invokeBinaryOp(binOp, integerValueType, "shiftRight"); break;
+            case SHL:       invokeBinaryOp(binOp, "shiftLeft"); break;
+            case SHR:       invokeBinaryOp(binOp, "shiftRight"); break;
             
-            case B_AND:     invokeBinaryOp(binOp, integerValueType, "and"); break;
-            case B_NOT:     invokeUnaryOp(binOp, integerValueType, "not"); break;
-            case B_OR:      invokeBinaryOp(binOp, integerValueType, "or"); break;
-            case B_XOR:     invokeBinaryOp(binOp, integerValueType, "xor"); break;
+            case B_AND:     invokeBinaryOp(binOp, "and"); break;
+            case B_NOT:     invokeUnaryOp(binOp, "not"); break;
+            case B_OR:      invokeBinaryOp(binOp, "or"); break;
+            case B_XOR:     invokeBinaryOp(binOp, "xor"); break;
             
             case L_NOT:     l_not(binOp); break;
             case L_AND:     l_shortCircuit(binOp, "FALSE"); break;
             case L_OR:      l_shortCircuit(binOp, "TRUE"); break;
             
-            case FACTORIAL: invokeUnaryOp(binOp, integerValueType, "factorial"); break;
+            case FACTORIAL: invokeUnaryOp(binOp, "factorial"); break;
             
             case POST_DECREMENT: prePostIncrementDecrement(binOp, false, false); break;
             case POST_INCREMENT: prePostIncrementDecrement(binOp, false, true); break;
@@ -337,7 +337,6 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
             
             case EQ:        eq(binOp, "eq"); break;
             case NE:        eq(binOp, "ne"); break;
-            // FIXME: there's no reason why we can't offer these relational operators on non-numeric types. But should we?
             case LE:        cmp(binOp, GeneratorAdapter.LE); break;
             case GE:        cmp(binOp, GeneratorAdapter.GE); break;
             case GT:        cmp(binOp, GeneratorAdapter.GT); break;
@@ -345,16 +344,16 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
             
             case ASSIGN:            binOp.rhs().accept(this); assignTo(binOp.lhs()); break;
             case PLUS_ASSIGN:       numericAddOrStringConcatenation(binOp); assignTo(binOp.lhs()); break;
-            case SUB_ASSIGN:        invokeBinaryOp(binOp, numericValueType, "subtract"); assignTo(binOp.lhs()); break;
-            case MUL_ASSIGN:        invokeBinaryOp(binOp, numericValueType, "multiply"); assignTo(binOp.lhs()); break;
-            case POW_ASSIGN:        invokeBinaryOp(binOp, numericValueType, "pow"); assignTo(binOp.lhs()); break;
-            case DIV_ASSIGN:        invokeBinaryOp(binOp, numericValueType, "divide"); assignTo(binOp.lhs()); break;
-            case MOD_ASSIGN:        invokeBinaryOp(binOp, numericValueType, "mod"); assignTo(binOp.lhs()); break;
-            case SHL_ASSIGN:        invokeBinaryOp(binOp, numericValueType, "shiftLeft"); assignTo(binOp.lhs()); break;
-            case SHR_ASSIGN:        invokeBinaryOp(binOp, numericValueType, "shiftRight"); assignTo(binOp.lhs()); break;
-            case AND_ASSIGN:        invokeBinaryOp(binOp, numericValueType, "and"); assignTo(binOp.lhs()); break;
-            case OR_ASSIGN:         invokeBinaryOp(binOp, numericValueType, "or"); assignTo(binOp.lhs()); break;
-            case XOR_ASSIGN:        invokeBinaryOp(binOp, numericValueType, "xor"); assignTo(binOp.lhs()); break;
+            case SUB_ASSIGN:        invokeBinaryOp(binOp, "subtract"); assignTo(binOp.lhs()); break;
+            case MUL_ASSIGN:        invokeBinaryOp(binOp, "multiply"); assignTo(binOp.lhs()); break;
+            case POW_ASSIGN:        invokeBinaryOp(binOp, "pow"); assignTo(binOp.lhs()); break;
+            case DIV_ASSIGN:        invokeBinaryOp(binOp, "divide"); assignTo(binOp.lhs()); break;
+            case MOD_ASSIGN:        invokeBinaryOp(binOp, "mod"); assignTo(binOp.lhs()); break;
+            case SHL_ASSIGN:        invokeBinaryOp(binOp, "shiftLeft"); assignTo(binOp.lhs()); break;
+            case SHR_ASSIGN:        invokeBinaryOp(binOp, "shiftRight"); assignTo(binOp.lhs()); break;
+            case AND_ASSIGN:        invokeBinaryOp(binOp, "and"); assignTo(binOp.lhs()); break;
+            case OR_ASSIGN:         invokeBinaryOp(binOp, "or"); assignTo(binOp.lhs()); break;
+            case XOR_ASSIGN:        invokeBinaryOp(binOp, "xor"); assignTo(binOp.lhs()); break;
             
         default:
             throw new TalcError(binOp, "don't know how to generate code for " + binOp.op());
@@ -369,7 +368,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
             binOp.rhs().accept(this);
             mg.invokeVirtual(javaLangStringType, new Method("concat", javaLangStringType, new Type[] { javaLangStringType }));
         } else {
-            invokeBinaryOp(binOp, numericValueType, "add");
+            invokeBinaryOp(binOp, "add");
         }
     }
     
@@ -414,7 +413,8 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
             mg.dup();
         }
         // Increment/decrement.
-        mg.invokeInterface(numericValueType, new Method(isIncrement ? "increment" : "decrement", numericValueType, new Type[0]));
+        Type type = typeForTalcType(binOp.type());
+        mg.invokeVirtual(type, new Method(isIncrement ? "increment" : "decrement", type, new Type[0]));
         // For pre-increment/decrement, we want to return the value we currently have on the top of the stack.
         if (isPre) {
             mg.dup();
@@ -439,7 +439,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         // Equivalent to: BooleanValue.valueOf(lhsNumber(binOp).compareTo(rhsNumber(binOp)) <comparison> 0);
         binOp.lhs().accept(this);
         binOp.rhs().accept(this);
-        mg.invokeInterface(numericValueType, Method.getMethod("int compareTo(org.jessies.talc.NumericValue)"));
+        mg.invokeInterface(javaLangComparableType, new Method("compareTo", Type.INT_TYPE, new Type[] { javaLangObjectType }));
         mg.ifZCmp(comparison, equalLabel);
         mg.getStatic(booleanValueType, "FALSE", booleanValueType);
         mg.goTo(doneLabel);
@@ -448,23 +448,17 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         mg.mark(doneLabel);
     }
     
-    private void invokeUnaryOp(AstNode.BinaryOperator binOp, Type type, String name) {
+    private void invokeUnaryOp(AstNode.BinaryOperator binOp, String name) {
         binOp.lhs().accept(this);
-        if (type == numericValueType) {
-            mg.invokeInterface(type, new Method(name, type, new Type[0]));
-        } else {
-            mg.invokeVirtual(type, new Method(name, type, new Type[0]));
-        }
+        Type type = typeForTalcType(binOp.type());
+        mg.invokeVirtual(type, new Method(name, type, new Type[0]));
     }
     
-    private void invokeBinaryOp(AstNode.BinaryOperator binOp, Type type, String name) {
+    private void invokeBinaryOp(AstNode.BinaryOperator binOp, String name) {
         binOp.lhs().accept(this);
         binOp.rhs().accept(this);
-        if (type == numericValueType) {
-            mg.invokeInterface(type, new Method(name, type, new Type[] { type }));
-        } else {
-            mg.invokeVirtual(type, new Method(name, type, new Type[] { type }));
-        }
+        Type type = typeForTalcType(binOp.type());
+        mg.invokeVirtual(type, new Method(name, type, new Type[] { type }));
     }
     
     private void assignTo(AstNode lhs) {
@@ -625,7 +619,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         // if (k >= max) goto breakLabel;
         k.emitGet();
         max.emitGet();
-        mg.invokeInterface(numericValueType, Method.getMethod("int compareTo(org.jessies.talc.NumericValue)"));
+        mg.invokeInterface(javaLangComparableType, new Method("compareTo", Type.INT_TYPE, new Type[] { javaLangObjectType }));
         mg.push(0);
         mg.ifICmp(GeneratorAdapter.GE, loopInfo.breakLabel);
         // v = collection.__get_item__(k);

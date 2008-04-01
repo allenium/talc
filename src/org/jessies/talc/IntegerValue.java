@@ -20,7 +20,7 @@ package org.jessies.talc;
 
 import java.math.*;
 
-public class IntegerValue implements NumericValue {
+public class IntegerValue implements Comparable<IntegerValue> {
     // Cache common values, equivalent to what the JLS mandates for boxed integers in Java.
     private static final IntegerValue[] cache = new IntegerValue[-(-128) + 127 + 1];
     private static final int CACHE_OFFSET = 128;
@@ -55,20 +55,20 @@ public class IntegerValue implements NumericValue {
         return new IntegerValue(value.abs());
     }
     
-    public NumericValue add(NumericValue rhs) {
-        return new IntegerValue(value.add(((IntegerValue) rhs).value));
+    public IntegerValue add(IntegerValue rhs) {
+        return new IntegerValue(value.add(rhs.value));
     }
     
-    public NumericValue subtract(NumericValue rhs) {
-        return new IntegerValue(value.subtract(((IntegerValue) rhs).value));
+    public IntegerValue subtract(IntegerValue rhs) {
+        return new IntegerValue(value.subtract(rhs.value));
     }
     
-    public NumericValue multiply(NumericValue rhs) {
-        return new IntegerValue(value.multiply(((IntegerValue) rhs).value));
+    public IntegerValue multiply(IntegerValue rhs) {
+        return new IntegerValue(value.multiply(rhs.value));
     }
     
-    public NumericValue divide(NumericValue rhs) {
-        return new IntegerValue(value.divide(((IntegerValue) rhs).value));
+    public IntegerValue divide(IntegerValue rhs) {
+        return new IntegerValue(value.divide(rhs.value));
     }
     
     public IntegerValue mod(IntegerValue rhs) {
@@ -85,9 +85,9 @@ public class IntegerValue implements NumericValue {
         return new IntegerValue(value.shiftRight(rhs.value.intValue()));
     }
     
-    public NumericValue pow(NumericValue rhs) {
+    public IntegerValue pow(IntegerValue rhs) {
         // FIXME: check that rhs not too large.
-        return new IntegerValue(value.pow(((IntegerValue) rhs).value.intValue()));
+        return new IntegerValue(value.pow(rhs.value.intValue()));
     }
     
     public IntegerValue and(IntegerValue rhs) {
@@ -106,20 +106,24 @@ public class IntegerValue implements NumericValue {
         return new IntegerValue(value.xor(rhs.value));
     }
     
-    public NumericValue negate() {
+    public IntegerValue negate() {
         return new IntegerValue(value.negate());
     }
     
-    public NumericValue decrement() {
+    public IntegerValue decrement() {
         return new IntegerValue(value.subtract(BigInteger.ONE));
     }
     
-    public NumericValue increment() {
+    public IntegerValue increment() {
         return new IntegerValue(value.add(BigInteger.ONE));
     }
     
-    public int compareTo(NumericValue rhs) {
-        return value.compareTo(((IntegerValue) rhs).value);
+    /**
+     * Returns -1, 0 or 1 if this IntegerValue is less than, equal to, or greater than rhs.
+     * The suggested idiom for performing any boolean comparison 'op' is: (x.compareTo(y) op 0).
+     */
+    public int compareTo(IntegerValue rhs) {
+        return value.compareTo(rhs.value);
     }
     
     public IntegerValue signum() {
@@ -160,10 +164,12 @@ public class IntegerValue implements NumericValue {
         return value.intValue();
     }
     
+    /** Returns the equivalent IntegerValue, or throws an exception. */
     public IntegerValue to_i() {
         return this;
     }
     
+    /** Returns the equivalent RealValue, or throws an exception. */
     public RealValue to_r() {
         double result = value.doubleValue();
         if (result == Double.NEGATIVE_INFINITY || result == Double.POSITIVE_INFINITY) {

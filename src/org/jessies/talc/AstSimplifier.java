@@ -156,14 +156,14 @@ public class AstSimplifier implements AstVisitor<AstNode> {
                 }
                 
                 // Must be an "arithmetic" integer expression.
-                return new AstNode.Constant(binOp.location(), (IntegerValue) evaluateIntegerExpression(binOp, lhsValue, rhsValue), TalcType.INT);
+                return new AstNode.Constant(binOp.location(), evaluateIntegerExpression(binOp, lhsValue, rhsValue), TalcType.INT);
             }
         }
         
         return binOp;
     }
     
-    private NumericValue evaluateIntegerExpression(AstNode.BinaryOperator binOp, IntegerValue lhs, IntegerValue rhs) {
+    private IntegerValue evaluateIntegerExpression(AstNode.BinaryOperator binOp, IntegerValue lhs, IntegerValue rhs) {
         switch (binOp.op()) {
             case PLUS: return lhs.add(rhs);
             case SUB: return lhs.subtract(rhs);
