@@ -42,28 +42,6 @@ public class Talc {
     public Talc() {
     }
     
-    // For interactive use, as a calculator.
-    public String parseAndEvaluate(String text) {
-        if (text.endsWith(";") == false) {
-            // For interactive use, supply a trailing semicolon so the user isn't forced to type it.
-            text += ";";
-        }
-        
-        List<Object> values = parseAndEvaluate(null, new String[0], new Lexer(text));
-        StringBuilder result = new StringBuilder();
-        for (Object value : values) {
-            result.append(value);
-            if (value instanceof IntegerValue) {
-                IntegerValue integerValue = (IntegerValue) value;
-                if (integerValue.compareTo(IntegerValue.valueOf(9)) > 0) {
-                    result.append(" (0x" + integerValue.to_base(IntegerValue.valueOf(16)) + ")");
-                }
-            }
-            result.append('\n');
-        }
-        return result.toString();
-    }
-    
     private void reportTime(String task, long ns) {
         if (Talc.debugging('t')) {
             double s = ns/1000000000.0;
@@ -73,7 +51,7 @@ public class Talc {
         }
     }
     
-    private List<Object> parseAndEvaluate(String argv0, String[] args, Lexer lexer) {
+    private void parseAndEvaluate(String argv0, String[] args, Lexer lexer) {
         // 1. Parse.
         long parse0 = System.nanoTime();
         List<AstNode> ast = new Parser(lexer).parse();
@@ -108,25 +86,34 @@ public class Talc {
         // 4. Execution.
         if (Talc.debugging('n')) {
             System.err.println("[talc] (not executing generated code because of -D n.)");
-            return null;
+            return;
         }
         long execution0 = System.nanoTime();
         try {
             Class<?> generatedClass = loader.getClass("GeneratedClass");
             generatedClass.getMethod("main", String[].class).invoke(null, (Object) args);
         } catch (Throwable th) {
-            th.printStackTrace();
+            if (th.getCause() != null) {
+                th.getCause().printStackTrace();
+            } else {
+                th.printStackTrace();
+            }
         }
         reportTime("execution", System.nanoTime() - execution0);
-        return null;
     }
     
     private void interactiveReadEvaluatePrintLoop() throws IOException {
         LineReader lineReader = new LineReader();
         String line;
+        // FIXME: is breaking into lines really useful, when there's no context carried over?
         while ((line = lineReader.readLine("  ")) != null) {
             try {
-                System.out.println("= " + parseAndEvaluate(line));
+                if (line.endsWith(";") == false && line.endsWith("}") == false) {
+                    // For interactive use, supply a trailing semicolon so the user isn't forced to type it.
+                    // FIXME: is this really useful?
+                    line += ";";
+                }
+                parseAndEvaluate(null, new String[0], new Lexer(line));
             } catch (Throwable th) {
                 reportError(th);
             }
