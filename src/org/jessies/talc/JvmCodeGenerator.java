@@ -801,7 +801,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         } else if (talcType == TalcType.INT) {
             return integerValueType;
         } else if (talcType == TalcType.MATCH) {
-            return "org/jessiestalc/MatchValue";
+            return "org/jessies/talc/MatchValue";
         } else if (talcType == TalcType.OBJECT) {
             return javaLangObjectType;
         } else if (talcType == TalcType.REAL) {
