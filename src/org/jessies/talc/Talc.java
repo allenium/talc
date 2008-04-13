@@ -35,8 +35,7 @@ public class Talc {
         debuggingFlagNames['T'] = "shows information helpful when debugging the type checker";
         debuggingFlagNames['S'] = "shows the generated JVM bytecodes";
         debuggingFlagNames['s'] = "saves the generated code to /tmp";
-        debuggingFlagNames['v'] = "verifies the generated code with ASM's verifier";
-        debuggingFlagNames['V'] = "verifies the generated code with BCEL's JustIce verifier (implies 's')";
+        debuggingFlagNames['v'] = "verifies the generated code with ASM's verifier (implies 's'; libasm3-java must be installed)";
     }
     
     public Talc() {
@@ -141,8 +140,7 @@ public class Talc {
             if (inScriptArgs) {
                 scriptArgs.add(args[i]);
             } else if (args[i].equals("--copyright")) {
-                System.out.println("talc - Copyright (C) 2007-2008 Elliott Hughes.");
-                System.out.println("ASM bytecode library copyright (C) 2000-2007 INRIA, France Telecom.");
+                reportCopyright();
                 didSomethingUseful = true;
             } else if (args[i].equals("-h") || args[i].equals("--help")) {
                 usage(0);
@@ -209,6 +207,29 @@ public class Talc {
             System.err.println("Unexpected internal error:");
             th.printStackTrace();
         }
+    }
+    
+    private static void reportCopyright() {
+        System.out.println("talc - http://code.google.com/p/talc/");
+        System.out.println();
+        System.out.println("Copyright (C) 2007-2008 Elliott Hughes <enh@jessies.org>.");
+        System.out.println();
+        System.out.println("Talc uses org.mozilla.classfile, written by Roger Lawrence.");
+        System.out.println();
+        System.out.println("Talc is free software; you can redistribute it and/or modify");
+        System.out.println("it under the terms of the GNU General Public License as published by");
+        System.out.println("the Free Software Foundation; either version 3 of the License, or");
+        System.out.println("(at your option) any later version.");
+        System.out.println();
+        System.out.println("Talc is distributed in the hope that it will be useful,");
+        System.out.println("but WITHOUT ANY WARRANTY; without even the implied warranty of");
+        System.out.println("MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the");
+        System.out.println("GNU General Public License for more details.");
+        System.out.println();
+        System.out.println("You should have received a copy of the GNU General Public License");
+        System.out.println("along with this program.  If not, see <http://www.gnu.org/licenses/>.");
+        System.out.println();
+        System.out.println("Documentation should be available via \"man talc\" or on the web.");
     }
     
     public static boolean debugging(char ch) {

@@ -18,7 +18,7 @@ DOCUMENTATION
 
 TESTING
 
-* add "assert" statements.
+* add "assert" statements. See also: http://java.sun.com/j2se/1.4.2/docs/guide/lang/assert.html
 
 * fix the "tests" to actually use these, so we get assertion failures if anything goes wrong.
 
@@ -233,8 +233,6 @@ make sure all "value" classes return sensible hashCodes!
 
 
 IMPLEMENTATION
-
-* would gnu.bytecode be a better choice for us than ASM? it seems like it might be more convenient for compilation than ASM (which carries a lot of baggage for fiddling with existing classes).
 
 * language defect:
       a[i] = 0;        # OK

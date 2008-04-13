@@ -20,45 +20,36 @@ package org.jessies.talc;
 
 import java.io.*;
 import java.util.*;
-import org.objectweb.asm.*;
-import org.objectweb.asm.commons.GeneratorAdapter;
-import org.objectweb.asm.commons.Method;
-import org.objectweb.asm.util.CheckClassAdapter;
-import org.objectweb.asm.util.TraceClassVisitor;
+import org.jessies.talc.bytecode.*;
 
 /**
  * Creates Java classes corresponding to given ASTs.
  * There's little to no attempt at optimization here.
- * 
- * All the actual class file writing is done by objectweb.org's ASM library.
  */
 public class JvmCodeGenerator implements AstVisitor<Void> {
-    // We use a lot of types repeatedly, so let's try to ask for any given type just once.
-    private final Type booleanValueType = Type.getType(BooleanValue.class);
-    private final Type fileValueType = Type.getType(FileValue.class);
-    private final Type integerValueType = Type.getType(IntegerValue.class);
-    private final Type listValueType = Type.getType(ListValue.class);
-    private final Type mapValueType = Type.getType(MapValue.class);
-    private final Type matchValueType = Type.getType(MatchValue.class);
-    private final Type realValueType = Type.getType(RealValue.class);
+    // We use some types repeatedly, so let's try to ask for any given type just once.
+    // FIXME: these "types" are actually class names. We should say so.
+    // FIXME: we often want the corresponding signatures. Add constants for them?
+    private static final String integerValueType = "org/jessies/talc/IntegerValue";
+    private static final String listValueType = "org/jessies/talc/ListValue";
+    private static final String realValueType = "org/jessies/talc/RealValue";
     
-    private final Type orgJessiesTalcFunctionsType = Type.getType(Functions.class);
-    private final Type stringFunctionsType = Type.getType(StringFunctions.class);
+    private static final String generatedClassType = "GeneratedClass";
     
-    private final Type generatedClassType = Type.getType("LGeneratedClass;");
+    private static final String javaLangObjectType = "java/lang/Object";
+    private static final String javaLangStringType = "java/lang/String";
     
-    private final Type javaLangComparableType = Type.getType(Comparable.class);
-    private final Type javaLangObjectType = Type.getType(Object.class);
-    private final Type javaLangStringType = Type.getType(String.class);
-    private final Type array_javaLangObjectType = Type.getType(Object[].class);
+    // Our highly sophisticated register allocator.
+    // Also used to set the value of the eponymous field of the Code attribute.
+    private short maxLocals;
     
     // We need the ability to track active loops to implement "break" and "continue".
-    private static class LoopInfo { Label breakLabel, continueLabel; }
+    private static class LoopInfo { int breakLabel, continueLabel; }
     private ArrayStack<LoopInfo> activeLoops = new ArrayStack<LoopInfo>();
     private LoopInfo enterLoop() {
         LoopInfo loopInfo = new LoopInfo();
-        loopInfo.breakLabel = mg.newLabel();
-        loopInfo.continueLabel = mg.newLabel();
+        loopInfo.breakLabel = cv.acquireLabel();
+        loopInfo.continueLabel = cv.acquireLabel();
         activeLoops.push(loopInfo);
         return loopInfo;
     }
@@ -67,59 +58,50 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     }
     
     // The class we're currently emitting code for.
-    private ClassVisitor cv;
-    // The method in which to dump code found at the global scope.
-    // Only used when we come to the end of a method to reset mg.
-    // You shouldn't ever need to reference this directly.
-    private GeneratorAdapter globalMethod;
-    // The method we're currently emitting code for (which may or may not be globalMethod).
-    private GeneratorAdapter mg;
-    
-    private int nextLocal = -1;
-    
-    private JvmTalcConstantPool talcConstantPool;
+    private ClassFileWriter cv;
     
     private class JvmLocalVariableAccessor implements VariableAccessor {
-        private int localSlot;
+        private int variable;
         
-        private JvmLocalVariableAccessor(int localSlot) {
-            this.localSlot = localSlot;
+        private JvmLocalVariableAccessor(String identifier, String signature, int variable) {
+            this.variable = variable;
+            cv.addVariableDescriptor(identifier, signature, cv.getCurrentCodeOffset(), variable);
         }
         
         public void emitGet() {
-            mg.visitVarInsn(Opcodes.ALOAD, localSlot);
+            cv.addALoad(variable);
         }
         
         public void emitPut() {
-            mg.visitVarInsn(Opcodes.ASTORE, localSlot);
+            cv.addAStore(variable);
         }
     }
     
     private class JvmStaticFieldAccessor implements VariableAccessor {
-        private Type owner;
-        private String name;
-        private Type type;
+        private String className;
+        private String fieldName;
+        private String fieldType;
         
-        private JvmStaticFieldAccessor(Type owner, String name, Type type) {
-            this.owner = owner;
-            this.name = name;
-            this.type = type;
+        private JvmStaticFieldAccessor(String className, String fieldName, String fieldType) {
+            this.className = className;
+            this.fieldName = fieldName;
+            this.fieldType = fieldType;
         }
         
         public void emitGet() {
-            mg.getStatic(owner, name, type);
+            cv.add(ByteCode.GETSTATIC, className, fieldName, fieldType);
         }
         
         public void emitPut() {
-            mg.putStatic(owner, name, type);
+            cv.add(ByteCode.PUTSTATIC, className, fieldName, fieldType);
         }
     }
     
     /**
      * JVM constant pools can only contain primitives or java.lang.Strings.
-     * We make use of that (via ASM), but Talc "int" and "real" constants,
-     * being boxed in IntegerValue and RealValue, can't be stored in the
-     * constant pool.
+     * We make use of that (via ClassFileWriter), but Talc "int" and "real"
+     * constants, being boxed in IntegerValue and RealValue, can't be stored
+     * in the constant pool.
      * 
      * To work round this, we have our own "Talc constant pool", implemented
      * as a "private static final Object[]" field. We collect constants during
@@ -127,41 +109,47 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
      * method, and generate code to write the constants into the array after
      * we're finished generating user code.
      */
+    private JvmTalcConstantPool talcConstantPool;
     private class JvmTalcConstantPool {
-        private final String name = "$__talc_constants";
-        private final Method initializerMethod = new Method("__init_constants__", Type.VOID_TYPE, new Type[0]);
+        private final String owner;
+        private static final String constantsFieldName = "$__talc_constants";
+        private static final String constantsFieldSignature = "[Ljava/lang/Object;";
         
-        private Type owner;
-        private int nextConstant = 0;
         private ArrayList<Object> constants = new ArrayList<Object>();
+        private HashMap<Object, Integer> constantIndexes = new HashMap<Object, Integer>();
         
-        private JvmTalcConstantPool(Type owner) {
+        private JvmTalcConstantPool(String owner) {
             this.owner = owner;
+            cv.addField(constantsFieldName, constantsFieldSignature, (short) (ClassFileWriter.ACC_PRIVATE | ClassFileWriter.ACC_STATIC | ClassFileWriter.ACC_FINAL));
         }
         
-        public void addConstantAndEmitCode(Object constant, Type type) {
+        public void addConstantAndEmitCode(Object constant, String type) {
             if (Talc.debugging('C')) {
                 emitConstant(constant);
             } else {
                 // FIXME: don't store duplicates.
-                emitGet(nextConstant++, type);
-                constants.add(constant);
+                Integer constantIndex = constantIndexes.get(constant);
+                if (constantIndex == null) {
+                    constantIndex = constants.size();
+                    constants.add(constant);
+                    constantIndexes.put(constant, constantIndex);
+                }
+                emitGet(constantIndex, type);
             }
         }
         
-        private void emitGet(int index, Type type) {
-            mg.getStatic(owner, name, array_javaLangObjectType);
-            mg.push(index);
-            mg.visitInsn(Opcodes.AALOAD);
-            mg.checkCast(type);
+        private void emitGet(int index, String type) {
+            cv.add(ByteCode.GETSTATIC, owner, constantsFieldName, constantsFieldSignature);
+            cv.addPush(index);
+            cv.add(ByteCode.AALOAD);
+            cv.add(ByteCode.CHECKCAST, type);
         }
         
         public void emitCallToTalcConstantPoolInitializer() {
             if (Talc.debugging('C')) {
                 return;
             }
-                
-            mg.invokeStatic(owner, initializerMethod);
+            cv.addInvoke(ByteCode.INVOKESTATIC, owner, "__init_constants__", "()V");
         }
         
         public void emitTalcConstantPoolInitializer() {
@@ -169,139 +157,173 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
                 return;
             }
             
-            mg = new GeneratorAdapter(Opcodes.ACC_PRIVATE | Opcodes.ACC_STATIC, initializerMethod, null, null, cv);
-            mg.visitCode();
+            maxLocals = 0;
+            cv.startMethod("__init_constants__", "()V", (short) (ClassFileWriter.ACC_PRIVATE | ClassFileWriter.ACC_STATIC));
             
-            // private static final Object[] $talc_constants = new Object[constants.size()];
-            int access = Opcodes.ACC_PRIVATE | Opcodes.ACC_STATIC | Opcodes.ACC_FINAL;
-            cv.visitField(access, name, "[Ljava/lang/Object;", null, null);
-            mg.push(constants.size());
-            mg.newArray(javaLangObjectType);
+            // $talc_constants = new Object[constants.size()];
+            cv.addPush(constants.size());
+            cv.add(ByteCode.ANEWARRAY, javaLangObjectType);
             
             for (int i = 0; i < constants.size(); ++i) {
-                mg.dup();
-                mg.push(i);
+                cv.add(ByteCode.DUP);
+                cv.addPush(i);
                 emitConstant(constants.get(i));
-                mg.visitInsn(Opcodes.AASTORE);
+                cv.add(ByteCode.AASTORE);
             }
-            mg.putStatic(owner, name, array_javaLangObjectType);
+            cv.add(ByteCode.PUTSTATIC, owner, constantsFieldName, constantsFieldSignature);
+            cv.add(ByteCode.RETURN);
             
-            mg.returnValue();
-            mg.endMethod();
+            cv.stopMethod(maxLocals);
         }
         
         private void emitConstant(Object constant) {
             if (constant instanceof RealValue) {
-                RealValue realValue = ((RealValue) constant);
-                mg.push(realValue.doubleValue());
-                mg.invokeStatic(realValueType, new Method("valueOf", realValueType, new Type[] { Type.DOUBLE_TYPE }));
+                RealValue realValue = (RealValue) constant;
+                cv.addPush(realValue.doubleValue());
+                cv.addInvoke(ByteCode.INVOKESTATIC, realValueType, "valueOf", "(D)L" + realValueType + ";");
             } else {
-                IntegerValue integerValue = ((IntegerValue) constant);
-                mg.newInstance(integerValueType);
-                mg.dup();
+                IntegerValue integerValue = (IntegerValue) constant;
+                cv.add(ByteCode.NEW, integerValueType);
+                cv.add(ByteCode.DUP);
                 // FIXME: we should choose valueOf(long) where possible (which will be in almost every case).
-                mg.push(integerValue.toString());
-                mg.push(10);
-                mg.invokeConstructor(integerValueType, Method.getMethod("void <init>(String, int)"));
+                cv.addPush(integerValue.toString());
+                cv.addPush(10);
+                cv.addInvoke(ByteCode.INVOKESPECIAL, integerValueType, "<init>", "(Ljava/lang/String;I)V");
             }
         }
     }
     
     public JvmCodeGenerator(TalcClassLoader classLoader, List<AstNode> ast) {
-        ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-        classWriter.visitSource(ast.get(0).location().sourceFilename(), null);
-        compile(ast, classWriter);
-        byte[] bytecode = classWriter.toByteArray();
+        byte[] bytecode = compile(ast);
         
-        // FIXME: use this for caching rather than/as well as debugging?
-        if (Talc.debugging('s') || Talc.debugging('V')) {
-            saveGeneratedCode(bytecode);
-        }
-        
-        if (Talc.debugging('v')) {
-            ClassReader cr = new ClassReader(bytecode);
-            CheckClassAdapter.verify(cr, false, new PrintWriter(System.err));
+        // FIXME: use 's' for caching rather than/as well as debugging?
+        if (Talc.debugging('s') || Talc.debugging('S') || Talc.debugging('v')) {
+            File filename = saveGeneratedCode(bytecode);
+            // FIXME: would be nice to have our own built-in disassembler.
+            if (Talc.debugging('S')) {
+                disassemble(filename);
+            }
+            // FIXME: verification failures should probably stop us in our tracks.
+            if (Talc.debugging('v')) {
+                verify(filename);
+            }
         }
         
         classLoader.defineClass("GeneratedClass", bytecode);
     }
     
-    private void saveGeneratedCode(byte[] bytecode) {
+    private File saveGeneratedCode(byte[] bytecode) {
         File filename = new File("/tmp/GeneratedClass.class");
         try {
             FileOutputStream fos = new FileOutputStream(filename);
             fos.write(bytecode);
             fos.close();
-            if (Talc.debugging('V')) {
-                String command = "java -cp /usr/share/java/bcel-5.2.jar:" + filename.getParent() + ":" + System.getProperty("java.class.path") + " org.apache.bcel.verifier.Verifier GeneratedClass";
-                System.err.println("talc: verifying with:\n" + "  " + command);
-                Functions.shell(command);
-            }
         } catch (Exception ex) {
             System.err.println("talc: warning: couldn't write generated class file to \"" + filename + "\".");
         }
+        return filename;
     }
     
-    private void compile(List<AstNode> ast, ClassWriter classWriter) {
-        this.cv = classWriter;
-        if (Talc.debugging('S')) {
-            cv = new TraceClassVisitor(cv, new PrintWriter(System.out));
+    private static void disassemble(File filename) {
+        String command = "javap -c -l -private -v -classpath " + filename.getParent() + " GeneratedClass";
+        System.err.println("talc: disassembling with:\n" + "  " + command);
+        Functions.shell(command);
+    }
+    
+    private static void verify(File filename) {
+        // Gather up all the ASM jar files from /usr/share/java/.
+        // FIXME: Talc will need some kind of "glob" facility, and we could re-use it here.
+        ListValue classpath = new ListValue();
+        for (File jar : new File("/usr/share/java/").listFiles()) {
+            if (jar.getName().endsWith(".jar")) {
+                if (jar.getName().startsWith("asm")) {
+                    classpath.push_back(jar);
+                }
+            }
         }
-        // FIXME: what does this cost? should it be optional for end-users?
-        cv = new CheckClassAdapter(cv);
+        // Add the directory we wrote the generated code to.
+        classpath.push_back(filename.getParent());
+        // Add our own classpath (for the Talc runtime classes).
+        classpath.push_back(System.getProperty("java.class.path"));
         
-        cv.visit(Opcodes.V1_5, Opcodes.ACC_PUBLIC, "GeneratedClass", null, "java/lang/Object", null);
+        // Call the external verifier.
+        String command = "java -cp " + classpath.join(":") + " org.objectweb.asm.util.CheckClassAdapter " + filename;
+        System.err.println("talc: verifying with:\n" + "  " + command);
+        Functions.shell(command);
+    }
+    
+    private byte[] compile(List<AstNode> ast) {
+        String sourceFilename = ast.get(0).location().sourceFilename();
+        this.cv = new ClassFileWriter(generatedClassType, javaLangObjectType, sourceFilename);
+        cv.setFlags(ClassFileWriter.ACC_PUBLIC);
         
-        globalMethod = mg = new GeneratorAdapter(Opcodes.ACC_STATIC, new Method("<clinit>", Type.VOID_TYPE, new Type[0]), null, null, cv);
-        mg.visitCode();
         emitClassInitializer();
-        mg.endMethod();
         
         // It's convenient to be able to run the class, so we can point an arbitrary JVM at it to see what it thinks.
         // To enable that, generate a "public static void main(String[] args)" method.
-        globalMethod = mg = new GeneratorAdapter(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, Method.getMethod("void main(String[])"), null, null, cv);
-        mg.visitCode();
+        // This method also generates the code corresponding to global function definitions.
         emitMainMethod(ast);
-        mg.endMethod();
         
         talcConstantPool.emitTalcConstantPoolInitializer();
         
-        cv.visitEnd();
+        return cv.toByteArray();
     }
     
     private void emitClassInitializer() {
+        maxLocals = 0;
+        cv.startMethod("<clinit>", "()V", ClassFileWriter.ACC_STATIC);
+        
         // Create a constant pool for Talc-level constants.
         talcConstantPool = new JvmTalcConstantPool(generatedClassType);
         talcConstantPool.emitCallToTalcConstantPoolInitializer();
         
-        // Create the static fields corresponding to the built-in variables.
-        // Their initializers should appear at the start of the constructor.
+        // Create and initialize the static fields corresponding to the built-in variables.
         for (AstNode.VariableDefinition builtInVariableDefinition : Scope.builtInVariableDefinitions()) {
             builtInVariableDefinition.accept(this);
             popAnythingLeftBy(builtInVariableDefinition);
         }
-        mg.returnValue();
+        cv.add(ByteCode.RETURN);
+        
+        cv.stopMethod(maxLocals);
     }
     
     private void emitMainMethod(List<AstNode> ast) {
+        maxLocals = 0;
+        cv.startMethod("main", "([Ljava/lang/String;)V", (short) (ClassFileWriter.ACC_PUBLIC | ClassFileWriter.ACC_STATIC));
+        
         // main has a (String[] args) argument.
-        int argsLocal = 0;
-        nextLocal = 1;
+        int argsLocal = maxLocals++;
         
         // ARGS = new ListValue(args);
-        mg.newInstance(listValueType);
-        mg.dup();
-        mg.visitVarInsn(Opcodes.ALOAD, argsLocal);
-        mg.invokeConstructor(listValueType, new Method("<init>", Type.VOID_TYPE, new Type[] { Type.getType(String[].class) }));
-        mg.putStatic(generatedClassType, "ARGS", listValueType);
+        cv.add(ByteCode.NEW, listValueType);
+        cv.add(ByteCode.DUP);
+        cv.addALoad(argsLocal);
+        cv.addInvoke(ByteCode.INVOKESPECIAL, listValueType, "<init>", "([Ljava/lang/String;)V");
+        cv.add(ByteCode.PUTSTATIC, generatedClassType, "ARGS", "Lorg/jessies/talc/ListValue;");
         
-        // Compile the user code.
+        // Compile the global code, saving global functions for later.
+        ArrayList<AstNode.FunctionDefinition> functionDefinitions = new ArrayList<AstNode.FunctionDefinition>();
         for (AstNode node : ast) {
-            node.accept(this);
-            popAnythingLeftBy(node);
+            if (node instanceof AstNode.FunctionDefinition) {
+                functionDefinitions.add((AstNode.FunctionDefinition) node);
+            } else {
+                node.accept(this);
+                popAnythingLeftBy(node);
+            }
         }
         
-        mg.returnValue();
+        //mg.popScope();
+        cv.add(ByteCode.RETURN);
+        cv.stopMethod(maxLocals);
+        
+        // Now we've finished with the global code, we can go back over the global functions.
+        emitGlobalFunctions(functionDefinitions);
+    }
+    
+    private void emitGlobalFunctions(List<AstNode.FunctionDefinition> functionDefinitions) {
+        for (AstNode.FunctionDefinition functionDefinition : functionDefinitions) {
+            visitFunctionDefinition(functionDefinition);
+        }
     }
     
     public Void visitBinaryOperator(AstNode.BinaryOperator binOp) {
@@ -337,10 +359,11 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
             
             case EQ:        eq(binOp, "eq"); break;
             case NE:        eq(binOp, "ne"); break;
-            case LE:        cmp(binOp, GeneratorAdapter.LE); break;
-            case GE:        cmp(binOp, GeneratorAdapter.GE); break;
-            case GT:        cmp(binOp, GeneratorAdapter.GT); break;
-            case LT:        cmp(binOp, GeneratorAdapter.LT); break;
+            
+            case LE:             cmp(binOp, ByteCode.IFLE); break;
+            case GE:             cmp(binOp, ByteCode.IFGE); break;
+            case GT:             cmp(binOp, ByteCode.IFGT); break;
+            case LT:             cmp(binOp, ByteCode.IFLT); break;
             
             case ASSIGN:            binOp.rhs().accept(this); assignTo(binOp.lhs()); break;
             case PLUS_ASSIGN:       numericAddOrStringConcatenation(binOp); assignTo(binOp.lhs()); break;
@@ -356,7 +379,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
             case XOR_ASSIGN:        invokeBinaryOp(binOp, "xor"); assignTo(binOp.lhs()); break;
             
         default:
-            throw new TalcError(binOp, "don't know how to generate code for " + binOp.op());
+            throw new TalcError(binOp, "ICE: don't know how to generate code for " + binOp.op());
         }
         return null;
     }
@@ -366,114 +389,114 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
             // FIXME: should generalize to cope with arbitrary chains of concatenation (though probably above this level).
             binOp.lhs().accept(this);
             binOp.rhs().accept(this);
-            mg.invokeVirtual(javaLangStringType, new Method("concat", javaLangStringType, new Type[] { javaLangStringType }));
+            visitLineNumber(binOp);
+            cv.addInvoke(ByteCode.INVOKEVIRTUAL, "java/lang/String", "concat", "(Ljava/lang/String;)Ljava/lang/String;");
         } else {
             invokeBinaryOp(binOp, "add");
         }
     }
     
-    // Leaves ((binOp.lhs() == BooleanValue.TRUE) ? BooleanValue.FALSE : BooleanValue.TRUE) on the stack.
-    // FIXME: is it worth having this manual inline? i did it like this because it was the first binOp i implemented. if i were coming to it now, i'd use invokeVirtual.
     private void l_not(AstNode.BinaryOperator binOp) {
         binOp.lhs().accept(this);
-        
-        Label pushFalseLabel = mg.newLabel();
-        Label doneLabel = mg.newLabel();
-        
-        mg.getStatic(booleanValueType, "TRUE", booleanValueType);
-        mg.ifCmp(booleanValueType, GeneratorAdapter.EQ, pushFalseLabel);
-        mg.getStatic(booleanValueType, "TRUE", booleanValueType);
-        mg.goTo(doneLabel);
-        mg.mark(pushFalseLabel);
-        mg.getStatic(booleanValueType, "FALSE", booleanValueType);
-        mg.mark(doneLabel);
+        visitLineNumber(binOp);
+        cv.addInvoke(ByteCode.INVOKEVIRTUAL, "org/jessies/talc/BooleanValue", "not", "()Lorg/jessies/talc/BooleanValue;");
     }
     
     // Short-circuits the evaluation of binOp.rhs() if the binOp.lhs() is the BooleanValue corresponding to 'trueOrFalse'.
     // Implements either && or ||, depending on whether you supply "FALSE" or "TRUE".
     private void l_shortCircuit(AstNode.BinaryOperator binOp, String trueOrFalse) {
-        Label shortCircuitLabel = mg.newLabel();
-        Label doneLabel = mg.newLabel();
+        int shortCircuitLabel = cv.acquireLabel();
+        int doneLabel = cv.acquireLabel();
         
         binOp.lhs().accept(this);
-        mg.getStatic(booleanValueType, trueOrFalse, booleanValueType);
-        mg.ifCmp(booleanValueType, GeneratorAdapter.EQ, shortCircuitLabel);
+        visitLineNumber(binOp);
+        pushTrueOrFalse(trueOrFalse);
+        cv.add(ByteCode.IF_ACMPEQ, shortCircuitLabel);
         binOp.rhs().accept(this);
-        mg.goTo(doneLabel);
-        mg.mark(shortCircuitLabel);
-        mg.getStatic(booleanValueType, trueOrFalse, booleanValueType);
-        mg.mark(doneLabel);
+        visitLineNumber(binOp);
+        cv.add(ByteCode.GOTO, doneLabel);
+        cv.markLabel(shortCircuitLabel);
+        pushTrueOrFalse(trueOrFalse);
+        cv.markLabel(doneLabel);
     }
     
     private void prePostIncrementDecrement(AstNode.BinaryOperator binOp, boolean isPre, boolean isIncrement) {
         // Get the initial value on the stack.
         binOp.lhs().accept(this);
+        visitLineNumber(binOp);
         // For post-increment/decrement, we want to return the value we currently have on the top of the stack.
         if (isPre == false) {
-            mg.dup();
+            cv.add(ByteCode.DUP);
         }
         // Increment/decrement.
-        Type type = typeForTalcType(binOp.type());
-        mg.invokeVirtual(type, new Method(isIncrement ? "increment" : "decrement", type, new Type[0]));
+        String type = typeForTalcType(binOp.type());
+        cv.addInvoke(ByteCode.INVOKEVIRTUAL, type, (isIncrement ? "increment" : "decrement"), "()L" + type + ";");
         // For pre-increment/decrement, we want to return the value we currently have on the top of the stack.
         if (isPre) {
-            mg.dup();
+            cv.add(ByteCode.DUP);
         }
         // Store the new value.
         AstNode.VariableName variableName = (AstNode.VariableName) binOp.lhs();
         AstNode.VariableDefinition variableDefinition = variableName.definition();
-        mg.checkCast(typeForTalcType(variableDefinition.type()));
+        cv.add(ByteCode.CHECKCAST, typeForTalcType(variableDefinition.type()));
         variableDefinition.accessor().emitPut();
     }
     
     private void eq(AstNode.BinaryOperator binOp, String eqOrNe) {
         binOp.lhs().accept(this);
         binOp.rhs().accept(this);
-        mg.invokeStatic(orgJessiesTalcFunctionsType, new Method(eqOrNe, booleanValueType, new Type[] { javaLangObjectType, javaLangObjectType }));
+        visitLineNumber(binOp);
+        cv.addInvoke(ByteCode.INVOKESTATIC, "org/jessies/talc/Functions", eqOrNe, "(Ljava/lang/Object;Ljava/lang/Object;)Lorg/jessies/talc/BooleanValue;");
     }
     
-    private void cmp(AstNode.BinaryOperator binOp, int comparison) {
-        Label equalLabel = mg.newLabel();
-        Label doneLabel = mg.newLabel();
+    private void cmp(AstNode.BinaryOperator binOp, int jumpOpcode) {
+        int equalLabel = cv.acquireLabel();
+        int doneLabel = cv.acquireLabel();
         
         // Equivalent to: BooleanValue.valueOf(lhsNumber(binOp).compareTo(rhsNumber(binOp)) <comparison> 0);
         binOp.lhs().accept(this);
         binOp.rhs().accept(this);
-        mg.invokeInterface(javaLangComparableType, new Method("compareTo", Type.INT_TYPE, new Type[] { javaLangObjectType }));
-        mg.ifZCmp(comparison, equalLabel);
-        mg.getStatic(booleanValueType, "FALSE", booleanValueType);
-        mg.goTo(doneLabel);
-        mg.mark(equalLabel);
-        mg.getStatic(booleanValueType, "TRUE", booleanValueType);
-        mg.mark(doneLabel);
+        visitLineNumber(binOp);
+        cv.addInvoke(ByteCode.INVOKEINTERFACE, "java/lang/Comparable", "compareTo", "(Ljava/lang/Object;)I");
+        cv.add(jumpOpcode, equalLabel);
+        pushFalse();
+        cv.add(ByteCode.GOTO, doneLabel);
+        cv.markLabel(equalLabel);
+        pushTrue();
+        cv.markLabel(doneLabel);
     }
     
     private void invokeUnaryOp(AstNode.BinaryOperator binOp, String name) {
         binOp.lhs().accept(this);
-        Type type = typeForTalcType(binOp.type());
-        mg.invokeVirtual(type, new Method(name, type, new Type[0]));
+        String type = typeForTalcType(binOp.type());
+        visitLineNumber(binOp);
+        cv.addInvoke(ByteCode.INVOKEVIRTUAL, type, name, "()L" + type + ";");
     }
     
     private void invokeBinaryOp(AstNode.BinaryOperator binOp, String name) {
         binOp.lhs().accept(this);
         binOp.rhs().accept(this);
-        Type type = typeForTalcType(binOp.type());
-        mg.invokeVirtual(type, new Method(name, type, new Type[] { type }));
+        String type = typeForTalcType(binOp.type());
+        visitLineNumber(binOp);
+        cv.addInvoke(ByteCode.INVOKEVIRTUAL, type, name, "(L" + type + ";)L" + type + ";");
     }
     
     private void assignTo(AstNode lhs) {
+        visitLineNumber(lhs);
         AstNode.VariableName variableName = (AstNode.VariableName) lhs;
         AstNode.VariableDefinition variableDefinition = variableName.definition();
-        mg.checkCast(typeForTalcType(variableDefinition.type()));
-        mg.dup();
+        cv.add(ByteCode.CHECKCAST, typeForTalcType(variableDefinition.type()));
+        cv.add(ByteCode.DUP);
         variableDefinition.accessor().emitPut();
     }
     
     public Void visitBlock(AstNode.Block block) {
+        //mg.pushScope();
         for (AstNode statement : block.statements()) {
             statement.accept(this);
             popAnythingLeftBy(statement);
         }
+        //mg.popScope();
         return null;
     }
     
@@ -482,50 +505,53 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         
         // If the code we generated for "statement" left a value on the stack, we need to pop it off!
         if (node instanceof AstNode.BinaryOperator || node instanceof AstNode.Constant || node instanceof AstNode.ListLiteral || node instanceof AstNode.VariableDefinition || node instanceof AstNode.VariableName) {
-            mg.pop();
+            cv.add(ByteCode.POP);
         } else if (node instanceof AstNode.FunctionCall) {
             // Pop unused return values from non-void functions.
             AstNode.FunctionCall functionCall = (AstNode.FunctionCall) node;
             if (functionCall.definition().returnType() != TalcType.VOID) {
-                mg.pop();
+                cv.add(ByteCode.POP);
             }
         }
     }
     
     public Void visitBreakStatement(AstNode.BreakStatement breakStatement) {
+        visitLineNumber(breakStatement);
         LoopInfo loopInfo = activeLoops.peek();
-        mg.goTo(loopInfo.breakLabel);
+        cv.add(ByteCode.GOTO, loopInfo.breakLabel);
         return null;
     }
     
     public Void visitConstant(AstNode.Constant constant) {
-        // FIXME: this is all very unfortunate. life would be simpler if we'd use Java's "built-in" Boolean and String types, and do something a bit cleverer for "int", too.
+        visitLineNumber(constant);
+        // FIXME: this is all very unfortunate. life would be simpler if we'd use Java's "built-in" Boolean type, and do something a bit cleverer for "int", too.
         TalcType constantType = constant.type();
         if (constantType == TalcType.NULL || constant.constant() == null) {
-            mg.visitInsn(Opcodes.ACONST_NULL);
+            cv.add(ByteCode.ACONST_NULL);
         } else if (constantType == TalcType.BOOL) {
-            mg.getStatic(booleanValueType, (constant.constant() == BooleanValue.TRUE) ? "TRUE" : "FALSE", booleanValueType);
+            pushTrueOrFalse((constant.constant() == BooleanValue.TRUE) ? "TRUE" : "FALSE");
         } else if (constantType == TalcType.INT) {
             talcConstantPool.addConstantAndEmitCode((IntegerValue) constant.constant(), integerValueType);
         } else if (constantType == TalcType.REAL) {
             talcConstantPool.addConstantAndEmitCode((RealValue) constant.constant(), realValueType);
         } else if (constantType == TalcType.STRING) {
             // FIXME: .class files have 64KiB limits on UTF-8 constants, so we might want to break long strings up.
-            mg.push(constant.constant().toString());
+            cv.addPush(constant.constant().toString());
         } else {
-            throw new TalcError(constant, "don't know how to generate code for constants of type " + constantType);
+            throw new TalcError(constant, "ICE: don't know how to generate code for constants of type " + constantType);
         }
         return null;
     }
     
     public Void visitClassDefinition(AstNode.ClassDefinition classDefinition) {
-        throw new TalcError(classDefinition, "don't know how to generate code for user-defined classes");
+        throw new TalcError(classDefinition, "NYI: don't know how to generate code for user-defined classes");
         //return null;
     }
     
     public Void visitContinueStatement(AstNode.ContinueStatement continueStatement) {
+        visitLineNumber(continueStatement);
         LoopInfo loopInfo = activeLoops.peek();
-        mg.goTo(loopInfo.continueLabel);
+        cv.add(ByteCode.GOTO, loopInfo.continueLabel);
         return null;
     }
     
@@ -533,17 +559,18 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         LoopInfo loopInfo = enterLoop();
         
         // continueLabel:
-        mg.mark(loopInfo.continueLabel);
+        cv.markLabel(loopInfo.continueLabel);
         // <body>
         doStatement.body().accept(this);
         // if (<expression> == false) goto breakLabel;
         doStatement.expression().accept(this);
-        mg.getStatic(booleanValueType, "FALSE", booleanValueType);
-        mg.ifCmp(booleanValueType, GeneratorAdapter.EQ, loopInfo.breakLabel);
+        visitLineNumber(doStatement);
+        pushFalse();
+        cv.add(ByteCode.IF_ACMPEQ, loopInfo.breakLabel);
         // goto continueLabel;
-        mg.goTo(loopInfo.continueLabel);
+        cv.add(ByteCode.GOTO, loopInfo.continueLabel);
         // breakLabel:
-        mg.mark(loopInfo.breakLabel);
+        cv.markLabel(loopInfo.breakLabel);
         
         leaveLoop();
         return null;
@@ -552,7 +579,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     public Void visitForStatement(AstNode.ForStatement forStatement) {
         LoopInfo loopInfo = enterLoop();
         
-        Label headLabel = mg.newLabel();
+        int headLabel = cv.acquireLabel();
         
         // <initializer>
         if (forStatement.initializer() != null) {
@@ -560,22 +587,24 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
             popAnythingLeftBy(forStatement.initializer());
         }
         // headLabel:
-        mg.mark(headLabel);
+        cv.markLabel(headLabel);
         // if (<condition> == false) goto breakLabel;
         forStatement.conditionExpression().accept(this);
-        mg.getStatic(booleanValueType, "FALSE", booleanValueType);
-        mg.ifCmp(booleanValueType, GeneratorAdapter.EQ, loopInfo.breakLabel);
+        visitLineNumber(forStatement);
+        pushFalse();
+        cv.add(ByteCode.IF_ACMPEQ, loopInfo.breakLabel);
         // <body>
         forStatement.body().accept(this);
         // continueLabel:
-        mg.mark(loopInfo.continueLabel);
+        cv.markLabel(loopInfo.continueLabel);
         // <update-expression>
         forStatement.updateExpression().accept(this);
+        visitLineNumber(forStatement);
         popAnythingLeftBy(forStatement.updateExpression());
         // goto headLabel;
-        mg.goTo(headLabel);
+        cv.add(ByteCode.GOTO, headLabel);
         // breakLabel:
-        mg.mark(loopInfo.breakLabel);
+        cv.markLabel(loopInfo.breakLabel);
         
         leaveLoop();
         return null;
@@ -584,74 +613,85 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     public Void visitForEachStatement(AstNode.ForEachStatement forEachStatement) {
         // FIXME: we need some kind of "iterable" concept in the language. until then, this code assumes we're dealing with a list.
         
+        visitLineNumber(forEachStatement);
         ArrayList<AstNode.VariableDefinition> loopVariables = (ArrayList<AstNode.VariableDefinition>) forEachStatement.loopVariableDefinitions();
+        AstNode.VariableDefinition kDefinition;
         if (loopVariables.size() == 1) {
             // The user didn't ask for the key, but we'll be needing it, so synthesize it before visiting the loop variable definitions.
-            AstNode.VariableDefinition k = new AstNode.VariableDefinition(null, null, TalcType.INT, new AstNode.Constant(null, IntegerValue.valueOf(0), TalcType.INT), false);
-            loopVariables.add(0, k);
+            kDefinition = new AstNode.VariableDefinition(null, "$key", TalcType.INT, null, false);
+            loopVariables.add(0, kDefinition);
+        } else {
+            // The user did ask for the key, but won't (can't!) have supplied an initializer.
+            kDefinition = loopVariables.get(0);
         }
+        kDefinition.setInitializer(new AstNode.Constant(null, IntegerValue.valueOf(0), TalcType.INT));
+        
         for (AstNode.VariableDefinition loopVariable : loopVariables) {
             visitVariableDefinition(loopVariable);
+            popAnythingLeftBy(loopVariable);
         }
         
         LoopInfo loopInfo = enterLoop();
         
-        Label headLabel = mg.newLabel();
+        int headLabel = cv.acquireLabel();
         
         // collection: list = <expression>;
         forEachStatement.expression().accept(this);
-        JvmLocalVariableAccessor collection = new JvmLocalVariableAccessor(nextLocal++);
-        mg.checkCast(listValueType);
-        mg.dup();
+        visitLineNumber(forEachStatement);
+        JvmLocalVariableAccessor collection = new JvmLocalVariableAccessor("$collection", ClassFileWriter.classNameToSignature(listValueType), maxLocals++);
+        cv.add(ByteCode.CHECKCAST, listValueType);
+        cv.add(ByteCode.DUP);
         collection.emitPut();
         
         // max: int = collection.length();
-        JvmLocalVariableAccessor max = new JvmLocalVariableAccessor(nextLocal++);
-        mg.invokeVirtual(listValueType, new Method("size", integerValueType, new Type[0]));
+        JvmLocalVariableAccessor max = new JvmLocalVariableAccessor("$max", ClassFileWriter.classNameToSignature(integerValueType), maxLocals++);
+        cv.addInvoke(ByteCode.INVOKEVIRTUAL, listValueType, "size", "()Lorg/jessies/talc/IntegerValue;");
         max.emitPut();
         
         VariableAccessor k = loopVariables.get(0).accessor();
         VariableAccessor v = loopVariables.get(1).accessor();
-        Type vType = typeForTalcType(loopVariables.get(1).type());
+        String vType = typeForTalcType(loopVariables.get(1).type());
         
         // headLabel:
-        mg.mark(headLabel);
+        cv.markLabel(headLabel);
         // if (k >= max) goto breakLabel;
         k.emitGet();
         max.emitGet();
-        mg.invokeInterface(javaLangComparableType, new Method("compareTo", Type.INT_TYPE, new Type[] { javaLangObjectType }));
-        mg.push(0);
-        mg.ifICmp(GeneratorAdapter.GE, loopInfo.breakLabel);
+        cv.addInvoke(ByteCode.INVOKEINTERFACE, "java/lang/Comparable", "compareTo", "(Ljava/lang/Object;)I");
+        cv.addPush(0);
+        cv.add(ByteCode.IF_ICMPGE, loopInfo.breakLabel);
         // v = collection.__get_item__(k);
         collection.emitGet();
         k.emitGet();
-        mg.invokeVirtual(listValueType, new Method("__get_item__", javaLangObjectType, new Type[] { integerValueType }));
-        mg.checkCast(vType);
+        cv.addInvoke(ByteCode.INVOKEVIRTUAL, listValueType, "__get_item__", "(Lorg/jessies/talc/IntegerValue;)Ljava/lang/Object;");
+        cv.add(ByteCode.CHECKCAST, vType);
         v.emitPut();
         // <body>
         forEachStatement.body().accept(this);
         // continueLabel:
-        mg.mark(loopInfo.continueLabel);
+        cv.markLabel(loopInfo.continueLabel);
         // ++k;
+        visitLineNumber(forEachStatement);
         k.emitGet();
-        mg.invokeVirtual(integerValueType, new Method("inc", integerValueType, new Type[0]));
+        cv.addInvoke(ByteCode.INVOKEVIRTUAL, integerValueType, "inc", "()Lorg/jessies/talc/IntegerValue;");
         k.emitPut();
         // goto headLabel;
-        mg.goTo(headLabel);
+        cv.add(ByteCode.GOTO, headLabel);
         // breakLabel:
-        mg.mark(loopInfo.breakLabel);
+        cv.markLabel(loopInfo.breakLabel);
         
         leaveLoop();
         return null;
     }
     
     public Void visitFunctionCall(AstNode.FunctionCall functionCall) {
+        visitLineNumber(functionCall);
         String functionName = functionCall.functionName();
         AstNode.FunctionDefinition definition = functionCall.definition();
         AstNode[] arguments = functionCall.arguments();
         
         // Assume we're dealing with a global user-defined function...
-        Type containingType = generatedClassType;
+        String containingType = generatedClassType;
         // ...unless we know it's not.
         TalcType talcContainingType = definition.containingType();
         //System.err.println("call to " + functionName + " in type " + talcContainingType + " defined in scope " + definition.scope());
@@ -659,73 +699,92 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
             containingType = typeForTalcType(talcContainingType);
         } else if (definition.scope() == null) {
             // We need a special case for built-in "global" functions.
-            containingType = orgJessiesTalcFunctionsType;
+            containingType = "org/jessies/talc/Functions";
         }
         
         // FIXME: generalize this.
-        Type proxyType = null;
-        Type proxyFirstArgumentType = null;
+        String proxyType = null;
+        String proxyFirstArgumentType = null;
         if (containingType == javaLangStringType) {
-            proxyType = stringFunctionsType;
+            proxyType = "org/jessies/talc/StringFunctions";
             proxyFirstArgumentType = containingType;
         }
         
         if (definition.isVarArgs()) {
             if (arguments.length == 1) {
                 arguments[0].accept(this);
-                mg.invokeStatic(containingType, Method.getMethod("void " + functionName + " (java.lang.Object)"));
+                cv.addInvoke(ByteCode.INVOKESTATIC, containingType, functionName, "(Ljava/lang/Object;)V");
             } else {
-                mg.push(arguments.length);
-                mg.newArray(javaLangObjectType);
+                cv.addPush(arguments.length);
+                cv.add(ByteCode.ANEWARRAY, javaLangObjectType);
                 for (int i = 0; i < arguments.length; ++i) {
-                    mg.dup();
-                    mg.push(i);
+                    cv.add(ByteCode.DUP);
+                    cv.addPush(i);
                     arguments[i].accept(this);
-                    mg.checkCast(javaLangObjectType);
-                    mg.arrayStore(javaLangObjectType);
+                    cv.add(ByteCode.CHECKCAST, javaLangObjectType);
+                    cv.add(ByteCode.AASTORE);
                 }
-                mg.invokeStatic(containingType, Method.getMethod("void " + functionName + " (java.lang.Object[])"));
+                cv.addInvoke(ByteCode.INVOKESTATIC, containingType, functionName, "([Ljava/lang/Object;)V");
             }
         } else {
             if (functionCall.instance() != null) {
                 if (functionName.equals("to_s")) {
                     // A special case: for Java compatibility to_s is toString underneath.
                     functionCall.instance().accept(this);
-                    mg.invokeVirtual(javaLangObjectType, Method.getMethod("java.lang.String toString()"));
+                    cv.addInvoke(ByteCode.INVOKEVIRTUAL, "java/lang/Object", "toString", "()Ljava/lang/String;");
                     return null;
                 } else {
                     functionCall.instance().accept(this);
-                    mg.checkCast(containingType);
+                    cv.add(ByteCode.CHECKCAST, containingType);
                     
                     // FIXME: is this fall-through right?
                 }
             }
             
             if (definition.isConstructor()) {
-                mg.newInstance(containingType);
-                mg.dup();
+                cv.add(ByteCode.NEW, containingType);
+                cv.add(ByteCode.DUP);
             }
             
-            Method method = methodForFunctionDefinition(definition, proxyFirstArgumentType);
-            Type[] methodArgumentTypes = method.getArgumentTypes();
+            List<TalcType> formalParameterTypes = definition.formalParameterTypes();
             for (int i = 0; i < arguments.length; ++i) {
                 arguments[i].accept(this);
-                mg.checkCast(methodArgumentTypes[i]);
+                
+                // Emit a "checkcast", just in case.
+                // FIXME: really, we shouldn't ever be in this position. We should take care of this on the return from generic methods. (Anywhere else?)
+                String expectedArgumentType;
+                if (proxyFirstArgumentType != null) {
+                    // If proxyFirstArgumentType is non-null, you intend to invoke a method on
+                    // a proxy class, which means it's static method, which means you need an
+                    // extra first argument to take the place of "this", and proxyFirstArgumentType
+                    // is the type of that argument, *not* the type of the class containing
+                    // the method.
+                    expectedArgumentType = (i == 0) ? proxyFirstArgumentType : typeForTalcType(formalParameterTypes.get(i - 1));;
+                } else {
+                    expectedArgumentType = typeForTalcType(formalParameterTypes.get(i));
+                }
+                cv.add(ByteCode.CHECKCAST, expectedArgumentType);
             }
+            
+            String name = definition.functionName();
+            String methodSignature = methodSignature(definition);
             if (proxyType != null) {
-                mg.invokeStatic(proxyType, method);
+                // Insert the argument representing "this" in these static methods.
+                methodSignature = "(" + ClassFileWriter.classNameToSignature(containingType) + methodSignature.substring(1);
+                cv.addInvoke(ByteCode.INVOKESTATIC, proxyType, name, methodSignature);
             } else if (functionCall.instance() != null) {
-                mg.invokeVirtual(containingType, method);
+                cv.addInvoke(ByteCode.INVOKEVIRTUAL, containingType, name, methodSignature);
             } else if (definition.isConstructor()) {
-                mg.invokeConstructor(containingType, method);
+                cv.addInvoke(ByteCode.INVOKESPECIAL, containingType, "<init>", methodSignature);
             } else {
-                mg.invokeStatic(containingType, method);
+                cv.addInvoke(ByteCode.INVOKESTATIC, containingType, name, methodSignature);
             }
             
             // Because we implement generics by erasure, we should "checkcast" non-void return types.
+            // FIXME: we only need to do this in a generic context.
             TalcType resolvedReturnType = functionCall.resolvedReturnType();
             if (resolvedReturnType != TalcType.VOID) {
-                mg.checkCast(typeForTalcType(resolvedReturnType));
+                cv.add(ByteCode.CHECKCAST, typeForTalcType(resolvedReturnType));
             }
             
             // FIXME: check here whether 'method' exists, and fail here rather than waiting for the verifier?
@@ -734,15 +793,15 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         return null;
     }
     
-    private Type typeForTalcType(TalcType talcType) {
+    private String typeForTalcType(TalcType talcType) {
         if (talcType == TalcType.BOOL) {
-            return booleanValueType;
+            return "org/jessies/talc/BooleanValue";
         } else if (talcType == TalcType.FILE) {
-            return fileValueType;
+            return "org/jessies/talc/FileValue";
         } else if (talcType == TalcType.INT) {
             return integerValueType;
         } else if (talcType == TalcType.MATCH) {
-            return matchValueType;
+            return "org/jessiestalc/MatchValue";
         } else if (talcType == TalcType.OBJECT) {
             return javaLangObjectType;
         } else if (talcType == TalcType.REAL) {
@@ -750,7 +809,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         } else if (talcType == TalcType.STRING) {
             return javaLangStringType;
         } else if (talcType == TalcType.VOID) {
-            return Type.VOID_TYPE;
+            return "V";
         } else if (talcType == TalcType.T || talcType == TalcType.K || talcType == TalcType.V) {
             // We implement generics by erasure.
             return javaLangObjectType;
@@ -759,60 +818,50 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
             return listValueType;
         } else if (talcType.rawName().equals("map")) {
             // FIXME: this is a particularly big hack.
-            return mapValueType;
+            return "org/jessies/talc/MapValue";
         } else {
             throw new RuntimeException("don't know how to represent TalcType " + talcType);
         }
     }
     
-    /**
-     * Creates an ASM Method corresponding to the FunctionDefinition AstNode.
-     * If proxyFirstArgumentType is non-null, you intend to use the Method on
-     * a proxy class, which means it's static method, which means you need an
-     * extra first argument to take the place of "this", and proxyFirstArgumentType
-     * is the type of that argument, *not* the type of the class containing
-     * the method.
-     */
-    private Method methodForFunctionDefinition(AstNode.FunctionDefinition definition, Type proxyFirstArgumentType) {
-        List<TalcType> talcTypes = definition.formalParameterTypes();
-        ArrayList<Type> argumentTypes = new ArrayList<Type>(talcTypes.size());
-        if (proxyFirstArgumentType != null) {
-            argumentTypes.add(proxyFirstArgumentType);
+    private String methodSignature(AstNode.FunctionDefinition definition) {
+        StringBuffer result = new StringBuffer("(");
+        for (TalcType talcType : definition.formalParameterTypes()) {
+            result.append(ClassFileWriter.classNameToSignature(typeForTalcType(talcType)));
         }
-        for (TalcType talcType : talcTypes) {
-            argumentTypes.add(typeForTalcType(talcType));
-        }
-        String name;
-        Type returnType;
-        if (definition.isConstructor()) {
-            name = "<init>";
-            returnType = Type.VOID_TYPE;
+        result.append(")");
+        if (definition.isConstructor() || definition.returnType() == TalcType.VOID) {
+            result.append("V");
         } else {
-            name = definition.functionName();
-            returnType = typeForTalcType(definition.returnType());
+            result.append(ClassFileWriter.classNameToSignature(typeForTalcType(definition.returnType())));
         }
-        return new Method(name, returnType, argumentTypes.toArray(new Type[argumentTypes.size()]));
+        return result.toString();
     }
     
     public Void visitFunctionDefinition(AstNode.FunctionDefinition functionDefinition) {
-        Method m = methodForFunctionDefinition(functionDefinition, null);
-        mg = new GeneratorAdapter(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, m, null, null, cv);
+        short flags = ClassFileWriter.ACC_PUBLIC | ClassFileWriter.ACC_STATIC;
         
-        // FIXME: this should be 1 for non-static methods!
-        nextLocal = 0;
+        maxLocals = 0;
+        cv.startMethod(functionDefinition.functionName(), methodSignature(functionDefinition), flags);
+        
+        visitLineNumber(functionDefinition);
+        // FIXME: for non-static methods, "this" is argument 0 and the arguments start from 1.
         for (AstNode.VariableDefinition formalParameter : functionDefinition.formalParameters()) {
-            formalParameter.setAccessor(new JvmLocalVariableAccessor(nextLocal++));
+            String formalParameterSignature = ClassFileWriter.classNameToSignature(typeForTalcType(formalParameter.type()));
+            formalParameter.setAccessor(new JvmLocalVariableAccessor(formalParameter.identifier(), formalParameterSignature, maxLocals++));
         }
         
-        mg.visitCode();
+        //mg.pushScope();
         functionDefinition.body().accept(this);
+        //mg.popScope();
+        
         if (functionDefinition.returnType() == TalcType.VOID) {
-            // Void functions are allowed an implicit "return".
+            // Void functions in Talc are allowed an implicit "return".
             // The bytecode verifier doesn't care if we have an unreachable RETURN bytecode, but it does care if we fall off the end of a method!
-            mg.returnValue();
+            cv.add(ByteCode.RETURN);
         }
-        mg.endMethod();
-        mg = globalMethod;
+        
+        cv.stopMethod(maxLocals);
         return null;
     }
     
@@ -824,51 +873,53 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         final int expressionCount = expressions.size();
         
         // We have a label for each expression...
-        Label[] labels = new Label[expressionCount];
+        int[] labels = new int[expressionCount];
         for (int i = 0; i < labels.length; ++i) {
-            labels[i] = mg.newLabel();
+            labels[i] = cv.acquireLabel();
         }
         // ...a label for any expressionless "else" block...
-        Label elseLabel = mg.newLabel();
+        int elseLabel = cv.acquireLabel();
         // ...and a label for the end of the whole "if" statement.
-        Label doneLabel = mg.newLabel();
+        int doneLabel = cv.acquireLabel();
         
         // Unlike most compilers, we actually keep all the expressions together in a sort of "jump table"...
         for (int i = 0; i < expressionCount; ++i) {
             expressions.get(i).accept(this);
-            mg.getStatic(booleanValueType, "TRUE", booleanValueType);
-            mg.ifCmp(booleanValueType, GeneratorAdapter.EQ, labels[i]);
+            pushTrue();
+            cv.add(ByteCode.IF_ACMPEQ, labels[i]);
         }
-        mg.goTo(elseLabel);
+        cv.add(ByteCode.GOTO, elseLabel);
         
         // ...that jumps to the appropriate block.
         for (int i = 0; i < expressionCount; ++i) {
-            mg.mark(labels[i]);
+            cv.markLabel(labels[i]);
             bodies.get(i).accept(this);
-            mg.goTo(doneLabel);
+            cv.add(ByteCode.GOTO, doneLabel);
         }
         
         // If no expression was true, we'll jump here, to the "else" block.
         // The else block may be empty, in which case we'll just fall through to the end of the whole "if" statement.
-        mg.mark(elseLabel);
+        cv.markLabel(elseLabel);
         ifStatement.elseBlock().accept(this);
         
-        mg.mark(doneLabel);
+        cv.markLabel(doneLabel);
         // We need this in case this "if" is the last statement in a method.
         // If it is, then a goto to doneLabel would jump past the end of the code.
         // The ASM and BCEL verifiers don't mind (perhaps because they can see the gotos aren't taken), but the JVM verifier rejects such code.
-        mg.visitInsn(Opcodes.NOP);
-        
+        cv.add(ByteCode.NOP);
         return null;
     }
     
     public Void visitListLiteral(AstNode.ListLiteral listLiteral) {
         // ListValue result = new ListValue();
-        mg.newInstance(listValueType);
-        mg.dup();
-        mg.invokeConstructor(listValueType, Method.getMethod("void <init>()"));
-        int resultLocal = nextLocal++;
-        mg.visitVarInsn(Opcodes.ASTORE, resultLocal);
+        visitLineNumber(listLiteral);
+        cv.add(ByteCode.NEW, listValueType);
+        cv.add(ByteCode.DUP);
+        cv.addInvoke(ByteCode.INVOKESPECIAL, listValueType, "<init>", "()V");
+        //mg.pushScope();
+        int result = maxLocals++;
+        cv.add(ByteCode.DUP);
+        cv.addAStore(result);
         
         List<AstNode> expressions = listLiteral.expressions();
         for (AstNode expression : expressions) {
@@ -876,53 +927,62 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
             expression.accept(this);
             
             // result.push_back(expression);
-            mg.visitVarInsn(Opcodes.ALOAD, resultLocal);
-            mg.swap();
-            mg.invokeVirtual(listValueType, Method.getMethod("org.jessies.talc.ListValue push_back(java.lang.Object)"));
+            visitLineNumber(listLiteral);
+            cv.addInvoke(ByteCode.INVOKEVIRTUAL, listValueType, "push_back", "(Ljava/lang/Object;)Lorg/jessies/talc/ListValue;");
         }
         
         // We didn't need a dup in the loop above because push_back leaves the result on the stack anyway.
         // Likewise, we don't need a loadLocal here unless we never went round the loop.
         if (expressions.size() == 0) {
-            mg.visitVarInsn(Opcodes.ALOAD, resultLocal);
+            cv.addALoad(result);
         }
+        //mg.popScope();
         return null;
     }
     
     public Void visitReturnStatement(AstNode.ReturnStatement returnStatement) {
         if (returnStatement.expression() != null) {
             returnStatement.expression().accept(this);
-            mg.checkCast(typeForTalcType(returnStatement.returnType()));
+            cv.add(ByteCode.CHECKCAST, typeForTalcType(returnStatement.returnType()));
+            visitLineNumber(returnStatement);
+            cv.add(ByteCode.ARETURN);
+            return null;
         }
-        mg.returnValue();
+        
+        visitLineNumber(returnStatement);
+        cv.add(ByteCode.RETURN);
         return null;
     }
     
     public Void visitVariableDefinition(AstNode.VariableDefinition variableDefinition) {
-        Type type = typeForTalcType(variableDefinition.type());
+        String type = typeForTalcType(variableDefinition.type());
+        String signature = ClassFileWriter.classNameToSignature(type);
         VariableAccessor accessor;
         if (variableDefinition.scope() == Scope.globalScope() || variableDefinition.scope() == Scope.builtInScope()) {
             // If we're at global scope, we may need to back variables with fields.
             // Escape analysis would tell us whether or not we do, but we don't do any of that, so we have to assume the worst.
-            int access = Opcodes.ACC_PRIVATE | Opcodes.ACC_STATIC;
+            short access = ClassFileWriter.ACC_PRIVATE | ClassFileWriter.ACC_STATIC;
             if (variableDefinition.isFinal()) {
-                access |= Opcodes.ACC_FINAL;
+                access |= ClassFileWriter.ACC_FINAL;
             }
-            cv.visitField(access, variableDefinition.identifier(), type.getDescriptor(), null, null);
-            accessor = new JvmStaticFieldAccessor(generatedClassType, variableDefinition.identifier(), type);
+            
+            cv.addField(variableDefinition.identifier(), signature, access);
+            accessor = new JvmStaticFieldAccessor(cv.getClassName(), variableDefinition.identifier(), signature);
         } else {
             // If we're at local scope, we can back variables with locals.
-            accessor = new JvmLocalVariableAccessor(nextLocal++);
+            accessor = new JvmLocalVariableAccessor(variableDefinition.identifier(), signature, maxLocals++);
         }
         variableDefinition.setAccessor(accessor);
         variableDefinition.initializer().accept(this);
-        mg.checkCast(type);
-        mg.dup();
+        visitLineNumber(variableDefinition);
+        cv.add(ByteCode.CHECKCAST, type);
+        cv.add(ByteCode.DUP);
         accessor.emitPut();
         return null;
     }
     
     public Void visitVariableName(AstNode.VariableName variableName) {
+        visitLineNumber(variableName);
         variableName.definition().accessor().emitGet();
         return null;
     }
@@ -931,19 +991,42 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         LoopInfo loopInfo = enterLoop();
         
         // continueLabel:
-        mg.mark(loopInfo.continueLabel);
+        cv.markLabel(loopInfo.continueLabel);
         // if (<expression> == false) goto breakLabel;
         whileStatement.expression().accept(this);
-        mg.getStatic(booleanValueType, "FALSE", booleanValueType);
-        mg.ifCmp(booleanValueType, GeneratorAdapter.EQ, loopInfo.breakLabel);
+        visitLineNumber(whileStatement);
+        pushFalse();
+        cv.add(ByteCode.IF_ACMPEQ, loopInfo.breakLabel);
         // <body>
         whileStatement.body().accept(this);
         // goto continueLabel;
-        mg.goTo(loopInfo.continueLabel);
+        visitLineNumber(whileStatement);
+        cv.add(ByteCode.GOTO, loopInfo.continueLabel);
         // breakLabel:
-        mg.mark(loopInfo.breakLabel);
+        cv.markLabel(loopInfo.breakLabel);
         
         leaveLoop();
         return null;
+    }
+    
+    private void pushTrue() {
+        pushTrueOrFalse("TRUE");
+    }
+    
+    private void pushFalse() {
+        pushTrueOrFalse("FALSE");
+    }
+    
+    private void pushTrueOrFalse(String trueOrFalse) {
+        cv.add(ByteCode.GETSTATIC, "org/jessies/talc/BooleanValue", trueOrFalse, "Lorg/jessies/talc/BooleanValue;");
+    }
+    
+    private void visitLineNumber(AstNode node) {
+        if (node != null) {
+            SourceLocation location = node.location();
+            if (location != null) {
+                cv.addLineNumberEntry((short) location.lineNumber());
+            }
+        }
     }
 }
