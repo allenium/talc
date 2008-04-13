@@ -328,55 +328,55 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     
     public Void visitBinaryOperator(AstNode.BinaryOperator binOp) {
         switch (binOp.op()) {
-            case NEG:       invokeUnaryOp(binOp, "negate"); break;
+            case NEG:            invokeUnaryOp(binOp, "negate"); break;
             
-            case PLUS:      numericAddOrStringConcatenation(binOp); break;
+            case PLUS:           numericAddOrStringConcatenation(binOp); break;
             
-            case SUB:       invokeBinaryOp(binOp, "subtract"); break;
-            case MUL:       invokeBinaryOp(binOp, "multiply"); break;
-            case POW:       invokeBinaryOp(binOp, "pow"); break;
-            case DIV:       invokeBinaryOp(binOp, "divide"); break;
-            case MOD:       invokeBinaryOp(binOp, "mod"); break;
+            case SUB:            invokeBinaryOp(binOp, "subtract"); break;
+            case MUL:            invokeBinaryOp(binOp, "multiply"); break;
+            case POW:            invokeBinaryOp(binOp, "pow"); break;
+            case DIV:            invokeBinaryOp(binOp, "divide"); break;
+            case MOD:            invokeBinaryOp(binOp, "mod"); break;
             
-            case SHL:       invokeBinaryOp(binOp, "shiftLeft"); break;
-            case SHR:       invokeBinaryOp(binOp, "shiftRight"); break;
+            case SHL:            invokeBinaryOp(binOp, "shiftLeft"); break;
+            case SHR:            invokeBinaryOp(binOp, "shiftRight"); break;
             
-            case B_AND:     invokeBinaryOp(binOp, "and"); break;
-            case B_NOT:     invokeUnaryOp(binOp, "not"); break;
-            case B_OR:      invokeBinaryOp(binOp, "or"); break;
-            case B_XOR:     invokeBinaryOp(binOp, "xor"); break;
+            case B_AND:          invokeBinaryOp(binOp, "and"); break;
+            case B_NOT:          invokeUnaryOp(binOp, "not"); break;
+            case B_OR:           invokeBinaryOp(binOp, "or"); break;
+            case B_XOR:          invokeBinaryOp(binOp, "xor"); break;
             
-            case L_NOT:     l_not(binOp); break;
-            case L_AND:     l_shortCircuit(binOp, "FALSE"); break;
-            case L_OR:      l_shortCircuit(binOp, "TRUE"); break;
+            case L_NOT:          l_not(binOp); break;
+            case L_AND:          l_shortCircuit(binOp, "FALSE"); break;
+            case L_OR:           l_shortCircuit(binOp, "TRUE"); break;
             
-            case FACTORIAL: invokeUnaryOp(binOp, "factorial"); break;
+            case FACTORIAL:      invokeUnaryOp(binOp, "factorial"); break;
             
             case POST_DECREMENT: prePostIncrementDecrement(binOp, false, false); break;
             case POST_INCREMENT: prePostIncrementDecrement(binOp, false, true); break;
             case PRE_DECREMENT:  prePostIncrementDecrement(binOp, true, false); break;
             case PRE_INCREMENT:  prePostIncrementDecrement(binOp, true, true); break;
             
-            case EQ:        eq(binOp, "eq"); break;
-            case NE:        eq(binOp, "ne"); break;
+            case EQ:             eq(binOp, "eq"); break;
+            case NE:             eq(binOp, "ne"); break;
             
             case LE:             cmp(binOp, ByteCode.IFLE); break;
             case GE:             cmp(binOp, ByteCode.IFGE); break;
             case GT:             cmp(binOp, ByteCode.IFGT); break;
             case LT:             cmp(binOp, ByteCode.IFLT); break;
             
-            case ASSIGN:            binOp.rhs().accept(this); assignTo(binOp.lhs()); break;
-            case PLUS_ASSIGN:       numericAddOrStringConcatenation(binOp); assignTo(binOp.lhs()); break;
-            case SUB_ASSIGN:        invokeBinaryOp(binOp, "subtract"); assignTo(binOp.lhs()); break;
-            case MUL_ASSIGN:        invokeBinaryOp(binOp, "multiply"); assignTo(binOp.lhs()); break;
-            case POW_ASSIGN:        invokeBinaryOp(binOp, "pow"); assignTo(binOp.lhs()); break;
-            case DIV_ASSIGN:        invokeBinaryOp(binOp, "divide"); assignTo(binOp.lhs()); break;
-            case MOD_ASSIGN:        invokeBinaryOp(binOp, "mod"); assignTo(binOp.lhs()); break;
-            case SHL_ASSIGN:        invokeBinaryOp(binOp, "shiftLeft"); assignTo(binOp.lhs()); break;
-            case SHR_ASSIGN:        invokeBinaryOp(binOp, "shiftRight"); assignTo(binOp.lhs()); break;
-            case AND_ASSIGN:        invokeBinaryOp(binOp, "and"); assignTo(binOp.lhs()); break;
-            case OR_ASSIGN:         invokeBinaryOp(binOp, "or"); assignTo(binOp.lhs()); break;
-            case XOR_ASSIGN:        invokeBinaryOp(binOp, "xor"); assignTo(binOp.lhs()); break;
+            case ASSIGN:         binOp.rhs().accept(this); assignTo(binOp.lhs()); break;
+            case PLUS_ASSIGN:    numericAddOrStringConcatenation(binOp); assignTo(binOp.lhs()); break;
+            case SUB_ASSIGN:     invokeBinaryOp(binOp, "subtract"); assignTo(binOp.lhs()); break;
+            case MUL_ASSIGN:     invokeBinaryOp(binOp, "multiply"); assignTo(binOp.lhs()); break;
+            case POW_ASSIGN:     invokeBinaryOp(binOp, "pow"); assignTo(binOp.lhs()); break;
+            case DIV_ASSIGN:     invokeBinaryOp(binOp, "divide"); assignTo(binOp.lhs()); break;
+            case MOD_ASSIGN:     invokeBinaryOp(binOp, "mod"); assignTo(binOp.lhs()); break;
+            case SHL_ASSIGN:     invokeBinaryOp(binOp, "shiftLeft"); assignTo(binOp.lhs()); break;
+            case SHR_ASSIGN:     invokeBinaryOp(binOp, "shiftRight"); assignTo(binOp.lhs()); break;
+            case AND_ASSIGN:     invokeBinaryOp(binOp, "and"); assignTo(binOp.lhs()); break;
+            case OR_ASSIGN:      invokeBinaryOp(binOp, "or"); assignTo(binOp.lhs()); break;
+            case XOR_ASSIGN:     invokeBinaryOp(binOp, "xor"); assignTo(binOp.lhs()); break;
             
         default:
             throw new TalcError(binOp, "ICE: don't know how to generate code for " + binOp.op());
