@@ -340,6 +340,7 @@ public class AstSimplifier implements AstVisitor<AstNode> {
             } else if (constant(exp) == BooleanValue.TRUE) {
                 // Drop *everything* after (but not including) a true expression.
                 while (eIt.hasNext()) {
+                    eIt.next(); bIt.next();
                     eIt.remove(); bIt.remove();
                 }
                 elseBlock = AstNode.Block.EMPTY_BLOCK;
