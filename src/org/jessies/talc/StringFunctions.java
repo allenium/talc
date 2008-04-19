@@ -24,6 +24,11 @@ public final class StringFunctions {
     private StringFunctions() {
     }
     
+    public static String __get_item__(String s, IntegerValue index) {
+        int i = index.intValue();
+        return s.substring(i, i + 1);
+    }
+    
     public static BooleanValue contains(String s, String substring) {
         return BooleanValue.valueOf(s.contains(substring));
     }

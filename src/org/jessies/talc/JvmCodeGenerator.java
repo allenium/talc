@@ -735,8 +735,16 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
                     return null;
                 } else {
                     functionCall.instance().accept(this);
-                    cv.add(ByteCode.CHECKCAST, containingType);
-                    
+                    if (proxyFirstArgumentType != null) {
+                        // If proxyFirstArgumentType is non-null, you intend to invoke a method on
+                        // a proxy class, which means it's static method, which means you need an
+                        // extra first argument to take the place of "this", and proxyFirstArgumentType
+                        // is the type of that argument, *not* the type of the class containing
+                        // the method.
+                        cv.add(ByteCode.CHECKCAST, proxyFirstArgumentType);
+                    } else {
+                        cv.add(ByteCode.CHECKCAST, containingType);
+                    }
                     // FIXME: is this fall-through right?
                 }
             }
@@ -752,18 +760,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
                 
                 // Emit a "checkcast", just in case.
                 // FIXME: really, we shouldn't ever be in this position. We should take care of this on the return from generic methods. (Anywhere else?)
-                String expectedArgumentType;
-                if (proxyFirstArgumentType != null) {
-                    // If proxyFirstArgumentType is non-null, you intend to invoke a method on
-                    // a proxy class, which means it's static method, which means you need an
-                    // extra first argument to take the place of "this", and proxyFirstArgumentType
-                    // is the type of that argument, *not* the type of the class containing
-                    // the method.
-                    expectedArgumentType = (i == 0) ? proxyFirstArgumentType : typeForTalcType(formalParameterTypes.get(i - 1));;
-                } else {
-                    expectedArgumentType = typeForTalcType(formalParameterTypes.get(i));
-                }
-                cv.add(ByteCode.CHECKCAST, expectedArgumentType);
+                cv.add(ByteCode.CHECKCAST, typeForTalcType(formalParameterTypes.get(i)));
             }
             
             String name = definition.functionName();
@@ -931,11 +928,6 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
             cv.addInvoke(ByteCode.INVOKEVIRTUAL, listValueType, "push_back", "(Ljava/lang/Object;)Lorg/jessies/talc/ListValue;");
         }
         
-        // We didn't need a dup in the loop above because push_back leaves the result on the stack anyway.
-        // Likewise, we don't need a loadLocal here unless we never went round the loop.
-        if (expressions.size() == 0) {
-            cv.addALoad(result);
-        }
         //mg.popScope();
         return null;
     }

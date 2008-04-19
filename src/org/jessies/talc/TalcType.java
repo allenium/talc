@@ -134,6 +134,7 @@ public class TalcType {
         addMemberFunction(REAL, new BuiltInFunction("to_r", TalcType.REAL));
         addClass(REAL);
         
+        addMemberFunction(STRING, new BuiltInFunction("__get_item__", Arrays.asList("index"), Arrays.asList(TalcType.INT), TalcType.STRING));
         addMemberFunction(STRING, new BuiltInFunction("contains", Arrays.asList("substring"), Arrays.asList(TalcType.STRING), TalcType.BOOL));
         addMemberFunction(STRING, new BuiltInFunction("ends_with", Arrays.asList("suffix"), Arrays.asList(TalcType.STRING), TalcType.BOOL));
         addMemberFunction(STRING, new BuiltInFunction("escape_html", TalcType.STRING));
