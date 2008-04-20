@@ -22,7 +22,6 @@ empty.m();
 o : object = empty;
 puts(empty.to_s(), " should equal ", o.to_s());
 
-/*
 class Point {
   x: int = 0;
   y: int = 0;
@@ -64,4 +63,3 @@ p := new Point(3, 4);
 puts(p);
 p.moveBy(-2 * p.x(), -2 * p.y());
 puts(p);
-*/

@@ -79,23 +79,36 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         }
     }
     
-    private class JvmStaticFieldAccessor implements VariableAccessor {
+    private class JvmFieldAccessor implements VariableAccessor {
         private String className;
         private String fieldName;
         private String fieldType;
+        private boolean isStatic;
         
-        private JvmStaticFieldAccessor(String className, String fieldName, String fieldType) {
+        private JvmFieldAccessor(String className, String fieldName, String fieldType, boolean isStatic) {
             this.className = className;
             this.fieldName = fieldName;
             this.fieldType = fieldType;
+            this.isStatic = isStatic;
         }
         
         public void emitGet() {
-            cv.add(ByteCode.GETSTATIC, className, fieldName, fieldType);
+            if (isStatic) {
+                cv.add(ByteCode.GETSTATIC, className, fieldName, fieldType);
+            } else {
+                cv.add(ByteCode.ALOAD_0);
+                cv.add(ByteCode.GETFIELD, className, fieldName, fieldType);
+            }
         }
         
         public void emitPut() {
-            cv.add(ByteCode.PUTSTATIC, className, fieldName, fieldType);
+            if (isStatic) {
+                cv.add(ByteCode.PUTSTATIC, className, fieldName, fieldType);
+            } else {
+                cv.add(ByteCode.ALOAD_0);
+                cv.add(ByteCode.SWAP);
+                cv.add(ByteCode.PUTFIELD, className, fieldName, fieldType);
+            }
         }
     }
     
@@ -260,7 +273,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         String sourceFilename = ast.get(0).location().sourceFilename();
         this.cv = new ClassFileWriter(generatedClassType, javaLangObjectType, sourceFilename);
         cv.setFlags(ClassFileWriter.ACC_PUBLIC);
-        emitClassInitializer(generatedClassType, true);
+        emitClassInitializer(generatedClassType);
         
         // It's convenient to be able to run the class, so we can point an arbitrary JVM at it to see what it thinks.
         // To enable that, generate a "public static void main(String[] args)" method.
@@ -307,7 +320,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         emitUserDefinedClasses(classDefinitions);
     }
     
-    private void emitClassInitializer(String className, boolean mainClass) {
+    private void emitClassInitializer(String className) {
         maxLocals = 0;
         cv.startMethod("<clinit>", "()V", ClassFileWriter.ACC_STATIC);
         
@@ -315,7 +328,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         talcConstantPool = new JvmTalcConstantPool(className);
         talcConstantPool.emitCallToTalcConstantPoolInitializer();
         
-        if (mainClass) {
+        if (className.equals(generatedClassType)) {
             // Create and initialize the static fields corresponding to the built-in variables.
             for (AstNode.VariableDefinition builtInVariableDefinition : Scope.builtInVariableDefinitions()) {
                 builtInVariableDefinition.accept(this);
@@ -561,11 +574,18 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         String sourceFilename = classDefinition.location().sourceFilename();
         this.cv = new ClassFileWriter(className, javaLangObjectType, sourceFilename);
         cv.setFlags(ClassFileWriter.ACC_PUBLIC);
-        emitClassInitializer(className, false);
+        emitClassInitializer(className);
         
+        // Generate a method before adding the fields, so we've somewhere to
+        // put code for the field initializers; constructors will invoke this
+        // method rather than duplicate the initialization.
+        maxLocals = 1;
+        cv.startMethod("__init_fields__", "()V", ClassFileWriter.ACC_PRIVATE);
         for (AstNode.VariableDefinition field : classDefinition.fields()) {
             visitVariableDefinition(field);
         }
+        cv.add(ByteCode.RETURN);
+        cv.stopMethod(maxLocals);
         
         for (AstNode.FunctionDefinition method : classDefinition.methods()) {
             visitFunctionDefinition(method);
@@ -890,9 +910,14 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         
         // For non-static methods, "this" is argument 0 and the arguments start from 1.
         JvmLocalVariableAccessor thisAccessor = null;
+        String containingClassName = null;
+        String containingClassSignature = null;
+        if (functionDefinition.containingType() != null) {
+            containingClassName = typeForTalcType(functionDefinition.containingType());
+            containingClassSignature = ClassFileWriter.classNameToSignature(containingClassName);
+        }
         if ((flags & ClassFileWriter.ACC_STATIC) == 0) {
-            String signature = ClassFileWriter.classNameToSignature(typeForTalcType(functionDefinition.containingType()));
-            thisAccessor = new JvmLocalVariableAccessor("this", signature, maxLocals++);
+            thisAccessor = new JvmLocalVariableAccessor("this", containingClassSignature, maxLocals++);
         }
         
         for (AstNode.VariableDefinition formalParameter : functionDefinition.formalParameters()) {
@@ -906,6 +931,8 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
             thisAccessor.emitGet();
             // FIXME: not all classes will have java/lang/Object as their superclass!
             cv.addInvoke(ByteCode.INVOKESPECIAL, "java/lang/Object", "<init>", "()V");
+            thisAccessor.emitGet();
+            cv.addInvoke(ByteCode.INVOKEVIRTUAL, containingClassName, "__init_fields__", "()V");
         }
         functionDefinition.body().accept(this);
         //mg.popScope();
@@ -1017,7 +1044,15 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
             }
             
             cv.addField(variableDefinition.identifier(), signature, access);
-            accessor = new JvmStaticFieldAccessor(cv.getClassName(), variableDefinition.identifier(), signature);
+            accessor = new JvmFieldAccessor(cv.getClassName(), variableDefinition.identifier(), signature, true);
+        } else if (variableDefinition.isField()) {
+            short access = ClassFileWriter.ACC_PRIVATE;
+            if (variableDefinition.isFinal()) {
+                access |= ClassFileWriter.ACC_FINAL;
+            }
+            
+            cv.addField(variableDefinition.identifier(), signature, access);
+            accessor = new JvmFieldAccessor(cv.getClassName(), variableDefinition.identifier(), signature, false);
         } else {
             // If we're at local scope, we can back variables with locals.
             accessor = new JvmLocalVariableAccessor(variableDefinition.identifier(), signature, maxLocals++);
