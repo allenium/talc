@@ -165,6 +165,7 @@ public class TalcType {
     private TalcType valueType;
     private Scope members;
     private boolean isTypeVariable;
+    private boolean isUserDefined;
     
     private TalcType() {
     }
@@ -216,7 +217,13 @@ public class TalcType {
     }
     
     public static TalcType makeUserDefinedClass(TalcType superclass, String name) {
-        return new TalcType(superclass, name);
+        TalcType newType = new TalcType(superclass, name);
+        newType.isUserDefined = true;
+        return newType;
+    }
+    
+    public boolean isUserDefined() {
+        return isUserDefined;
     }
     
     public static void addClass(TalcType t) {

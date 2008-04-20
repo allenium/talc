@@ -61,6 +61,9 @@ public class Scope {
         if (parent != null) {
             return parent.findFunction(name);
         }
+        if (globalScope != null && this != globalScope) {
+            return globalScope.findFunction(name);
+        }
         return null;
     }
     

@@ -2,8 +2,12 @@
 
 class EmptyClass {
   function EmptyClass() : EmptyClass {
-    # FIXME: should be able to call global functions!
-    #puts("in EmptyClass constructor");
+    puts("in EmptyClass constructor");
+    // FIXME: m();
+  }
+  
+  function m() : void {
+    puts((1 + 2).to_s());
   }
   
   function to_s() : string {
@@ -11,6 +15,14 @@ class EmptyClass {
   }
 }
 
+puts(new EmptyClass().to_s());
+puts(new EmptyClass());
+empty := new EmptyClass();
+empty.m();
+o : object = empty;
+puts(empty.to_s(), " should equal ", o.to_s());
+
+/*
 class Point {
   x: int = 0;
   y: int = 0;
@@ -18,8 +30,7 @@ class Point {
   function Point(x0: int, y0: int) : Point {
     x = x0;
     y = y0;
-    return;
-    # FIXME: "this"!
+    # FIXME: "this"?
     #this.x = x0;
     #this.y = y0;
   }
@@ -53,9 +64,4 @@ p := new Point(3, 4);
 puts(p);
 p.moveBy(-2 * p.x(), -2 * p.y());
 puts(p);
-
-puts(new EmptyClass().to_s());
-puts(new EmptyClass());
-empty := new EmptyClass();
-o : object = empty;
-puts(empty.to_s(), " should equal ", o.to_s());
+*/

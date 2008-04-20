@@ -79,12 +79,11 @@ public class SymbolTable implements AstVisitor<Void> {
     
     public Void visitClassDefinition(AstNode.ClassDefinition classDefinition) {
         // FIXME: is this right? i think this should be classDefinition.setScope(<superclass's scope>). but how do we do that? not another pass?! maybe this whole scope-setting thing's a bad idea...
-        //setScope(classDefinition);
+        setScope(classDefinition);
         String className = classDefinition.className();
         TalcType newClass = TalcType.makeUserDefinedClass(TalcType.OBJECT, className);
         TalcType.addClass(newClass);
         classDefinition.setType(newClass);
-        //classDefinition.setScope();
         
         scopes.push(newClass.members());
         try {

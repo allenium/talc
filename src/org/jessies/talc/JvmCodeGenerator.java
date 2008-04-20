@@ -60,6 +60,8 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     // The class we're currently emitting code for.
     private ClassFileWriter cv;
     
+    private TalcClassLoader classLoader;
+    
     private class JvmLocalVariableAccessor implements VariableAccessor {
         private int variable;
         
@@ -194,26 +196,28 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     }
     
     public JvmCodeGenerator(TalcClassLoader classLoader, List<AstNode> ast) {
-        byte[] bytecode = compile(ast);
-        
+        this.classLoader = classLoader;
+        compile(ast);
+    }
+    
+    private void defineClass(String className, byte[] bytecode) {
         // FIXME: use 's' for caching rather than/as well as debugging?
         if (Talc.debugging('s') || Talc.debugging('S') || Talc.debugging('v')) {
-            File filename = saveGeneratedCode(bytecode);
+            File filename = saveGeneratedCode(className, bytecode);
             // FIXME: would be nice to have our own built-in disassembler.
             if (Talc.debugging('S')) {
-                disassemble(filename);
+                disassemble(className, filename);
             }
             // FIXME: verification failures should probably stop us in our tracks.
             if (Talc.debugging('v')) {
                 verify(filename);
             }
         }
-        
-        classLoader.defineClass("GeneratedClass", bytecode);
+        classLoader.defineClass(className, bytecode);
     }
     
-    private File saveGeneratedCode(byte[] bytecode) {
-        File filename = new File("/tmp/GeneratedClass.class");
+    private static File saveGeneratedCode(String className, byte[] bytecode) {
+        File filename = new File("/tmp/" + className + ".class");
         try {
             FileOutputStream fos = new FileOutputStream(filename);
             fos.write(bytecode);
@@ -224,8 +228,8 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         return filename;
     }
     
-    private static void disassemble(File filename) {
-        String command = "javap -c -l -private -v -classpath " + filename.getParent() + " GeneratedClass";
+    private static void disassemble(String className, File filename) {
+        String command = "javap -c -l -private -v -classpath " + filename.getParent() + " " + className;
         System.err.println("talc: disassembling with:\n" + "  " + command);
         Functions.shell(command);
     }
@@ -252,42 +256,15 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         Functions.shell(command);
     }
     
-    private byte[] compile(List<AstNode> ast) {
+    private void compile(List<AstNode> ast) {
         String sourceFilename = ast.get(0).location().sourceFilename();
         this.cv = new ClassFileWriter(generatedClassType, javaLangObjectType, sourceFilename);
         cv.setFlags(ClassFileWriter.ACC_PUBLIC);
-        
-        emitClassInitializer();
+        emitClassInitializer(generatedClassType, true);
         
         // It's convenient to be able to run the class, so we can point an arbitrary JVM at it to see what it thinks.
         // To enable that, generate a "public static void main(String[] args)" method.
         // This method also generates the code corresponding to global function definitions.
-        emitMainMethod(ast);
-        
-        talcConstantPool.emitTalcConstantPoolInitializer();
-        
-        return cv.toByteArray();
-    }
-    
-    private void emitClassInitializer() {
-        maxLocals = 0;
-        cv.startMethod("<clinit>", "()V", ClassFileWriter.ACC_STATIC);
-        
-        // Create a constant pool for Talc-level constants.
-        talcConstantPool = new JvmTalcConstantPool(generatedClassType);
-        talcConstantPool.emitCallToTalcConstantPoolInitializer();
-        
-        // Create and initialize the static fields corresponding to the built-in variables.
-        for (AstNode.VariableDefinition builtInVariableDefinition : Scope.builtInVariableDefinitions()) {
-            builtInVariableDefinition.accept(this);
-            popAnythingLeftBy(builtInVariableDefinition);
-        }
-        cv.add(ByteCode.RETURN);
-        
-        cv.stopMethod(maxLocals);
-    }
-    
-    private void emitMainMethod(List<AstNode> ast) {
         maxLocals = 0;
         cv.startMethod("main", "([Ljava/lang/String;)V", (short) (ClassFileWriter.ACC_PUBLIC | ClassFileWriter.ACC_STATIC));
         
@@ -301,10 +278,13 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         cv.addInvoke(ByteCode.INVOKESPECIAL, listValueType, "<init>", "([Ljava/lang/String;)V");
         cv.add(ByteCode.PUTSTATIC, generatedClassType, "ARGS", "Lorg/jessies/talc/ListValue;");
         
-        // Compile the global code, saving global functions for later.
+        // Compile the global code, saving global functions and user-defined classes for later.
         ArrayList<AstNode.FunctionDefinition> functionDefinitions = new ArrayList<AstNode.FunctionDefinition>();
+        ArrayList<AstNode.ClassDefinition> classDefinitions = new ArrayList<AstNode.ClassDefinition>();
         for (AstNode node : ast) {
-            if (node instanceof AstNode.FunctionDefinition) {
+            if (node instanceof AstNode.ClassDefinition) {
+                classDefinitions.add((AstNode.ClassDefinition) node);
+            } else if (node instanceof AstNode.FunctionDefinition) {
                 functionDefinitions.add((AstNode.FunctionDefinition) node);
             } else {
                 node.accept(this);
@@ -318,11 +298,44 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         
         // Now we've finished with the global code, we can go back over the global functions.
         emitGlobalFunctions(functionDefinitions);
+        
+        talcConstantPool.emitTalcConstantPoolInitializer();
+        
+        defineClass(generatedClassType, cv.toByteArray());
+        cv = null;
+        
+        emitUserDefinedClasses(classDefinitions);
+    }
+    
+    private void emitClassInitializer(String className, boolean mainClass) {
+        maxLocals = 0;
+        cv.startMethod("<clinit>", "()V", ClassFileWriter.ACC_STATIC);
+        
+        // Create a constant pool for Talc-level constants.
+        talcConstantPool = new JvmTalcConstantPool(className);
+        talcConstantPool.emitCallToTalcConstantPoolInitializer();
+        
+        if (mainClass) {
+            // Create and initialize the static fields corresponding to the built-in variables.
+            for (AstNode.VariableDefinition builtInVariableDefinition : Scope.builtInVariableDefinitions()) {
+                builtInVariableDefinition.accept(this);
+                popAnythingLeftBy(builtInVariableDefinition);
+            }
+        }
+        
+        cv.add(ByteCode.RETURN);
+        cv.stopMethod(maxLocals);
     }
     
     private void emitGlobalFunctions(List<AstNode.FunctionDefinition> functionDefinitions) {
         for (AstNode.FunctionDefinition functionDefinition : functionDefinitions) {
             visitFunctionDefinition(functionDefinition);
+        }
+    }
+    
+    private void emitUserDefinedClasses(List<AstNode.ClassDefinition> classDefinitions) {
+        for (AstNode.ClassDefinition classDefinition : classDefinitions) {
+            visitClassDefinition(classDefinition);
         }
     }
     
@@ -544,8 +557,25 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     }
     
     public Void visitClassDefinition(AstNode.ClassDefinition classDefinition) {
-        throw new TalcError(classDefinition, "NYI: don't know how to generate code for user-defined classes");
-        //return null;
+        String className = classDefinition.className();
+        String sourceFilename = classDefinition.location().sourceFilename();
+        this.cv = new ClassFileWriter(className, javaLangObjectType, sourceFilename);
+        cv.setFlags(ClassFileWriter.ACC_PUBLIC);
+        emitClassInitializer(className, false);
+        
+        for (AstNode.VariableDefinition field : classDefinition.fields()) {
+            visitVariableDefinition(field);
+        }
+        
+        for (AstNode.FunctionDefinition method : classDefinition.methods()) {
+            visitFunctionDefinition(method);
+        }
+        
+        talcConstantPool.emitTalcConstantPoolInitializer();
+        
+        defineClass(className, cv.toByteArray());
+        cv = null;
+        return null;
     }
     
     public Void visitContinueStatement(AstNode.ContinueStatement continueStatement) {
@@ -816,6 +846,8 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         } else if (talcType.rawName().equals("map")) {
             // FIXME: this is a particularly big hack.
             return "org/jessies/talc/MapValue";
+        } else if (talcType.isUserDefined()) {
+            return talcType.rawName();
         } else {
             throw new RuntimeException("don't know how to represent TalcType " + talcType);
         }
@@ -836,23 +868,49 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     }
     
     public Void visitFunctionDefinition(AstNode.FunctionDefinition functionDefinition) {
-        short flags = ClassFileWriter.ACC_PUBLIC | ClassFileWriter.ACC_STATIC;
+        String functionName = functionDefinition.functionName();
+        
+        short flags = ClassFileWriter.ACC_PUBLIC;
+        if (functionDefinition.isConstructor()) {
+            functionName = "<init>";
+        }
+        
+        if (functionDefinition.scope() == Scope.globalScope()) {
+            flags |= ClassFileWriter.ACC_STATIC;
+        }
+        
+        if (functionName.equals("to_s")) {
+            functionName = "toString";
+        }
         
         maxLocals = 0;
-        cv.startMethod(functionDefinition.functionName(), methodSignature(functionDefinition), flags);
+        cv.startMethod(functionName, methodSignature(functionDefinition), flags);
         
         visitLineNumber(functionDefinition);
-        // FIXME: for non-static methods, "this" is argument 0 and the arguments start from 1.
+        
+        // For non-static methods, "this" is argument 0 and the arguments start from 1.
+        JvmLocalVariableAccessor thisAccessor = null;
+        if ((flags & ClassFileWriter.ACC_STATIC) == 0) {
+            String signature = ClassFileWriter.classNameToSignature(typeForTalcType(functionDefinition.containingType()));
+            thisAccessor = new JvmLocalVariableAccessor("this", signature, maxLocals++);
+        }
+        
         for (AstNode.VariableDefinition formalParameter : functionDefinition.formalParameters()) {
             String formalParameterSignature = ClassFileWriter.classNameToSignature(typeForTalcType(formalParameter.type()));
             formalParameter.setAccessor(new JvmLocalVariableAccessor(formalParameter.identifier(), formalParameterSignature, maxLocals++));
         }
         
         //mg.pushScope();
+        if (functionDefinition.isConstructor()) {
+            // Constructors need to call their superclass constructor.
+            thisAccessor.emitGet();
+            // FIXME: not all classes will have java/lang/Object as their superclass!
+            cv.addInvoke(ByteCode.INVOKESPECIAL, "java/lang/Object", "<init>", "()V");
+        }
         functionDefinition.body().accept(this);
         //mg.popScope();
         
-        if (functionDefinition.returnType() == TalcType.VOID) {
+        if (functionDefinition.isConstructor() || functionDefinition.returnType() == TalcType.VOID) {
             // Void functions in Talc are allowed an implicit "return".
             // The bytecode verifier doesn't care if we have an unreachable RETURN bytecode, but it does care if we fall off the end of a method!
             cv.add(ByteCode.RETURN);
