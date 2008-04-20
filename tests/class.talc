@@ -1,13 +1,13 @@
 #!/usr/bin/talc
 
 class EmptyClass {
-  function EmptyClass() : EmptyClass {
-    puts("in EmptyClass constructor");
-    // FIXME: m();
+  function m() : void {
+    puts("EmptyClass::m()");
   }
   
-  function m() : void {
-    puts((1 + 2).to_s());
+  function EmptyClass() : EmptyClass {
+    puts("EmptyClass::EmptyClass()");
+    m();
   }
   
   function to_s() : string {

@@ -777,14 +777,16 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
                 cv.addInvoke(ByteCode.INVOKESTATIC, containingType, functionName, "([Ljava/lang/Object;)V");
             }
         } else {
-            if (functionCall.instance() != null) {
+            if (definition.isConstructor()) {
+                cv.add(ByteCode.NEW, containingType);
+                cv.add(ByteCode.DUP);
+            } else if (functionCall.instance() != null) {
+                functionCall.instance().accept(this);
                 if (functionName.equals("to_s")) {
                     // A special case: for Java compatibility to_s is toString underneath.
-                    functionCall.instance().accept(this);
                     cv.addInvoke(ByteCode.INVOKEVIRTUAL, "java/lang/Object", "toString", "()Ljava/lang/String;");
                     return null;
                 } else {
-                    functionCall.instance().accept(this);
                     if (proxyFirstArgumentType != null) {
                         // If proxyFirstArgumentType is non-null, you intend to invoke a method on
                         // a proxy class, which means it's static method, which means you need an
@@ -795,13 +797,9 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
                     } else {
                         cv.add(ByteCode.CHECKCAST, containingType);
                     }
-                    // FIXME: is this fall-through right?
                 }
-            }
-            
-            if (definition.isConstructor()) {
-                cv.add(ByteCode.NEW, containingType);
-                cv.add(ByteCode.DUP);
+            } else if (definition.containingType() != null) {
+                cv.add(ByteCode.ALOAD_0);
             }
             
             List<TalcType> formalParameterTypes = definition.formalParameterTypes();
@@ -816,13 +814,17 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
             String name = definition.functionName();
             String methodSignature = methodSignature(definition);
             if (proxyType != null) {
-                // Insert the argument representing "this" in these static methods.
+                // We have to insert the argument representing "this" in these static methods.
                 methodSignature = "(" + ClassFileWriter.classNameToSignature(containingType) + methodSignature.substring(1);
                 cv.addInvoke(ByteCode.INVOKESTATIC, proxyType, name, methodSignature);
-            } else if (functionCall.instance() != null) {
-                cv.addInvoke(ByteCode.INVOKEVIRTUAL, containingType, name, methodSignature);
             } else if (definition.isConstructor()) {
                 cv.addInvoke(ByteCode.INVOKESPECIAL, containingType, "<init>", methodSignature);
+            } else if (functionCall.instance() != null) {
+                // Explicit "obj.m()".
+                cv.addInvoke(ByteCode.INVOKEVIRTUAL, containingType, name, methodSignature);
+            } else if (definition.containingType() != null) {
+                // Implicit "this.m()" (i.e. "m()" inside another method).
+                cv.addInvoke(ByteCode.INVOKEVIRTUAL, containingType, name, methodSignature);
             } else {
                 cv.addInvoke(ByteCode.INVOKESTATIC, containingType, name, methodSignature);
             }
