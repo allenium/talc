@@ -172,13 +172,24 @@ public class AstTypeChecker implements AstVisitor<TalcType> {
     
     public TalcType visitClassDefinition(AstNode.ClassDefinition classDefinition) {
         currentClassDefinition = classDefinition;
+        
         // FIXME: we need to do more work here!
+        
+        // Visit the class' fields first.
         for (AstNode.VariableDefinition field : classDefinition.fields()) {
             field.accept(this);
         }
+        
+        // We visit a class' methods twice. First, we avoid visiting the bodies
+        // in case they refer to other methods that won't have been visited yet.
         for (AstNode.FunctionDefinition method : classDefinition.methods()) {
-            method.accept(this);
+            visitFunctionDefinition(method, 1);
         }
+        // Next, we visit them again, visiting just the bodies this time.
+        for (AstNode.FunctionDefinition method : classDefinition.methods()) {
+            visitFunctionDefinition(method, 2);
+        }
+        
         currentClassDefinition = null;
         return null;
     }
@@ -342,18 +353,28 @@ public class AstTypeChecker implements AstVisitor<TalcType> {
     }
     
     public TalcType visitFunctionDefinition(AstNode.FunctionDefinition functionDefinition) {
-        currentFunctionDefinition = functionDefinition;
-        functionDefinition.fixUpTypes((currentClassDefinition != null) ? currentClassDefinition.type() : null);
-        
-        // Check for dodgy constructors.
-        if (functionDefinition.isConstructor() && functionDefinition.returnType() != currentClassDefinition.type()) {
-            String className = currentClassDefinition.className();
-            throw new TalcError(functionDefinition, "constructor for class \"" + className + "\" must have return type of \"" + className + "\"; got \"" + functionDefinition.returnType() + "\" instead");
+        visitFunctionDefinition(functionDefinition, 1|2);
+        return null;
+    }
+    
+    private void visitFunctionDefinition(AstNode.FunctionDefinition functionDefinition, int passBitmask) {
+        // Check the function signature, if we've been asked to.
+        if ((passBitmask & 1) != 0) {
+            functionDefinition.fixUpTypes((currentClassDefinition != null) ? currentClassDefinition.type() : null);
+            
+            // Check for dodgy constructors.
+            if (functionDefinition.isConstructor() && functionDefinition.returnType() != currentClassDefinition.type()) {
+                String className = currentClassDefinition.className();
+                throw new TalcError(functionDefinition, "constructor for class \"" + className + "\" must have return type of \"" + className + "\"; got \"" + functionDefinition.returnType() + "\" instead");
+            }
         }
         
-        functionDefinition.body().accept(this);
-        currentFunctionDefinition = null;
-        return null;
+        // Check the function body, if we've been asked to.
+        if ((passBitmask & 2) != 0) {
+            currentFunctionDefinition = functionDefinition;
+            functionDefinition.body().accept(this);
+            currentFunctionDefinition = null;
+        }
     }
     
     public TalcType visitIfStatement(AstNode.IfStatement ifStatement) {

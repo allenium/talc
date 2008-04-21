@@ -1,13 +1,13 @@
 #!/usr/bin/talc
 
 class EmptyClass {
-  function m() : void {
-    puts("EmptyClass::m()");
-  }
-  
   function EmptyClass() : EmptyClass {
     puts("EmptyClass::EmptyClass()");
     m();
+  }
+  
+  function m() : void {
+    puts("EmptyClass::m()");
   }
   
   function to_s() : string {
