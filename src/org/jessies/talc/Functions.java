@@ -69,11 +69,7 @@ public class Functions {
     }
     
     public static void print(Object value) {
-        Object printable = value;
-        if (value == null) {
-            printable = "null";
-        }
-        System.out.print(printable);
+        System.out.print(value);
     }
     
     public static void print(Object[] values) {
