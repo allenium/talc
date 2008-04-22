@@ -28,7 +28,7 @@ Talc has automatic memory management. Objects no longer referenced from anywhere
 Talc is a purely object-oriented language, and was ever so. Even "primitive" types such as integers are seen as objects.
 .TP
 .B "Class, inheritance, and methods"
-As an object-oriented language, Talc has such basic features like classes, inheritance, and methods. (FIXME: not yet fully implemented.)
+As an object-oriented language, Talc has such basic features like classes, inheritance, and methods.
 .TP
 .B "Text processing and regular expressions"
 Talc has a bunch of text processing features equivalent to those you'd find in post-Perl scripting languages.
@@ -349,6 +349,9 @@ to:
 .fi
 for example.
 .TP
+.B printf(format: string, ...) : void
+The "printf" function takes a format string followed by an arbitrary number of arguments of arbitrary types. It offers C-like formatting of the arguments based on format specifiers in the format string. It's useful for sophisticated formatting, but less efficient than "print" or "puts".
+.TP
 .B puts(...) : void
 Like "print", but appends a newline.
 .TP
@@ -357,6 +360,9 @@ Executes the given command in a subshell. Returns the return status of the comma
 .TP
 .B system(command: list<string>) : int
 Executes the given command, specified as a list containing the program name and its arguments. Returns the return status of the command, or -1 if it was unable to start the command.
+.TP
+.B time_ms() : int
+Returns the time in milliseconds since the program started.
 .SS Built-in classes
 Talc has relatively few built-in classes. Few enough that we can reasonably comfortably summarize them all here.
 
