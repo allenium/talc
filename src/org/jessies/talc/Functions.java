@@ -78,6 +78,29 @@ public class Functions {
         }
     }
     
+    // FIXME: it doesn't really make sense to have a single-argument special case for "printf" but JvmCodeGenerator currently requires it.
+    public static void printf(Object value) {
+        System.out.printf(value.toString(), new Object[0]);
+    }
+    
+    public static void printf(Object[] values) {
+        String formatString = values[0].toString();
+        Object[] args = new Object[values.length - 1];
+        for (int i = 0; i < args.length; ++i) {
+            args[i] = translateToNativeJavaObject(values[i + 1]);
+        }
+        System.out.printf(String.format(formatString, args));
+    }
+    
+    private static Object translateToNativeJavaObject(Object o) {
+        if (o instanceof IntegerValue) {
+            return ((IntegerValue) o).toNativeJavaObject();
+        } else if (o instanceof RealValue) {
+            return ((RealValue) o).toNativeJavaObject();
+        }
+        return o;
+    }
+    
     public static void puts(Object value) {
         print(value);
         System.out.println();

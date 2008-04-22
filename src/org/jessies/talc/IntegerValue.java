@@ -160,6 +160,10 @@ public class IntegerValue implements Comparable<IntegerValue> {
         return IntegerValue.valueOf(value.intValue() + 1);
     }
     
+    public Object toNativeJavaObject() {
+        return value;
+    }
+    
     public int intValue() {
         return value.intValue();
     }

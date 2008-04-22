@@ -109,6 +109,10 @@ public class RealValue implements Comparable<RealValue> {
         return (int)(bits ^ (bits >>> 32));
     }
     
+    public Object toNativeJavaObject() {
+        return value;
+    }
+    
     public double doubleValue() {
         return value;
     }
