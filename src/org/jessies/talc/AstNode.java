@@ -59,6 +59,10 @@ public abstract class AstNode {
             return op;
         }
         
+        public void setOp(Token op) {
+            this.op = op;
+        }
+        
         public AstNode lhs() {
             return lhs;
         }

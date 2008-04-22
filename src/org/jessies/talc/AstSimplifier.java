@@ -59,6 +59,16 @@ public class AstSimplifier implements AstVisitor<AstNode> {
             if (lhsString != null && rhsString != null) {
                 return new AstNode.Constant(binOp.location(), lhsString + rhsString, TalcType.STRING);
             }
+        } else if (op == Token.PLUS_ASSIGN) {
+            // x += 0 == x
+            if (isZero(rhs)) {
+                return lhs;
+            }
+            // x += 1 == ++x
+            if (isOne(rhs)) {
+                binOp.setOp(Token.PRE_INCREMENT);
+                binOp.setRhs(null);
+            }
         } else if (op == Token.SUB) {
             // 0 - x == -x
             if (isZero(lhs)) {
@@ -69,6 +79,16 @@ public class AstSimplifier implements AstVisitor<AstNode> {
             // x - 0 == x
             if (isZero(rhs)) {
                 return lhs;
+            }
+        } else if (op == Token.SUB_ASSIGN) {
+            // x -= 0 == 0
+            if (isZero(rhs)) {
+                return lhs;
+            }
+            // x -= 1 == --x
+            if (isOne(rhs)) {
+                binOp.setOp(Token.PRE_DECREMENT);
+                binOp.setRhs(null);
             }
         } else if (op == Token.MUL) {
             if (isZero(lhs)) {
