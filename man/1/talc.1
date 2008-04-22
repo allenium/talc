@@ -479,7 +479,7 @@ The ability to define local variables inside conditional expressions and the sho
 for (line:string in lines) {
   # Most verbose (but not by much).
   # Necessary if you need access to the match outside of the "if".
-  m:match := null;
+  m:match = null;
   if ((m = line.match(@"\\s*function\\s+(\\S+)\\s*\\((.*)\\)\\s*")) != null) {
     name:string = m.group(1);
     arguments:string = m.group(2);
