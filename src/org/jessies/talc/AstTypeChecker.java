@@ -308,6 +308,10 @@ public class AstTypeChecker implements AstVisitor<TalcType> {
         
         AstNode[] actualParameters = functionCall.arguments();
         List<TalcType> formalParameterTypes = functionDefinition.formalParameterTypes();
+        // FIXME: need a better test for this!
+        if (functionDefinition.isVarArgs() == false && formalParameterTypes == null) {
+            throw new TalcError(functionCall, what + " used before its definition\n" + functionDefinition.location() + "...here");
+        }
         if (functionDefinition.isVarArgs() == false && actualParameters.length != formalParameterTypes.size()) {
             throw new TalcError(functionCall, what + " given wrong number of arguments (expected " + formalParameterTypes.size() + " but got " + actualParameters.length + ")");
         }
