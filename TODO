@@ -100,6 +100,8 @@ http://www.ferite.org/ - quite nice; good documentation. future plans smelled of
 
 http://blogs.sun.com/chrisoliver/resource/f3.html - "format as" looks interesting. otherwise quite nasty.
 
+http://pike.ida.liu.se/generated/manual/modref/
+
 C#'s System.IO.File is pretty nice, though i'm unconvinced by the the File/Directory split. note that their File only has static methods that take String pathnames. there's a separate FileInfo class (like "struct stat").
 
 # environment variables
@@ -207,7 +209,7 @@ Perl/Python/Ruby-like tr/tr_d? sufficiently useful?
 should ARGV0 be of type "File" rather than "string"?
 access to stderr? ability to print/puts to files/sockets/pipes?
 
-how should "printf"-like functionality be implemented? string.format? (int|real|string).format methods?
+should we have an "sprintf" to complement "printf"? or string.format? non-static? (i.e. "%2x".format(count) versus string.format("%2x", count).)
 
 # the need for these is demonstrated by "binomial-triangle.talc"...
 list<T>.n_copies(n:int,item:T):list<T> # returns a new list with 'n' copies of 'item'.
