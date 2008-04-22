@@ -61,7 +61,11 @@ public class Scope {
         if (parent != null) {
             return parent.findFunction(name);
         }
-        if (globalScope != null && this != globalScope) {
+        // If there's no parent scope, we're either in the top of an
+        // inheritance hierarchy, or the builtInScope. In the latter case,
+        // there's no where left to look. But at the top of an inheritance
+        // hierarchy, we want to fall back on the global scope.
+        if (this != builtInScope) {
             return globalScope.findFunction(name);
         }
         return null;
