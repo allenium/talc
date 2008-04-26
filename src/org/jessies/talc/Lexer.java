@@ -382,20 +382,6 @@ public class Lexer {
         return reader.getLocation();
     }
     
-    private void debugScanner() {
-        while (token() != Token.END_OF_INPUT) {
-            switch (token()) {
-                case IDENTIFIER: System.err.println("identifier \"" + identifier() + "\""); break;
-                case INT_LITERAL: System.err.println("integer literal " + numericLiteral()); break;
-                case REAL_LITERAL: System.err.println("real literal " + numericLiteral()); break;
-                default: System.err.println(token()); break;
-            }
-            nextToken();
-        }
-        System.err.println("Exiting.");
-        System.exit(1);
-    }
-    
     /**
      * Like the JDK PushbackReader, but with a larger default pushback buffer, and more intelligent behavior when pushing back EOF.
      */
