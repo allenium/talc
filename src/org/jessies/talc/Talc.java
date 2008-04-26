@@ -132,6 +132,7 @@ public class Talc {
     
     private void parseArguments(String[] args) throws IOException {
         String scriptFilename = null;
+        String expression = null;
         ArrayList<String> scriptArgs = new ArrayList<String>();
         boolean inScriptArgs = false;
         boolean didSomethingUseful = false;
@@ -167,9 +168,8 @@ public class Talc {
                 }
                 didSomethingUseful = true;
             } else if (args[i].equals("-e")) {
-                String expression = args[++i];
-                parseAndEvaluate(null, new String[0], new Lexer(expression));
-                didSomethingUseful = true;
+                expression = args[++i];
+                inScriptArgs = true;
             } else if (args[i].equals("--")) {
                 inScriptArgs = true;
             } else if (args[i].startsWith("-")) {
@@ -179,7 +179,7 @@ public class Talc {
                 inScriptArgs = true;
             }
         }
-        if (scriptFilename == null) {
+        if (scriptFilename == null && expression == null) {
             if (didSomethingUseful) {
                 // Fair enough, then.
                 System.exit(0);
@@ -187,7 +187,8 @@ public class Talc {
                 die("no script filename supplied");
             }
         }
-        parseAndEvaluate(scriptFilename, scriptArgs.toArray(new String[scriptArgs.size()]), new Lexer(new File(scriptFilename)));
+        Lexer lexer = (scriptFilename != null) ? new Lexer(new File(scriptFilename)) : new Lexer(expression);
+        parseAndEvaluate(scriptFilename, scriptArgs.toArray(new String[scriptArgs.size()]), lexer);
     }
     
     private static void die(String message) {
