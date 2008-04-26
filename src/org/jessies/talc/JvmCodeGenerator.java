@@ -557,9 +557,9 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         } else if (constantType == TalcType.BOOL) {
             pushTrueOrFalse((constant.constant() == BooleanValue.TRUE) ? "TRUE" : "FALSE");
         } else if (constantType == TalcType.INT) {
-            talcConstantPool.addConstantAndEmitCode((IntegerValue) constant.constant(), integerValueType);
+            talcConstantPool.addConstantAndEmitCode(constant.constant(), integerValueType);
         } else if (constantType == TalcType.REAL) {
-            talcConstantPool.addConstantAndEmitCode((RealValue) constant.constant(), realValueType);
+            talcConstantPool.addConstantAndEmitCode(constant.constant(), realValueType);
         } else if (constantType == TalcType.STRING) {
             // FIXME: .class files have 64KiB limits on UTF-8 constants, so we might want to break long strings up.
             cv.addPush(constant.constant().toString());
