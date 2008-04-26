@@ -285,7 +285,7 @@ public class Parser {
         expect(Token.FOR);
         expect(Token.OPEN_PARENTHESIS);
         
-        // Optional variable definition ("<name> : [<type>] = <initializer> ;") or for-each list ("<name> [, <name>] ;").
+        // Optional variable definition ("<name> : [<type>] = <initializer> ;") or for-each list ("<name> [, <name>] in").
         AstNode.VariableDefinition variableDefinition = null;
         if (lexer.token() == Token.IDENTIFIER) {
             SourceLocation location2 = lexer.getLocation();
@@ -309,28 +309,29 @@ public class Parser {
         return new AstNode.ForStatement(location, variableDefinition, conditionExpression, updateExpression, body);
     }
     
-    private AstNode parseForEachStatement(SourceLocation location, String variableName, SourceLocation location2) {
+    private AstNode parseForEachStatement(SourceLocation forLocation, String variableName, SourceLocation location1) {
         if (DEBUG_PARSER) { System.out.println("parseForEachStatement()"); }
         
         // "for ( <name> [, <name>] in <expression> ) <block>"
-        // When we're called, we've already swallowed as far as the optional COMMA or SEMICOLON.
+        // When we're called, we've already swallowed as far as the optional COMMA or "in".
         ArrayList<AstNode.VariableDefinition> loopVariableDefinitions = new ArrayList<AstNode.VariableDefinition>();
         
         // First, obligatory loop variable.
-        loopVariableDefinitions.add(new AstNode.VariableDefinition(location, variableName, (TalcType) null, new AstNode.Constant(location, null, TalcType.NULL), false));
+        loopVariableDefinitions.add(new AstNode.VariableDefinition(location1, variableName, (TalcType) null, new AstNode.Constant(location1, null, TalcType.NULL), false));
         
         // Second, optional loop variable.
         if (lexer.token() == Token.COMMA) {
             expect(Token.COMMA);
+            SourceLocation location2 = lexer.getLocation();
             String variableName2 = expectIdentifier("second loop variable name in for-each loop");
-            loopVariableDefinitions.add(new AstNode.VariableDefinition(location, variableName2, (TalcType) null, new AstNode.Constant(location, null, TalcType.NULL), false));
+            loopVariableDefinitions.add(new AstNode.VariableDefinition(location2, variableName2, (TalcType) null, new AstNode.Constant(location2, null, TalcType.NULL), false));
         }
         
         expect(Token.IN);
         AstNode expression = parseExpression();
         expect(Token.CLOSE_PARENTHESIS);
         AstNode.Block body = parseBlock();
-        return new AstNode.ForEachStatement(location, loopVariableDefinitions, expression, body);
+        return new AstNode.ForEachStatement(forLocation, loopVariableDefinitions, expression, body);
     }
     
     private AstNode.VariableDefinition parseVariableDefinition(SourceLocation location, String identifier) {
