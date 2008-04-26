@@ -729,7 +729,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         // ++k;
         visitLineNumber(forEachStatement);
         k.emitGet();
-        cv.addInvoke(ByteCode.INVOKEVIRTUAL, integerValueType, "inc", "()Lorg/jessies/talc/IntegerValue;");
+        cv.addInvoke(ByteCode.INVOKEVIRTUAL, integerValueType, "increment", "()Lorg/jessies/talc/IntegerValue;");
         k.emitPut();
         // goto headLabel;
         cv.add(ByteCode.GOTO, headLabel);

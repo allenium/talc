@@ -155,11 +155,6 @@ public class IntegerValue implements Comparable<IntegerValue> {
         return new IntegerValue(result);
     }
     
-    // Used to implement for-each loops, so it's not unreasonable to assume the value will fit in 32 bits.
-    public IntegerValue inc() {
-        return IntegerValue.valueOf(value.intValue() + 1);
-    }
-    
     public Object toNativeJavaObject() {
         return value;
     }
