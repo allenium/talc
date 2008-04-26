@@ -77,10 +77,9 @@ public class Talc {
         }
         
         // 3. Byte-code generation.
-        long codeGeneration0 = System.nanoTime();
         TalcClassLoader loader = new TalcClassLoader();
         JvmCodeGenerator codeGenerator = new JvmCodeGenerator(loader, ast);
-        reportTime("code generation", System.nanoTime() - codeGeneration0);
+        reportTime("code generation", System.nanoTime() - codeGenerator.creationTime());
         
         // 4. Execution.
         if (Talc.debugging('n')) {

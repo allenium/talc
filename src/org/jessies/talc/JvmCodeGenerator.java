@@ -60,6 +60,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     // The class we're currently emitting code for.
     private ClassFileWriter cv;
     
+    private long creationTime;
     private TalcClassLoader classLoader;
     
     private class JvmLocalVariableAccessor implements VariableAccessor {
@@ -209,8 +210,13 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     }
     
     public JvmCodeGenerator(TalcClassLoader classLoader, List<AstNode> ast) {
+        this.creationTime = System.nanoTime();
         this.classLoader = classLoader;
         compile(ast);
+    }
+    
+    public long creationTime() {
+        return creationTime;
     }
     
     private void defineClass(String className, byte[] bytecode) {
