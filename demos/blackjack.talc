@@ -1,0 +1,166 @@
+#!/usr/bin/talc
+
+# A simple game of blackjack (http://en.wikipedia.org/wiki/Blackjack).
+
+class Card {
+  // FIXME: it's a shame to have to give bogus default field values in a class like this.
+  name: string = null;
+  color: string = null;
+  suit: string = null;
+  value: int = null;
+  
+  function Card(name0: string, color0: string, suit0: string, value0: int) : Card {
+    name = name0;
+    color = color0;
+    suit = suit0;
+    value = value0;
+  }
+  
+  function to_s() : string {
+    return color + " " + name + suit + " " + "\u001b[m";
+  }
+  
+  function value() : int {
+    return value;
+  }
+}
+
+function family_of(color: string, suit: string) : list<Card> {
+  deck: list<Card> = [];
+  # Ace.
+  deck.push_back(new Card("A", color, suit, 1));
+  # 2, 3, 4, 5, 6, 7, 8, 9, 10.
+  for (i := 2; i < 11; ++i) {
+    deck.push_back(new Card(i.to_s(), color, suit, i));
+  }
+  # Jack, Queen, King.
+  deck.push_back(new Card("J", color, suit, 10));
+  deck.push_back(new Card("Q", color, suit, 10));
+  deck.push_back(new Card("K", color, suit, 10));
+  return deck;
+}
+
+function shuffle(deck: list<Card>) : void {
+  for (i := deck.size(); i > 1; --i) {
+    j := rnd(i);
+    tmp := deck[i - 1];
+    deck[i - 1] = deck[j];
+    deck[j] = tmp;
+  }
+}
+
+function new_deck() : list<Card> {
+  // Escape sequences for the colors.
+  BLACK/*ON_WHITE*/ := "\u001b[30;47m";
+  RED/*ON_WHITE*/ := "\u001b[31;47m";
+  
+  // Unicode characters for the playing card suits.
+  CLUBS := "\u2663";
+  DIAMONDS := "\u2666";
+  HEARTS := "\u2665";
+  SPADES := "\u2660";
+  
+  cards: list<Card> = [];
+  cards.add_all(family_of(BLACK, CLUBS));
+  cards.add_all(family_of(RED, DIAMONDS));
+  cards.add_all(family_of(RED, HEARTS));
+  cards.add_all(family_of(BLACK, SPADES));
+  shuffle(cards);
+  return cards;
+}
+
+function show_hand(prefix: string, hand: list<Card>, show_all: bool) : void {
+  print(prefix);
+  for (card in hand) {
+    print(card, " ");
+    if (show_all == false) {
+      break;
+    }
+  }
+  print("\n\n");
+}
+
+function total_hand(hand: list<Card>) : int {
+  total := 0;
+  for (card in hand) {
+    // FIXME: what about high aces? we need to return a min and max, really.
+    total += card.value();
+  }
+  return total;
+}
+
+dealer_hand: list<Card> = [];
+player_hand: list<Card> = [];
+
+function game_over(message: string) : void {
+  show_hand("    Your hand: ", player_hand, true);
+  show_hand("Dealer's hand: ", dealer_hand, true);
+  puts(message);
+  exit(0);
+}
+
+function play_blackjack() : void {
+  # We play with one deck in the shoe, to increase the house advantage.
+  deck_count: final = 1;
+  shoe: list<Card> = [];
+  for (i := 0; i < deck_count; ++i) {
+    shoe.add_all(new_deck());
+  }
+  
+  # Two cards for the dealer.
+  dealer_hand = [];
+  dealer_hand.push_back(shoe.pop_front());
+  dealer_hand.push_back(shoe.pop_front());
+  
+  # Two cards for the player.
+  player_hand = [];
+  player_hand.push_back(shoe.pop_front());
+  player_hand.push_back(shoe.pop_front());
+  
+  while (true) {
+    show_hand("    Your hand: ", player_hand, true);
+    show_hand(" Dealer shows: ", dealer_hand, false);
+    
+    if (total_hand(dealer_hand) == 21) {
+      if (total_hand(player_hand) == 21) {
+        game_over("Push: you both have 21!");
+      }
+      game_over("Dealer wins with blackjack!");
+    } else if (total_hand(player_hand) == 21) {
+      game_over("You win with blackjack!");
+    }
+    
+    choice := prompt("[h]it, [s]tand, or [q]uit? ");
+    puts();
+    if (choice == null || choice.trim().lc().starts_with("q")) {
+      game_over("Ta-ta!");
+    }
+    choice = choice.trim().lc();
+    if (choice.starts_with("h")) {
+      player_hand.push_back(shoe.pop_front());
+      if (total_hand(player_hand) > 21) {
+        game_over("You're bust!");
+      }
+      
+      // This is apparently the standard dealer strategy.
+      if (total_hand(dealer_hand) <= 17) {
+        dealer_hand.push_back(shoe.pop_front());
+        if (total_hand(dealer_hand) > 21) {
+          game_over("Dealer's bust!");
+        }
+      }
+    } else if (choice.starts_with("s")) {
+      if (total_hand(player_hand) > total_hand(dealer_hand)) {
+        game_over("You win!");
+      } else if (total_hand(player_hand) == total_hand(dealer_hand)) {
+        game_over("Push!");
+      } else {
+        game_over("Dealer wins!");
+      }
+    } else {
+      puts("Eh?");
+    }
+  }
+}
+
+play_blackjack();
