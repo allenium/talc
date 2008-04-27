@@ -163,10 +163,10 @@ picture.font(family:string, size:int):void # how best to specify style?
 
 # random class backed by java.util.Random
 random.reset(seed:int):void
-random.nextInt(n:int):int
-random.nextReal():real
+random.next_int(n:int):int
+random.next_real():real
 RANDOM:random # convenience instance
-int.random(n:int):int # convenience using global RANDOM
+int.random(n:int):int # convenience using global RANDOM [done]
 real.random():real # convenience using global RANDOM
 
 # primitive access to the underlying JVM?

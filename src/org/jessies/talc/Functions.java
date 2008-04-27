@@ -101,6 +101,11 @@ public class Functions {
         return o;
     }
     
+    public static String prompt(String prompt) {
+        // System.console() only works for /dev/tty, but maybe that makes sense for this function?
+        return System.console().readLine(prompt);
+    }
+    
     public static void puts(Object value) {
         print(value);
         System.out.println();
@@ -109,6 +114,17 @@ public class Functions {
     public static void puts(Object[] values) {
         print(values);
         System.out.println();
+    }
+    
+    private static Random RNG;
+    
+    public static IntegerValue rnd(IntegerValue n) {
+        // FIXME: this Random instance should be globally accessible.
+        if (RNG == null) {
+            RNG = new Random();
+        }
+        // FIXME: check that n is not too large.
+        return IntegerValue.valueOf(RNG.nextInt(n.intValue()));
     }
     
     private static IntegerValue runProcessBuilder(ProcessBuilder processBuilder, Appendable output) {

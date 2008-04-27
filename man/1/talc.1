@@ -352,8 +352,14 @@ for example.
 .B printf(format: string, ...) : void
 The "printf" function takes a format string followed by an arbitrary number of arguments of arbitrary types. It offers C-like formatting of the arguments based on format specifiers in the format string. It's useful for sophisticated formatting, but less efficient than "print" or "puts".
 .TP
+.B prompt(prompt: string) : string
+Prompts for input, using the given text, and returns what the user enters.
+.TP
 .B puts(...) : void
 Like "print", but appends a newline.
+.TP
+.B rnd(n: int) : int
+Returns a random integer between 0 (inclusive) and n (exclusive).
 .TP
 .B shell(command: string) : int
 Executes the given command in a subshell. Returns the return status of the command, or -1 if it was unable to start the command.
