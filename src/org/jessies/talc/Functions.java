@@ -102,8 +102,10 @@ public class Functions {
     }
     
     public static String prompt(String prompt) {
-        // System.console() only works for /dev/tty, but maybe that makes sense for this function?
-        return System.console().readLine(prompt);
+        // System.console() only works for /dev/tty, but that's okay here.
+        // We return null at EOF, or if there's no console.
+        Console console = System.console();
+        return (console != null) ? console.readLine(prompt) : null;
     }
     
     public static void puts(Object value) {
