@@ -263,6 +263,9 @@ public class AstTypeChecker implements AstVisitor<TalcType> {
         if (functionCall.classTypeDescriptor() != null) {
             // Calls to class methods need to be looked up in the scope of the relevant class.
             searchType = classType = functionCall.classTypeDescriptor().type();
+            if (searchType == null) {
+                throw new TalcError(functionCall, "unknown type \"" + functionCall.classTypeDescriptor() + "\"");
+            }
         }
         if (functionCall.instance() != null && functionCall.classTypeDescriptor() != null) {
             throw new TalcError(functionCall, "\"" + functionName + "\" can't be both an instance method of class " + instanceType + " and a class method of class " + classType);

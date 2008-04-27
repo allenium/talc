@@ -249,6 +249,9 @@ public class TalcType {
     }
     
     public static TalcType instantiateType(TalcType parametricType, TalcType keyType, TalcType valueType) {
+        if (parametricType == null) {
+            throw new RuntimeException("instantiateType(" + parametricType + ", " + keyType + ", " + valueType + "): alleged uninstantiated parametric type is null!");
+        }
         if (parametricType.uninstantiatedParametricType != null && (parametricType.keyType.isTypeVariable == false && parametricType.valueType.isTypeVariable == false)) {
             throw new RuntimeException("instantiateType(" + parametricType + ", " + keyType + ", " + valueType + "): alleged uninstantiated parametric type isn't!");
         }

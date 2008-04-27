@@ -47,7 +47,7 @@ public class TalcTypeDescriptor {
         if (actualType == null) {
             // Look up the TalcType corresponding to this descriptor.
             actualType = TalcType.byName(typeName);
-            if (keyTypeDescriptor != null || valueTypeDescriptor != null) {
+            if (actualType != null && (keyTypeDescriptor != null || valueTypeDescriptor != null)) {
                 actualType = TalcType.instantiateType(actualType, keyTypeDescriptor.type(), (valueTypeDescriptor != null) ? valueTypeDescriptor.type() : null);
             }
         }
