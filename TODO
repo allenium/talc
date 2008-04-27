@@ -178,6 +178,10 @@ jvm.put_static(class_name:string, field_name:string, value:object):void
 jvm.invoke_static(class_name:string, method_name:string, args:list<object>):object # what about overloading?
 jvm.invoke_method(class_name:string, method_name:string, instance:object, args:list<object>):object # what about overloading?
 
+# language-level access?
+extern "Java" function cos(a: real) : real = "java.util.Math.cos";
+extern "Java" class Random = "java.util.Random"; # uses reflection to fill in the methods.
+
 # primitive access to the C library/POSIX/arbitrary shared libraries?
 dl.open(library_name:string):object # return some kind of object representing the library? or void?
 dl.invoke(library:object, function_name:string, args:list<object>):object # or pass the library name each time?
