@@ -286,6 +286,7 @@ public abstract class AstNode {
         private List<AstNode.VariableDefinition> loopVariableDefinitions;
         private AstNode expression;
         private AstNode body;
+        private TalcType expressionType;
         
         public ForEachStatement(SourceLocation location, List<AstNode.VariableDefinition> loopVariableDefinitions, AstNode expression, AstNode body) {
             this.location = location;
@@ -316,6 +317,14 @@ public abstract class AstNode {
         
         public void setBody(AstNode body) {
             this.body = body;
+        }
+        
+        public void setExpressionType(TalcType type) {
+            this.expressionType = type;
+        }
+        
+        public TalcType expressionType() {
+            return expressionType;
         }
         
         public String toString() {

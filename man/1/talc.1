@@ -172,6 +172,7 @@ As a shorthand, the type may be omitted, in which case the type is taken to be t
   r := 0.0;             # implicitly r:real
   s := "hello, world!"; # implicitly s:string
   lines := s.split("\n"); # implicitly lines:list<string>
+  constant: final = 123;  # implicitly constant:final int
 .sp
 .fi
 Note that although the ":" and "=" are two separate tokens, it's conventional not to add whitespace between them.
@@ -290,9 +291,14 @@ A for-each loop iterates over a collection, evaluating a block once for each val
   for (i, w in [ "hello", "world" ]) {
     puts(i, " : ", s);
   }
+  
+  # Iterate over the characters in a string:
+  for (c in "hello, world\n") {
+    print(c);
+  }
 .sp
 .fi
-The expression must be of a collection type. The for-each loop has one or two loop variable names declared. If it has one, it is given the value type of the collection. If it has two, the first is given the key type of the collection and the second the value type. It is not possible to specify explicit types, nor to reverse the order of declaration.
+The expression must be of list, map, or string type. (It will be extended to user-defined types eventually, but that's not been implemented yet.) The for-each loop has one or two loop variable names declared. If it has one, it is given the value type of the collection. If it has two, the first is given the key type of the collection and the second the value type. It is not possible to specify explicit types, nor to reverse the order of declaration.
 
 A more Java-like syntax using a ":" instead of the "in" keyword isn't possible because of the ambiguity with an explicit type declaration. Talc initially used ";" (following the D language) but it looked strange, looked overly similar to the normal for loop, and was surprisingly hard to remember. A "foreach" keyword was considered (both in conjunction with ":" and "in"), but rejected as not being a real word. Though in some ways that's an ideal property for something as disruptive as a keyword.
 .SS Break statements
@@ -524,6 +530,10 @@ Talc arose out of dissatisfaction with existing scripting languages, in particul
 * The reduced amount of keyboarding is more responsible for the comfortableness of scripting languages than the reduced amount of type information and compile-time checking. Not repeating yourself also improves correctness, readability, and maintainability. (Hence, language features such as ":=" and for-each loops are important in increasing comfort without sacrifice.)
 
 * You can't please all the people all the time. Worse, trying to do so ends up pleasing no-one. (Hence, Perl, Python, and Ruby aren't so much the competition as alternative lifestyle choices, interesting only when they provide useful precedent.)
+
+At the same time, it would be naive to pretend that some choices don't also have negative consequences:
+
+* You can't avoid all syntactic confusion. No-one gets confused switching between, say, Java and Lisp. They look too different. But switching between C++ and Java, it's easy to confuse "bool" and "boolean", for example. The languages as a whole are superficially quite similar, so the little differences cause needless trouble. And since the languages of the C family already contain plenty of these little traps for those switching between them, it's impossible for a new C-family language like Talc to avoid both inheriting and adding to this confusion. Whose for-each syntax to use? Whose way of specifying superclass and interfaces? Whose names for the common types and functions?
 .SH BUGS
 Talc is not yet ready for production use.
 

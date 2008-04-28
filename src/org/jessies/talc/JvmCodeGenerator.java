@@ -667,7 +667,8 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     }
     
     public Void visitForEachStatement(AstNode.ForEachStatement forEachStatement) {
-        // FIXME: we need some kind of "iterable" concept in the language. until then, this code assumes we're dealing with a list.
+        // FIXME: we need some kind of "iterable" concept in the language. until then, this code assumes we're dealing with a list or string.
+        // Even if we have an "iterable" concept, we'll still need to cope with the fact that "string" is a bit of a special case, thanks to StringFunctions.
         
         visitLineNumber(forEachStatement);
         ArrayList<AstNode.VariableDefinition> loopVariables = (ArrayList<AstNode.VariableDefinition>) forEachStatement.loopVariableDefinitions();
@@ -694,14 +695,19 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         // collection: list = <expression>;
         forEachStatement.expression().accept(this);
         visitLineNumber(forEachStatement);
-        JvmLocalVariableAccessor collection = new JvmLocalVariableAccessor("$collection", ClassFileWriter.classNameToSignature(listValueType), maxLocals++);
-        cv.add(ByteCode.CHECKCAST, listValueType);
+        String collectionType = typeForTalcType(forEachStatement.expressionType());
+        JvmLocalVariableAccessor collection = new JvmLocalVariableAccessor("$collection", ClassFileWriter.classNameToSignature(collectionType), maxLocals++);
+        cv.add(ByteCode.CHECKCAST, collectionType);
         cv.add(ByteCode.DUP);
         collection.emitPut();
         
-        // max: int = collection.length();
+        // max: int = collection.size();
         JvmLocalVariableAccessor max = new JvmLocalVariableAccessor("$max", ClassFileWriter.classNameToSignature(integerValueType), maxLocals++);
-        cv.addInvoke(ByteCode.INVOKEVIRTUAL, listValueType, "size", "()Lorg/jessies/talc/IntegerValue;");
+        if (forEachStatement.expressionType() == TalcType.STRING) {
+            cv.addInvoke(ByteCode.INVOKESTATIC, "org/jessies/talc/StringFunctions", "size", "(Ljava/lang/String;)Lorg/jessies/talc/IntegerValue;");
+        } else {
+            cv.addInvoke(ByteCode.INVOKEVIRTUAL, collectionType, "size", "()Lorg/jessies/talc/IntegerValue;");
+        }
         max.emitPut();
         
         VariableAccessor k = loopVariables.get(0).accessor();
@@ -719,7 +725,11 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         // v = collection.__get_item__(k);
         collection.emitGet();
         k.emitGet();
-        cv.addInvoke(ByteCode.INVOKEVIRTUAL, listValueType, "__get_item__", "(Lorg/jessies/talc/IntegerValue;)Ljava/lang/Object;");
+        if (forEachStatement.expressionType() == TalcType.STRING) {
+            cv.addInvoke(ByteCode.INVOKESTATIC, "org/jessies/talc/StringFunctions", "__get_item__", "(Ljava/lang/String;Lorg/jessies/talc/IntegerValue;)Ljava/lang/String;");
+        } else {
+            cv.addInvoke(ByteCode.INVOKEVIRTUAL, collectionType, "__get_item__", "(Lorg/jessies/talc/IntegerValue;)Ljava/lang/Object;");
+        }
         cv.add(ByteCode.CHECKCAST, vType);
         v.emitPut();
         // <body>

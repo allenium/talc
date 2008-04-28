@@ -224,9 +224,16 @@ public class AstTypeChecker implements AstVisitor<TalcType> {
     
     public TalcType visitForEachStatement(AstNode.ForEachStatement forEachStatement) {
         TalcType expressionType = forEachStatement.expression().accept(this);
+        forEachStatement.setExpressionType(expressionType);
         // FIXME: really, we want an "Iterable" interface, and to invoke ".iterator()" on the expression.
         TalcType keyType = expressionType.typeParameter(TalcType.K);
         TalcType valueType = expressionType.typeParameter(TalcType.V);
+        // Our "string" is effectively "list<string>", but we obviously don't describe it recursively!
+        // Having an Iterable interface will remove the need for this special case too.
+        if (expressionType == TalcType.STRING) {
+            keyType = TalcType.INT;
+            valueType = TalcType.STRING;
+        }
         if (valueType == null) {
             // FIXME: check this is really a list rather than just assuming!
             keyType = TalcType.INT;

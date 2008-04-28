@@ -1,0 +1,61 @@
+#!/usr/bin/talc
+
+# Translates input to the NATO alphabet.
+
+NATO_ALPHABET := new map<string, string>();
+// Letters.
+NATO_ALPHABET["a"] = "alpha";
+NATO_ALPHABET["b"] = "bravo";
+NATO_ALPHABET["c"] = "charlie";
+NATO_ALPHABET["d"] = "delta";
+NATO_ALPHABET["e"] = "echo";
+NATO_ALPHABET["f"] = "foxtrot";
+NATO_ALPHABET["g"] = "golf";
+NATO_ALPHABET["h"] = "hotel";
+NATO_ALPHABET["i"] = "india";
+NATO_ALPHABET["j"] = "juliet";
+NATO_ALPHABET["k"] = "kilo";
+NATO_ALPHABET["l"] = "lima";
+NATO_ALPHABET["m"] = "mike";
+NATO_ALPHABET["n"] = "november";
+NATO_ALPHABET["o"] = "oscar";
+NATO_ALPHABET["p"] = "papa";
+NATO_ALPHABET["q"] = "quebec";
+NATO_ALPHABET["r"] = "romeo";
+NATO_ALPHABET["s"] = "sierra";
+NATO_ALPHABET["t"] = "tango";
+NATO_ALPHABET["u"] = "uniform";
+NATO_ALPHABET["v"] = "victor";
+NATO_ALPHABET["w"] = "whiskey";
+NATO_ALPHABET["x"] = "x-ray";
+NATO_ALPHABET["y"] = "yankee";
+NATO_ALPHABET["z"] = "zulu";
+// Digits.
+NATO_ALPHABET["0"] = "zero";
+NATO_ALPHABET["1"] = "one";
+NATO_ALPHABET["2"] = "two";
+NATO_ALPHABET["3"] = "three";
+NATO_ALPHABET["4"] = "four";
+NATO_ALPHABET["5"] = "five";
+NATO_ALPHABET["6"] = "six";
+NATO_ALPHABET["7"] = "seven";
+NATO_ALPHABET["8"] = "eight";
+NATO_ALPHABET["9"] = "nine";
+
+function to_nato(s: string): string {
+  result := "";
+  for (c in s) {
+    nato_c := NATO_ALPHABET[c.lc()];
+    // FIXME: the ternary operator would be nice.
+    if (nato_c == null) {
+      nato_c = c;
+    }
+    result += nato_c + " ";
+  }
+  return result;
+}
+
+while ((s := gets()) != null) {
+  puts(to_nato(s));
+}
+exit(0);
