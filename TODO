@@ -9,6 +9,10 @@ DOCUMENTATION
 * add some way to doc-comment class, function, and variable definitions. documentation should be available at run-time, and should be available for automatic dumping (like --dump-classes or a  better version of Ruby's ri).
 
 * more demos.
+* morse code encode/decode. (sound!)
+* resistor value calculator. (color ascii-art, simple math.)
+* calculator, programmable calculator, graphical calculator.
+* hangman game.
 
 * semi-automate the generation of the "built-in functions" section in the man page, as with the class summary.
 
