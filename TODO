@@ -26,7 +26,7 @@ TESTING
 
 * fix the "tests" to actually use these, so we get assertion failures if anything goes wrong.
 
-* increase test coverage.
+* increase test coverage. work out how to measure coverage; emma.sourceforge.net doesn't cope with our generated classes (why not?).
 
 
 
