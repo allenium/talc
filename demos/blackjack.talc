@@ -3,21 +3,17 @@
 # A simple game of blackjack (http://en.wikipedia.org/wiki/Blackjack).
 
 class Card {
-  // FIXME: it's a shame to have to give bogus default field values in a class like this.
-  name: string = null;
-  color: string = null;
-  suit: string = null;
+  // FIXME: it's a shame to have to give bogus default field values in a class.
+  text: string = null;
   value: int = null;
   
   function Card(name0: string, color0: string, suit0: string, value0: int) : Card {
-    name = name0;
-    color = color0;
-    suit = suit0;
     value = value0;
+    text = color0 + " " + name0 + suit0 + " " + "\u001b[m";
   }
   
   function to_s() : string {
-    return color + " " + name + suit + " " + "\u001b[m";
+    return text;
   }
   
   function value() : int {
@@ -65,28 +61,57 @@ function new_deck() : list<Card> {
   cards.add_all(family_of(RED, DIAMONDS));
   cards.add_all(family_of(RED, HEARTS));
   cards.add_all(family_of(BLACK, SPADES));
-  shuffle(cards);
   return cards;
 }
 
 function show_hand(prefix: string, hand: list<Card>, show_all: bool) : void {
   print(prefix);
-  for (card in hand) {
-    print(card, " ");
-    if (show_all == false) {
-      break;
+  if (show_all) {
+    for (card in hand) {
+      print(card, " ");
+    }
+  } else {
+    print(hand[0], " ");
+    for (i := 1; i < hand.size(); ++i) {
+      print("\u001b[37;41m ?? \u001b[0m ");
     }
   }
   print("\n\n");
 }
 
-function total_hand(hand: list<Card>) : int {
-  total := 0;
+# Totals the given hand, returning a list of the possible interpretations.
+# We can't return a single value because aces can be soft or hard.
+# We don't return "bust" totals (those over 21) to simplify the callers.
+function total_hand(hand: list<Card>) : list<int> {
+  high_total := 0;
+  low_total := 0;
   for (card in hand) {
-    // FIXME: what about high aces? we need to return a min and max, really.
-    total += card.value();
+    if (card.value() == 1) {
+      high_total += 11;
+      low_total += 1;
+    } else {
+      high_total += card.value();
+      low_total += card.value();
+    }
   }
-  return total;
+  result: list<int> = [];
+  if (low_total <= 21) {
+    result.push_back(low_total);
+  }
+  if (high_total <= 21) {
+    result.push_back(high_total);
+  }  
+  return result;
+}
+
+function max(xs: list<int>) : int {
+  result := xs[0];
+  for (i := 1; i < xs.size(); ++i) {
+    if (xs[i] > result) {
+      result = xs[i];
+    }
+  }
+  return result;
 }
 
 dealer_hand: list<Card> = [];
@@ -106,6 +131,7 @@ function play_blackjack() : void {
   for (i := 0; i < deck_count; ++i) {
     shoe.add_all(new_deck());
   }
+  shuffle(shoe);
   
   # Two cards for the dealer.
   dealer_hand = [];
@@ -120,13 +146,14 @@ function play_blackjack() : void {
   while (true) {
     show_hand("    Your hand: ", player_hand, true);
     show_hand(" Dealer shows: ", dealer_hand, false);
+    #puts("U: ", total_hand(player_hand), " D: ", total_hand(dealer_hand));
     
-    if (total_hand(dealer_hand) == 21) {
-      if (total_hand(player_hand) == 21) {
+    if (total_hand(dealer_hand).contains(21)) {
+      if (total_hand(player_hand).contains(21)) {
         game_over("Push: you both have 21!");
       }
       game_over("Dealer wins with blackjack!");
-    } else if (total_hand(player_hand) == 21) {
+    } else if (total_hand(player_hand).contains(21)) {
       game_over("You win with blackjack!");
     }
     
@@ -138,21 +165,26 @@ function play_blackjack() : void {
     choice = choice.trim().lc();
     if (choice.starts_with("h")) {
       player_hand.push_back(shoe.pop_front());
-      if (total_hand(player_hand) > 21) {
+      if (total_hand(player_hand).is_empty()) {
         game_over("You're bust!");
       }
-      
+    } else if (choice.starts_with("s")) {
       // This is apparently the standard dealer strategy.
-      if (total_hand(dealer_hand) <= 17) {
+      show_hand(" Dealer shows: ", dealer_hand, true);
+      while (max(total_hand(dealer_hand)) <= 17) {
         dealer_hand.push_back(shoe.pop_front());
-        if (total_hand(dealer_hand) > 21) {
-          game_over("Dealer's bust!");
+        show_hand("  Dealer hits: ", dealer_hand, true);
+        if (total_hand(dealer_hand).is_empty()) {
+          break;
         }
       }
-    } else if (choice.starts_with("s")) {
-      if (total_hand(player_hand) > total_hand(dealer_hand)) {
+      puts("Dealer stands...\n");
+      
+      if (total_hand(dealer_hand).is_empty()) {
+        game_over("You win: dealer's bust!");
+      } else if (max(total_hand(player_hand)) > max(total_hand(dealer_hand))) {
         game_over("You win!");
-      } else if (total_hand(player_hand) == total_hand(dealer_hand)) {
+      } else if (max(total_hand(player_hand)) == max(total_hand(dealer_hand))) {
         game_over("Push!");
       } else {
         game_over("Dealer wins!");
