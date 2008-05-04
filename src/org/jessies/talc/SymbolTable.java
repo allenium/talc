@@ -50,6 +50,14 @@ public class SymbolTable implements AstVisitor<Void> {
         node.setScope(scopes.peek());
     }
     
+    public Void visitAssertStatement(AstNode.AssertStatement assertStatement) {
+        assertStatement.testExpression().accept(this);
+        if (assertStatement.explanatoryExpression() != null) {
+            assertStatement.explanatoryExpression().accept(this);
+        }
+        return null;
+    }
+    
     public Void visitBinaryOperator(AstNode.BinaryOperator binOp) {
         setScope(binOp);
         binOp.lhs().accept(this);

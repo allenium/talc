@@ -36,6 +36,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     
     private static final String generatedClassType = "GeneratedClass";
     
+    private static final String javaLangAssertionErrorType = "java/lang/AssertionError";
     private static final String javaLangObjectType = "java/lang/Object";
     private static final String javaLangStringType = "java/lang/String";
     
@@ -356,6 +357,31 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         for (AstNode.ClassDefinition classDefinition : classDefinitions) {
             visitClassDefinition(classDefinition);
         }
+    }
+    
+    public Void visitAssertStatement(AstNode.AssertStatement assertStatement) {
+        int okayLabel = cv.acquireLabel();
+        
+        // if (<test-expression> == true) goto okayLabel;
+        assertStatement.testExpression().accept(this);
+        pushTrue();
+        cv.add(ByteCode.IF_ACMPEQ, okayLabel);
+        
+        // throw new AssertionError(<explanatory-expression>);
+        cv.add(ByteCode.NEW, javaLangAssertionErrorType);
+        cv.add(ByteCode.DUP);
+        if (assertStatement.explanatoryExpression() != null) {
+            assertStatement.explanatoryExpression().accept(this);
+            cv.addInvoke(ByteCode.INVOKESPECIAL, javaLangAssertionErrorType, "<init>", "(Ljava/lang/Object;)V");
+        } else {
+            cv.addInvoke(ByteCode.INVOKESPECIAL, javaLangAssertionErrorType, "<init>", "()V");
+        }
+        cv.add(ByteCode.ATHROW);
+        
+        // okayLabel:
+        cv.markLabel(okayLabel);
+        
+        return null;
     }
     
     public Void visitBinaryOperator(AstNode.BinaryOperator binOp) {

@@ -39,6 +39,10 @@ public class AstErrorChecker implements AstVisitor<Void> {
         return creationTime;
     }
     
+    public Void visitAssertStatement(AstNode.AssertStatement assertStatement) {
+        return null;
+    }
+    
     public Void visitBinaryOperator(AstNode.BinaryOperator binOp) {
         binOp.lhs().accept(this);
         if (binOp.rhs() != null) {

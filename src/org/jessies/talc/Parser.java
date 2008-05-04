@@ -45,15 +45,16 @@ public class Parser {
         if (DEBUG_PARSER) { System.out.println("parseStatement()"); }
         
         switch (lexer.token()) {
-            case BREAK: return parseBreakStatement();
-            case CLASS: return parseClassDefinition();
-            case CONTINUE: return parseContinueStatement();
-            case DO: return parseDoStatement();
-            case IF: return parseIfStatement();
-            case FOR: return parseForStatement();
-            case FUNCTION: return parseFunctionDefinition();
-            case RETURN: return parseReturnStatement();
-            case WHILE: return parseWhileStatement();
+        case ASSERT: return parseAssertStatement();
+        case BREAK: return parseBreakStatement();
+        case CLASS: return parseClassDefinition();
+        case CONTINUE: return parseContinueStatement();
+        case DO: return parseDoStatement();
+        case IF: return parseIfStatement();
+        case FOR: return parseForStatement();
+        case FUNCTION: return parseFunctionDefinition();
+        case RETURN: return parseReturnStatement();
+        case WHILE: return parseWhileStatement();
         case SEMICOLON:
             throw new TalcError(lexer, "empty statement");
         default:
@@ -100,6 +101,21 @@ public class Parser {
         String result = lexer.identifier();
         lexer.nextToken();
         return result;
+    }
+    
+    private AstNode parseAssertStatement() {
+        if (DEBUG_PARSER) { System.out.println("parseAssertStatement()"); }
+        
+        SourceLocation location = lexer.getLocation();
+        expect(Token.ASSERT);
+        AstNode testExpression = parseExpression();
+        AstNode explanatoryExpression = null;
+        if (lexer.token() == Token.COLON) {
+            expect(Token.COLON);
+            explanatoryExpression = parseExpression();
+        }
+        expect(Token.SEMICOLON);
+        return new AstNode.AssertStatement(location, testExpression, explanatoryExpression);
     }
     
     private AstNode parseBreakStatement() {

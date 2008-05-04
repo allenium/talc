@@ -38,6 +38,37 @@ public abstract class AstNode {
         this.scope = scope;
     }
     
+    public static class AssertStatement extends AstNode {
+        private AstNode testExpression;
+        private AstNode explanatoryExpression;
+        
+        public AssertStatement(SourceLocation location, AstNode testExpression, AstNode explanatoryExpression) {
+            this.location = location;
+            this.testExpression = testExpression;
+            this.explanatoryExpression = explanatoryExpression;
+        }
+        
+        public <ResultT> ResultT accept(AstVisitor<ResultT> visitor) {
+            return visitor.visitAssertStatement(this);
+        }
+        
+        public AstNode testExpression() {
+            return testExpression;
+        }
+        
+        public AstNode explanatoryExpression() {
+            return explanatoryExpression;
+        }
+        
+        public void setTestExpression(AstNode testExpression) {
+            this.testExpression = testExpression;
+        }
+        
+        public void setExplanatoryExpression(AstNode explanatoryExpression) {
+            this.explanatoryExpression = explanatoryExpression;
+        }
+    }
+    
     public static class BinaryOperator extends AstNode {
         private Token op;
         private AstNode lhs;

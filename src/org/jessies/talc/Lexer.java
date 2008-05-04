@@ -27,6 +27,7 @@ public class Lexer {
     private static final HashMap<String, Token> KEYWORDS;
     static {
         KEYWORDS = new HashMap<String, Token>();
+        KEYWORDS.put("assert", Token.ASSERT);
         KEYWORDS.put("break", Token.BREAK);
         KEYWORDS.put("class", Token.CLASS);
         KEYWORDS.put("continue", Token.CONTINUE);

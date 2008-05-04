@@ -1,6 +1,6 @@
 /*
  * This file is part of Talc.
- * Copyright (C) 2007 Elliott Hughes <enh@jessies.org>.
+ * Copyright (C) 2007-2008 Elliott Hughes <enh@jessies.org>.
  * 
  * Talc is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -112,6 +112,7 @@ public enum Token {
     // Keywords.
     
     // We don't actually use all of these yet, but we're likely to use most of them sooner or later...
+    ASSERT("assert"),
     BREAK("break"),
     CLASS("class"),
     CONTINUE("continue"),

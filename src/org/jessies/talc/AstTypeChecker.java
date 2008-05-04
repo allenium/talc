@@ -37,6 +37,14 @@ public class AstTypeChecker implements AstVisitor<TalcType> {
         return creationTime;
     }
     
+    public TalcType visitAssertStatement(AstNode.AssertStatement assertStatement) {
+        TalcType testType = assertStatement.testExpression().accept(this);
+        if (testType != TalcType.BOOL) {
+            throw new TalcError(assertStatement, "\"assert\" condition must have boolean type");
+        }
+        return TalcType.VOID;
+    }
+    
     public TalcType visitBinaryOperator(AstNode.BinaryOperator binOp) {
         TalcType type = visitBinaryOperator0(binOp);
         binOp.setType(type);

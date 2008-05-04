@@ -35,6 +35,12 @@ public class AstSimplifier implements AstVisitor<AstNode> {
         return simplifyAstNodeList(ast);
     }
     
+    public AstNode visitAssertStatement(AstNode.AssertStatement assertStatement) {
+        assertStatement.setTestExpression(assertStatement.testExpression().accept(this));
+        assertStatement.setExplanatoryExpression(simplifyIfNotNull(assertStatement.explanatoryExpression()));
+        return assertStatement;
+    }
+    
     public AstNode visitBinaryOperator(AstNode.BinaryOperator binOp) {
         AstNode lhs = binOp.lhs().accept(this);
         binOp.setLhs(lhs);
