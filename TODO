@@ -14,6 +14,12 @@ DOCUMENTATION
 * calculator, programmable calculator, graphical calculator.
 * hangman game.
 
+* http://merd.sourceforge.net/pixel/language-study/scripting-language/
+
+* http://www.angelfire.com/tx4/cus/shapes/index.html
+
+* http://merd.sourceforge.net/pixel/language-study/various/is-a-cow-an-animal/
+
 * semi-automate the generation of the "built-in functions" section in the man page, as with the class summary.
 
 * semi-automate the generation of the "built-in variables" section in the man page, as with the class summary.
@@ -32,16 +38,18 @@ TESTING
 
 MISSING FEATURES
 
-* [medium] finish user-defined classes.
- + instance fields
- + instance methods
- + class methods
- + class fields
- + final/synchronized methods (?)
- + "final" (and make all built-in classes final?)
- + "extends"
- + check for inheritance cycles.
- + "implements"
+* finish user-defined classes.
+  [x] instance fields
+  [ ] allow field definitions without initializers ("x: int;")
+  [x] instance methods
+  [ ] class methods
+  [ ] class fields
+  [ ] "extends"
+  [ ] check for inheritance cycles.
+  [ ] abstract methods
+  [ ] "interface" and "implements"
+  [ ] final/synchronized methods (?)
+  [ ] "final" (and make all built-in classes final?)
 
 * [medium] add map literals.
 
