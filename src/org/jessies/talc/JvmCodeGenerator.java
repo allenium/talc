@@ -593,7 +593,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         } else if (constantType == TalcType.REAL) {
             talcConstantPool.addConstantAndEmitCode(constant.constant(), realValueType);
         } else if (constantType == TalcType.STRING) {
-            // FIXME: .class files have 64KiB limits on UTF-8 constants, so we might want to break long strings up.
+            // Class files have 64KiB limits on UTF-8 constants, but addPush(String) breaks them up for us, if need be.
             cv.addPush(constant.constant().toString());
         } else {
             throw new TalcError(constant, "ICE: don't know how to generate code for constants of type " + constantType);
