@@ -50,20 +50,22 @@ public class SymbolTable implements AstVisitor<Void> {
         node.setScope(scopes.peek());
     }
     
+    private void visitIfNonNull(AstNode node) {
+        if (node != null) {
+            node.accept(this);
+        }
+    }
+    
     public Void visitAssertStatement(AstNode.AssertStatement assertStatement) {
         assertStatement.testExpression().accept(this);
-        if (assertStatement.explanatoryExpression() != null) {
-            assertStatement.explanatoryExpression().accept(this);
-        }
+        visitIfNonNull(assertStatement.explanatoryExpression());
         return null;
     }
     
     public Void visitBinaryOperator(AstNode.BinaryOperator binOp) {
         setScope(binOp);
         binOp.lhs().accept(this);
-        if (binOp.rhs() != null) {
-            binOp.rhs().accept(this);
-        }
+        visitIfNonNull(binOp.rhs());
         return null;
     }
     
@@ -138,9 +140,7 @@ public class SymbolTable implements AstVisitor<Void> {
         setScope(forStatement);
         pushScope();
         try {
-            if (forStatement.initializer() != null) {
-                forStatement.initializer().accept(this);
-            }
+            visitIfNonNull(forStatement.initializer());
             forStatement.conditionExpression().accept(this);
             forStatement.updateExpression().accept(this);
             forStatement.body().accept(this);
@@ -171,9 +171,7 @@ public class SymbolTable implements AstVisitor<Void> {
     
     public Void visitFunctionCall(AstNode.FunctionCall functionCall) {
         setScope(functionCall);
-        if (functionCall.instance() != null) {
-            functionCall.instance().accept(this);
-        }
+        visitIfNonNull(functionCall.instance());
         for (AstNode argument : functionCall.arguments()) {
             argument.accept(this);
         }
@@ -235,18 +233,14 @@ public class SymbolTable implements AstVisitor<Void> {
     
     public Void visitReturnStatement(AstNode.ReturnStatement returnStatement) {
         setScope(returnStatement);
-        if (returnStatement.expression() != null) {
-            returnStatement.expression().accept(this);
-        }
+        visitIfNonNull(returnStatement.expression());
         return null;
     }
     
     public Void visitVariableDefinition(AstNode.VariableDefinition variableDefinition) {
         setScope(variableDefinition);
         // Check the initializer first...
-        if (variableDefinition.initializer() != null) {
-            variableDefinition.initializer().accept(this);
-        }
+        visitIfNonNull(variableDefinition.initializer());
         // ...and add the variable to the current scope second, to prevent attempts at recursive initialization.
         scopes.peek().addVariable(variableDefinition);
         return null;
