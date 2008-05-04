@@ -39,9 +39,7 @@ public class AstTypeChecker implements AstVisitor<TalcType> {
     
     public TalcType visitAssertStatement(AstNode.AssertStatement assertStatement) {
         TalcType testType = assertStatement.testExpression().accept(this);
-        if (testType != TalcType.BOOL) {
-            throw new TalcError(assertStatement, "\"assert\" condition must have boolean type");
-        }
+        expectBooleanType("assert", assertStatement, assertStatement.testExpression());
         return TalcType.VOID;
     }
     
@@ -212,9 +210,7 @@ public class AstTypeChecker implements AstVisitor<TalcType> {
     
     public TalcType visitDoStatement(AstNode.DoStatement doStatement) {
         doStatement.body().accept(this);
-        if (doStatement.expression().accept(this) != TalcType.BOOL) {
-            throw new TalcError(doStatement, "\"do\" condition must have boolean type");
-        }
+        expectBooleanType("do", doStatement, doStatement.expression());
         return TalcType.VOID;
     }
     
@@ -222,9 +218,7 @@ public class AstTypeChecker implements AstVisitor<TalcType> {
         if (forStatement.initializer() != null) {
             forStatement.initializer().accept(this);
         }
-        if (forStatement.conditionExpression().accept(this) != TalcType.BOOL) {
-            throw new TalcError(forStatement, "\"for\" condition must have boolean type");
-        }
+        expectBooleanType("for", forStatement, forStatement.conditionExpression());
         forStatement.updateExpression().accept(this);
         forStatement.body().accept(this);
         return TalcType.VOID;
@@ -401,9 +395,7 @@ public class AstTypeChecker implements AstVisitor<TalcType> {
     
     public TalcType visitIfStatement(AstNode.IfStatement ifStatement) {
         for (AstNode expression : ifStatement.expressions()) {
-            if (expression.accept(this) != TalcType.BOOL) {
-                throw new TalcError(ifStatement, "\"if\" conditions must have boolean type");
-            }
+            expectBooleanType("if", ifStatement, expression);
         }
         for (AstNode block : ifStatement.bodies()) {
             block.accept(this);
@@ -520,10 +512,15 @@ public class AstTypeChecker implements AstVisitor<TalcType> {
     }
     
     public TalcType visitWhileStatement(AstNode.WhileStatement whileStatement) {
-        if (whileStatement.expression().accept(this) != TalcType.BOOL) {
-            throw new TalcError(whileStatement, "\"while\" condition must have boolean type");
-        }
+        expectBooleanType("while", whileStatement, whileStatement.expression());
         whileStatement.body().accept(this);
         return TalcType.VOID;
+    }
+    
+    private void expectBooleanType(String statementName, AstNode statement, AstNode expression) {
+        TalcType type = expression.accept(this);
+        if (type != TalcType.BOOL) {
+            throw new TalcError(statement, "\"" + statementName + "\" conditions must have boolean type, got " + type + " instead");
+        }
     }
 }
