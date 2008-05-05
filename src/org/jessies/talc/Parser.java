@@ -55,6 +55,10 @@ public class Parser {
         case FUNCTION: return parseFunctionDefinition();
         case RETURN: return parseReturnStatement();
         case WHILE: return parseWhileStatement();
+        case OPEN_BRACE:
+            // It's okay to introduce a new block anywhere.
+            // This isn't particularly useful to humans, but I don't think it's a likely cause of errors.
+            return parseBlock();
         case SEMICOLON:
             throw new TalcError(lexer, "empty statement");
         default:
