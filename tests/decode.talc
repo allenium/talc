@@ -8,3 +8,5 @@ for (i := 0; i < words.size(); ++i) {
   result += ("0x" + word).to_i().to_char();
 }
 print(result);
+
+assert result == "hello world\n";
