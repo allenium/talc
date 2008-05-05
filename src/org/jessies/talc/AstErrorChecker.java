@@ -39,19 +39,22 @@ public class AstErrorChecker implements AstVisitor<Void> {
         return creationTime;
     }
     
+    private void visitIfNonNull(AstNode node) {
+        if (node != null) {
+            node.accept(this);
+        }
+    }
+    
     public Void visitAssertStatement(AstNode.AssertStatement assertStatement) {
         assertStatement.testExpression().accept(this);
-        if (assertStatement.explanatoryExpression() != null) {
-            assertStatement.explanatoryExpression().accept(this);
-        }
+        visitIfNonNull(assertStatement.explanatoryExpression());
         return null;
     }
     
     public Void visitBinaryOperator(AstNode.BinaryOperator binOp) {
         binOp.lhs().accept(this);
-        if (binOp.rhs() != null) {
-            binOp.rhs().accept(this);
-        }
+        visitIfNonNull(binOp.rhs());
+        
         switch (binOp.op()) {
         case POST_DECREMENT:
         case POST_INCREMENT:
@@ -127,9 +130,7 @@ public class AstErrorChecker implements AstVisitor<Void> {
     }
     
     public Void visitForStatement(AstNode.ForStatement forStatement) {
-        if (forStatement.initializer() != null) {
-            forStatement.initializer().accept(this);
-        }
+        visitIfNonNull(forStatement.initializer());
         forStatement.conditionExpression().accept(this);
         forStatement.updateExpression().accept(this);
         ++loopDepth;
@@ -147,9 +148,7 @@ public class AstErrorChecker implements AstVisitor<Void> {
     }
     
     public Void visitFunctionCall(AstNode.FunctionCall functionCall) {
-        if (functionCall.instance() != null) {
-            functionCall.instance().accept(this);
-        }
+        visitIfNonNull(functionCall.instance());
         for (AstNode argument : functionCall.arguments()) {
             argument.accept(this);
         }
@@ -185,9 +184,7 @@ public class AstErrorChecker implements AstVisitor<Void> {
     }
     
     public Void visitReturnStatement(AstNode.ReturnStatement returnStatement) {
-        if (returnStatement.expression() != null) {
-            returnStatement.expression().accept(this);
-        }
+        visitIfNonNull(returnStatement.expression());
         return null;
     }
     
