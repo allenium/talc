@@ -28,9 +28,7 @@ DOCUMENTATION
 
 TESTING
 
-* add "assert" statements. See also: http://java.sun.com/j2se/1.4.2/docs/guide/lang/assert.html
-
-* fix the "tests" to actually use these, so we get assertion failures if anything goes wrong.
+* fix the tests to use "assert", so we get assertion failures if anything goes wrong.
 
 * increase test coverage. work out how to measure coverage; emma.sourceforge.net doesn't cope with our generated classes (why not?).
 
@@ -250,9 +248,9 @@ make sure all "value" classes return sensible hashCodes!
 
 
 
-IMPLEMENTATION
+LANGUAGE DEFECTS
 
-* language defect:
+* we need to give indexing expressions their own AstNode, i think.
       a[i] = 0;        # OK
       x = a[i];        # OK
       a[i] = a[i] + 1; # OK
@@ -260,6 +258,12 @@ IMPLEMENTATION
       a[i]++;          # ERROR
       ++a[i];          # ERROR
   it's a mistake to translate [] and []= in the parser. i think we do need some kind of AstNode.IndexExpression, and to do the __get_item__/__set_item__ translation in a context-sensitive way. not clear on the details, but this will have to be looked at eventually. i don't mind outlawing ++ and -- on these expressions, but compound assignment seems like something that should work.
+
+* in Java "assert 0 == 0 == 0;" won't compile, with the complaint that you can't compare boolean with int. in Talc, you get a surprising result instead.
+
+
+
+QUALITY OF IMPLEMENTATION
 
 * report better errors than 'no instance method "__get_item__" in class int' for talc -e '1[23];'.
   how public should those special names be?
