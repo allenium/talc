@@ -1,8 +1,10 @@
 #!/usr/bin/talc
 
+# Test assertions.
 assert true;
 assert 0 == 0;
 
+# Test Unicode escapes in string literals.
 assert "\u0068\u0065\u006c\u006c\u006f\u0020world" == 'hello world';
 
 i := 0;
@@ -101,6 +103,7 @@ if (false != false) {
  assert false;
 }
 
+# Test unary and binary operators.
 assert 1! == 1;
 assert 2! == 2;
 assert 3! == 6;
@@ -108,7 +111,6 @@ assert 4! == 24;
 assert 5! == 120;
 assert 6! == 720;
 assert 7! == 5040;
-
 assert 2 == 1 << 1;
 assert 1 << 10 == 1024;
 assert 1024 >> 2 == 256;
@@ -148,16 +150,20 @@ if (true) {
  assert false;
 }
 
+assert i == 14;
+
 {
  three := (1 + 2);
  assert three == 3;
 }
 
+# Test compile-time string concatenation.
 {
  s := ("hello" + " " + "world");
  assert s == "hello world";
 }
 
+# Test order of evaluation.
 {
  s:string = "one";
  if (s.starts_with(s = "two")) {
@@ -165,4 +171,22 @@ if (true) {
  }
 }
 
-assert i == 14;
+# Test "do" loops.
+{
+ i := 0;
+ do {
+  ++i;
+ } while (i < 5);
+ 
+ assert i == 5;
+}
+
+# Test "while" loops.
+{
+ i := 0;
+ while (i < 5) {
+  ++i;
+ }
+ 
+ assert i == 5;
+}

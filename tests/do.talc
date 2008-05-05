@@ -1,6 +1,0 @@
-#!/usr/bin/talc
-
-i := 0;
-do {
- puts(i++);
-} while (i < 5);
