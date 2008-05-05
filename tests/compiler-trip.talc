@@ -1,27 +1,30 @@
 #!/usr/bin/talc
 
-#function f() : void {
-puts("\u0068\u0065\u006c\u006c\u006f\u0020world");
-puts("Copyright \u00A9 2007, Elliott Hughes");
+assert true;
+assert 0 == 0;
+
+assert "\u0068\u0065\u006c\u006c\u006f\u0020world" == 'hello world';
+
+i := 0;
 
 if (true) {
- puts("okay");
+ ++i;
 } else {
- puts("unexpected!");
+ assert false;
 }
 
 if (false) {
- puts("unexpected!");
+ assert false;
 } else {
- puts("okay");
+ ++i;
 }
 
 if (true) {
- puts("okay");
+ ++i;
 }
 
 if (false) {
- puts("unexpected!");
+ assert false;
 }
 
 puts([true, false]);
@@ -33,116 +36,133 @@ puts(1, 2, 3, 4);
 puts([1, 2, 3, 4]);
 
 if (true) {
- puts([1]);
+ ++i;
 } else {
- puts("c");
+ assert false;
 }
 
 if (!true) {
- puts("unexpected!");
+ assert false;
 } else if (!false) {
- puts("okay");
+ ++i;
 } else {
- puts("unexpected!");
+ assert false;
 }
 
 if (false && true) {
- puts("unexpected!");
+ assert false;
 }
 if (true && false) {
- puts("unexpected!");
+ assert false;
 }
 if (true && true) {
- puts("okay");
+ ++i;
 }
 if (false && false) {
- puts("unexpected!");
+ assert false;
 }
 
 if (false || true) {
- puts("okay");
+ ++i;
 }
 if (true || false) {
- puts("okay");
+ ++i;
 }
 if (true && true) {
- puts("okay");
+ ++i;
 }
 if (false && false) {
- puts("unexpected!");
+ assert false;
 }
 
 if (true == false) {
- puts("unexpected!");
+ assert false;
 }
 if (false == true) {
- puts("unexpected!");
+ assert false;
 }
 if (true == true) {
- puts("okay");
+ ++i;
 }
 if (false == false) {
- puts("okay");
+ ++i;
 }
 
 if (true != false) {
- puts("okay");
+ ++i;
 }
 if (false != true) {
- puts("okay");
+ ++i;
 }
 if (true != true) {
- puts("unexpected!");
+ assert false;
 }
 if (false != false) {
- puts("unexpected!");
+ assert false;
 }
 
-puts(1!);
-puts(2!);
-puts(3!);
-puts(4!);
-puts(5!);
-puts(6!);
-puts(7!);
+assert 1! == 1;
+assert 2! == 2;
+assert 3! == 6;
+assert 4! == 24;
+assert 5! == 120;
+assert 6! == 720;
+assert 7! == 5040;
 
-puts(2 == 1 << 1);
-puts(1 << 10 == 1024);
-puts(1024 >> 2 == 256);
-puts(-1024);
-puts(1024 % 2 == 0);
-puts(1025 % 2 == 1);
-puts((7 & 2) == 2);
-puts((2 | 3) == 3);
-puts((2 ^ 3) == 1);
-#puts(~8);
-puts((2 ** 3) == 8);
-puts(-1024 - -1024 == 0);
-puts(3*4 == 12);
-puts(3.0*4.0 == 12.0);
-puts("hello" != null);
-puts(3.14);
-puts(1 + 1 == 2);
-puts(1.0 + 1.0 == 2.0);
-puts("hello" + " " + "world" == "hello world");
-puts((1 < 2) == true);
-puts((2 > 1) == true);
-puts((1 > 1) == false);
-puts((1 < 1) == false);
-puts((1 <= 1) == true);
-puts((1 <= 2) == true);
+assert 2 == 1 << 1;
+assert 1 << 10 == 1024;
+assert 1024 >> 2 == 256;
+assert -1 * 1024 == -1024;
+assert 1024 % 2 == 0;
+assert 1025 % 2 == 1;
+assert (7 & 2) == 2;
+assert (2 | 3) == 3;
+assert (2 ^ 3) == 1;
+assert (2 ** 3) == 8;
+assert (-3 ** 2) == -9;
+assert -1024 - -1024 == 0;
+assert 3*4 == 12;
+assert 3.0*4.0 == 12.0;
+assert "hello" != null;
+assert 1 + 1 == 2;
+assert 1.0 + 1.0 == 2.0;
+assert "hello" + " " + "world" == "hello world";
+assert 1 < 2;
+assert 2 > 1;
+assert !(1 > 1);
+assert !(1 < 1);
+assert 1 <= 1;
+assert 1 <= 2;
 
 if (true) {
+ ++i;
 } else if (true) {
+ assert false;
 } else if (true) {
+ assert false;
 } else if (true) {
+ assert false;
 } else if (true) {
+ assert false;
 } else {
+ assert false;
 }
 
-#}
+{
+ three := (1 + 2);
+ assert three == 3;
+}
 
-i := (1 + 2);
-s := ("hello" + " " + "world");
-puts(i == 3);
-puts(s == "hello world");
+{
+ s := ("hello" + " " + "world");
+ assert s == "hello world";
+}
+
+{
+ s:string = "one";
+ if (s.starts_with(s = "two")) {
+  assert false;
+ }
+}
+
+assert i == 14;
