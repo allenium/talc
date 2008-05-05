@@ -40,6 +40,10 @@ public class AstErrorChecker implements AstVisitor<Void> {
     }
     
     public Void visitAssertStatement(AstNode.AssertStatement assertStatement) {
+        assertStatement.testExpression().accept(this);
+        if (assertStatement.explanatoryExpression() != null) {
+            assertStatement.explanatoryExpression().accept(this);
+        }
         return null;
     }
     
