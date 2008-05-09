@@ -939,11 +939,14 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
             functionName = "<init>";
         }
         
-        if (functionDefinition.scope() == Scope.globalScope()) {
+        boolean isStatic = functionDefinition.scope() == Scope.globalScope();
+        if (isStatic) {
             flags |= ClassFileWriter.ACC_STATIC;
         }
         
-        if (functionName.equals("to_s")) {
+        // There's no reason a global function can't be called to_s.
+        // Member functions are renamed toString for Java compatibility.
+        if (!isStatic && functionName.equals("to_s")) {
             functionName = "toString";
         }
         
