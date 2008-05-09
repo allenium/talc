@@ -1,7 +1,4 @@
 n : int = 1;
-function double(n : int) : int { return 2*n; }
-puts(double(3));
-puts(n); # should be 1
 
 function hello() : bool { puts("hello"); return true; }
 function world() : bool { puts("world"); return true; }

@@ -249,3 +249,13 @@ assert i == 14;
  }
  assert i == 5;
 }
+
+# Check that function arguments and locals are distinct from globals.
+# (It's an error to attempt to hide a function argument with a local, so
+# that case isn't tested.)
+n : int = 1;
+m : int = 1;
+function double(n : int) : int { m := 2; assert m == 2; return 2*n; }
+assert double(3) == 6;
+assert n == 1;
+assert m == 1;
