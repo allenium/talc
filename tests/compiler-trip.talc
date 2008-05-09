@@ -177,8 +177,68 @@ assert i == 14;
  do {
   ++i;
  } while (i < 5);
- 
  assert i == 5;
+}
+
+# Test "for" loops.
+{
+ # Tests that we cope when any part of a "for" statement is missing.
+ 
+ # No initializer.
+ {
+  i := 0;
+  j := 0;
+  for (; i < 5; ++i) {
+   ++j;
+  }
+  assert i == 5;
+  assert j == 5;
+ }
+ 
+ # No increment.
+ {
+  j := 0;
+  for (i := 0; i < 5;) {
+   ++i;
+   ++j;
+  }
+  assert j == 5;
+ }
+ 
+ # No condition.
+ {
+  j := 0;
+  for (i := 0; ; ++i) {
+   if (i >= 5) {
+    break;
+   }
+   ++j;
+  }
+  assert j == 5;
+ }
+ 
+ # Tests the for-each functionality.
+ words:list<string> = ["this", "is", "a", "test"];
+ 
+ # For-each with index.
+ {
+  j := 0;
+  for (i, word in words) {
+   assert words[i] == word;
+   ++j;
+  }
+  assert j == words.size();
+ }
+ 
+ # For-each without index.
+ {
+  j := 0;
+  for (word in words) {
+   assert words[j] == word;
+   ++j;
+  }
+  assert j == words.size();
+ }
 }
 
 # Test "while" loops.
@@ -187,6 +247,5 @@ assert i == 14;
  while (i < 5) {
   ++i;
  }
- 
  assert i == 5;
 }
