@@ -62,7 +62,7 @@ MISSING FEATURES
 
 * should add an "Iterable" interface, change for-each to expect its expression has that type and then invoke "Iterable.iterator()" and use it. (though how does that get us keys as well as values? maybe not "Iterable" so much as "ForEachAble<K,V>"? "has_next() : bool", "key() : K", and "value() : V"?)
 
-* warnings about hiding? what kinds are okay and what kinds aren't?
+* warnings about hiding? what kinds are okay and what kinds aren't? i think we should outlaw all hiding.
 
 * [medium] implement regexp (type, literals (?), and basic operations). (a literal would give us compile-time regexp checking and ahead-of-time/once-off Pattern compilation.) go back over core library and see where we could usefully use regexp instead of string. (overloading might be handy.)
 
