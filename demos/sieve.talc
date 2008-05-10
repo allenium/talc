@@ -14,26 +14,24 @@ function n_trues(n: int) : list<bool> {
     return result;
 }
 
-# FIXME: this would be clearer (and more space-efficient) if we had a BitSet.
-
 start_time := time_ms();
-flags : list<bool> = n_trues(size);
 
-prime := 2;
-while (prime*prime < size) {
-    i := prime*prime;
-    while (i < size) {
-        flags[i] = false;
-        i += prime;
+# FIXME: this would be more space-efficient if we had a BitSet.
+sieve : list<bool> = n_trues(size);
+
+for (k := 2; k < size; ++k) {
+    if (!sieve[k]) {
+        continue;
     }
-    do {
-        ++prime;
-    } while (flags[prime] == false);
+    for (i := 2*k; i < size; i += k) {
+        sieve[i] = false;
+    }
 }
 
+# FIXME: this would be clearer if we had a BitSet.
 count := 0;
 for (i := 2; i < size; ++i) {
-    if (flags[i]) {
+    if (sieve[i]) {
         ++count;
     }
 }
