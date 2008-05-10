@@ -1,11 +1,12 @@
-n : int = 1;
-
-function hello() : bool { puts("hello"); return true; }
-function world() : bool { puts("world"); return true; }
-true || world();
-false || hello();
-true && world();
-false && hello();
+# Test short-circuit relational operators with function calls.
+function okay_to_call() : bool { assert true; return true; }
+function not_okay_to_call() : bool { assert false; return true; }
+{
+  true || not_okay_to_call();
+  false || okay_to_call();
+  true && okay_to_call();
+  false && not_okay_to_call();
+}
 
 function to_s(n:int):string {
   if (n == 0) {
@@ -39,29 +40,34 @@ function name_from_list(n : int) : string {
   return name;
 }
 
-#names:map<int,string> = [ 1:"one", 2:"two", 3:"three" ];
+# FIXME: what should we do about map literals?
 names:map<int,string> = new map<int,string>();
 names[1] = "one"; names[2] = "two"; names[3] = "three";
 function name_from_map(n:int):string {
   return names[n];
 }
 
-for (i:int = 1; i < 4; ++i) {
-  puts(i, "\t", name_from_list(i), "\t", name_from_map(i));
+# Check the two functions are equivalent.
+{
+  for (i:int = 1; i < names.size(); ++i) {
+    assert name_from_list(i) == name_from_map(i);
+  }
 }
-puts(names.has_key(1), " ", names.has_key(12));
-puts(names.has_value("one"), " ", names.has_value("many"));
-puts(names);
 
-puts("--");
-keys: list<int> = names.keys();
-puts(keys);
-values: list<string> = names.values();
-puts(values);
-puts("--");
-
-puts("size=", names.size());
-puts(names.remove(2));
-puts("size=", names.size());
-puts(names.clear());
-puts("size=", names.size());
+# Test map methods.
+{
+  assert names.has_key(1);
+  assert !names.has_key(12);
+  assert names.has_value("one");
+  assert !names.has_value("many");
+  assert names.to_s() == "{1=one, 2=two, 3=three}";
+  keys: list<int> = names.keys();
+  assert keys.to_s() == "[1, 2, 3]";
+  values: list<string> = names.values();
+  assert values.to_s() == "[one, two, three]";
+  assert names.size() == 3;
+  assert names.remove(2).to_s() == "{1=one, 3=three}";
+  assert names.size() == 2;
+  assert names.clear().to_s() == "{}";
+  assert names.size() == 0;
+}
