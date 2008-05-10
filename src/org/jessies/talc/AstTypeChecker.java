@@ -40,6 +40,9 @@ public class AstTypeChecker implements AstVisitor<TalcType> {
     public TalcType visitAssertStatement(AstNode.AssertStatement assertStatement) {
         TalcType testType = assertStatement.testExpression().accept(this);
         expectBooleanType("assert", assertStatement, assertStatement.testExpression());
+        if (assertStatement.explanatoryExpression() != null) {
+            assertStatement.explanatoryExpression().accept(this);
+        }
         return TalcType.VOID;
     }
     
