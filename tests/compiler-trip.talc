@@ -270,6 +270,10 @@ function not_okay_to_call() : bool { assert false; return true; }
  false && not_okay_to_call();
 }
 
+# Check that we don't evaluate the explanatory expression of an assertion
+# unless it fails.
+assert true : not_okay_to_call();
+
 # Two ways to translate a small int into a string.
 function name_from_list(n : int) : string {
  names:list<string> = [ "one", "two", "three" ];
