@@ -76,6 +76,10 @@ public class RealValue implements Comparable<RealValue> {
         return Double.compare(value, rhs.value);
     }
     
+    public RealValue cbrt() {
+        return new RealValue(Math.cbrt(value));
+    }
+    
     public RealValue log(RealValue base) {
         return new RealValue(Math.log(value) / Math.log(base.value));
     }

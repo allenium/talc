@@ -449,6 +449,7 @@ object
 
 real : object
   abs() : real
+  cbrt() : real
   log(base: real) : real
   log10() : real
   logE() : real
@@ -458,6 +459,7 @@ real : object
   to_r() : real
 
 string : object
+  __get_item__(index: int) : string
   contains(substring: string) : bool
   ends_with(suffix: string) : bool
   escape_html() : string

@@ -222,7 +222,6 @@ math.sinh => Math.sinh
 math.cosh => Math.cosh
 math.tanh => Math.tanh
 math.exp => Math.exp
-real.cbrt => Math.cbrt
 
 Perl-like pack/unpack?
 Perl/Python/Ruby-like tr/tr_d? sufficiently useful?

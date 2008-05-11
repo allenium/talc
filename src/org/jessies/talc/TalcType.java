@@ -125,6 +125,7 @@ public class TalcType {
         addClass(MATCH);
         
         addMemberFunction(REAL, new BuiltInFunction("abs", TalcType.REAL));
+        addMemberFunction(REAL, new BuiltInFunction("cbrt", TalcType.REAL));
         addMemberFunction(REAL, new BuiltInFunction("log", Arrays.asList("base"), Arrays.asList(TalcType.REAL), TalcType.REAL));
         addMemberFunction(REAL, new BuiltInFunction("log10", TalcType.REAL));
         addMemberFunction(REAL, new BuiltInFunction("logE", TalcType.REAL));
