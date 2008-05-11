@@ -2,25 +2,31 @@
 
 class EmptyClass {
   function EmptyClass() : EmptyClass {
-    puts("EmptyClass::EmptyClass()");
+    // Check that we can call a method from the constructor.
     m();
   }
   
   function m() : void {
-    puts("EmptyClass::m()");
+    // Check that we can call a method from a method.
+    assert m2();
+    // Check that we can call the special to_s/toString method.
+    assert to_s() == "!";
+  }
+  
+  function m2() : bool {
+    return true;
   }
   
   function to_s() : string {
-    return "hello, world!";
+    return "!";
   }
 }
 
-puts(new EmptyClass().to_s());
-puts(new EmptyClass());
 empty := new EmptyClass();
-empty.m();
+assert empty.m2();
+assert empty.to_s() == "!";
 o : object = empty;
-puts(empty.to_s(), " should equal ", o.to_s());
+assert empty.to_s() == o.to_s();
 
 class Point {
   x: int = 0;
@@ -29,9 +35,6 @@ class Point {
   function Point(x0: int, y0: int) : Point {
     x = x0;
     y = y0;
-    # FIXME: "this"?
-    #this.x = x0;
-    #this.y = y0;
   }
   
   function x() : int {
@@ -58,8 +61,8 @@ class Point {
 }
 
 origin := new Point(0, 0);
-puts(origin);
+assert origin.to_s() == "(0,0)";
 p := new Point(3, 4);
-puts(p);
+assert p.to_s() == "(3,4)";
 p.moveBy(-2 * p.x(), -2 * p.y());
-puts(p);
+assert p.to_s() == "(-3,-4)";
