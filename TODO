@@ -13,6 +13,8 @@ DOCUMENTATION
 * resistor value calculator. (color ascii-art, simple math.)
 * calculator, programmable calculator, graphical calculator.
 * hangman game.
+* tic-tac-toe, connect four?
+* roman numerals.
 
 * http://merd.sourceforge.net/pixel/language-study/scripting-language/
 
@@ -32,6 +34,7 @@ TESTING
 
 * increase test coverage. work out how to measure coverage; emma.sourceforge.net doesn't cope with our generated classes (why not?).
 
+* benchmarking. (i.e. automated performance testing.) maybe a directory of programs, each written in both Talc and Java, and a script to run them against one another, checking for changes in the relative (percentage?) runtime. should be able to refer to some of the demos, too: mandelbrot.talc is a decent performance test for some areas.
 
 
 MISSING FEATURES
@@ -138,6 +141,8 @@ int.to_s(base:int) # currently, we don't have overloading, so this is called int
 TalcPrimitives: chmod, chown, lstat, stat
 
 shouldn't "file" really be "path"?
+file.basename():file
+file.dirname():file
 file.chmod(mode:int):bool # plus symbolic constants?
 file.chown(uid:int, gid:int):bool
 file.is_reg():bool # et cetera? or should all this stuff be via stat?
@@ -217,6 +222,7 @@ math.sinh => Math.sinh
 math.cosh => Math.cosh
 math.tanh => Math.tanh
 math.exp => Math.exp
+real.cbrt => Math.cbrt
 
 Perl-like pack/unpack?
 Perl/Python/Ruby-like tr/tr_d? sufficiently useful?
@@ -246,6 +252,7 @@ should FILE_SEPARATOR and PATH_SEPARATOR be in class "file"?
 
 make sure all "value" classes return sensible hashCodes!
 
+simple input/output of CSV, TSV, XML. (anything else common?)
 
 
 LANGUAGE DEFECTS
