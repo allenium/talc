@@ -410,3 +410,35 @@ class Point {
  p.moveBy(-2 * p.x(), -2 * p.y());
  assert p.to_s() == "(-3,-4)";
 }
+
+# Test the string methods.
+{
+ s := "Hello, World!";
+ assert s == "Hello, World!";
+ assert s.uc() == "HELLO, WORLD!";
+ assert s == "Hello, World!";
+ assert s.lc() == "hello, world!";
+ assert s.lc_first() == "hello, World!";
+ assert s.lc().uc_first() == "Hello, world!";
+ 
+ assert s.contains("lo");
+ assert !s.contains("ol");
+ assert s.ends_with("!");
+ assert !s.ends_with("H");
+ assert s.starts_with("H");
+ assert !s.starts_with("!");
+ assert "  Hello, World!  ".trim() == s;
+ 
+ assert s.replace("l", "L") == "HeLLo, WorLd!";
+ assert s.replace(",", "") == "Hello World!";
+ 
+ assert s.sub("[a-z]", "x") == "Hxllo, World!";
+ assert s.gsub("[a-z]", "x") == "Hxxxx, Wxxxx!";
+ assert s.gsub("([A-Z])", "<$1>") == "<H>ello, <W>orld!";
+ 
+ assert @"\d+" == "\\d+";
+ assert @"the windows path is c:\here\there\everywhere\virus.exe" == "the windows path is c:\\here\\there\\everywhere\\virus.exe";
+ assert @"C:\Foo\Bar\Baz\" == "C:\\Foo\\Bar\\Baz\\";
+ assert @"I said, ""Hello there.""" == 'I said, "Hello there."';
+ assert @"I said, ""Hello there.""" == "I said, \"Hello there.\"";
+}
