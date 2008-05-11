@@ -380,6 +380,9 @@ public class AstTypeChecker implements AstVisitor<TalcType> {
         // Check the function signature, if we've been asked to.
         if ((passBitmask & 1) != 0) {
             functionDefinition.fixUpTypes((currentClassDefinition != null) ? currentClassDefinition.type() : null);
+            for (AstNode.VariableDefinition formalParameter : functionDefinition.formalParameters()) {
+                formalParameter.accept(this);
+            }
             
             // Check for dodgy constructors.
             if (functionDefinition.isConstructor() && functionDefinition.returnType() != currentClassDefinition.type()) {

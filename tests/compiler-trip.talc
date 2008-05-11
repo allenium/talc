@@ -442,3 +442,6 @@ class Point {
  assert @"I said, ""Hello there.""" == 'I said, "Hello there."';
  assert @"I said, ""Hello there.""" == "I said, \"Hello there.\"";
 }
+
+# Test that we can generate code for a function with an unused argument.
+function unused_argument(unused: int) : void {}
