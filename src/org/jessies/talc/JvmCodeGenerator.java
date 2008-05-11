@@ -824,21 +824,15 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
                 cv.add(ByteCode.DUP);
             } else if (functionCall.instance() != null) {
                 functionCall.instance().accept(this);
-                if (functionName.equals("to_s")) {
-                    // A special case: for Java compatibility to_s is toString underneath.
-                    cv.addInvoke(ByteCode.INVOKEVIRTUAL, "java/lang/Object", "toString", "()Ljava/lang/String;");
-                    return null;
+                if (proxyFirstArgumentType != null) {
+                    // If proxyFirstArgumentType is non-null, you intend to invoke a method on
+                    // a proxy class, which means it's static method, which means you need an
+                    // extra first argument to take the place of "this", and proxyFirstArgumentType
+                    // is the type of that argument, *not* the type of the class containing
+                    // the method.
+                    cv.add(ByteCode.CHECKCAST, proxyFirstArgumentType);
                 } else {
-                    if (proxyFirstArgumentType != null) {
-                        // If proxyFirstArgumentType is non-null, you intend to invoke a method on
-                        // a proxy class, which means it's static method, which means you need an
-                        // extra first argument to take the place of "this", and proxyFirstArgumentType
-                        // is the type of that argument, *not* the type of the class containing
-                        // the method.
-                        cv.add(ByteCode.CHECKCAST, proxyFirstArgumentType);
-                    } else {
-                        cv.add(ByteCode.CHECKCAST, containingType);
-                    }
+                    cv.add(ByteCode.CHECKCAST, containingType);
                 }
             } else if (definition.containingType() != null) {
                 cv.add(ByteCode.ALOAD_0);
@@ -854,6 +848,9 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
             }
             
             String name = definition.functionName();
+            if (name.equals("to_s")) {
+                name = "toString";
+            }
             String methodSignature = methodSignature(definition);
             if (proxyType != null) {
                 // We have to insert the argument representing "this" in these static methods.
@@ -944,9 +941,9 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
             flags |= ClassFileWriter.ACC_STATIC;
         }
         
-        // There's no reason a global function can't be called to_s.
         // Member functions are renamed toString for Java compatibility.
-        if (!isStatic && functionName.equals("to_s")) {
+        // There's no reason a global function can't be called to_s, but it makes life easier if we're consistent.
+        if (functionName.equals("to_s")) {
             functionName = "toString";
         }
         
