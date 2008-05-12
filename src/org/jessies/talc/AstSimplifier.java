@@ -37,14 +37,14 @@ public class AstSimplifier implements AstVisitor<AstNode> {
     
     public AstNode visitAssertStatement(AstNode.AssertStatement assertStatement) {
         assertStatement.setTestExpression(assertStatement.testExpression().accept(this));
-        assertStatement.setExplanatoryExpression(simplifyIfNotNull(assertStatement.explanatoryExpression()));
+        assertStatement.setExplanatoryExpression(simplifyIfNonNull(assertStatement.explanatoryExpression()));
         return assertStatement;
     }
     
     public AstNode visitBinaryOperator(AstNode.BinaryOperator binOp) {
         AstNode lhs = binOp.lhs().accept(this);
         binOp.setLhs(lhs);
-        AstNode rhs = simplifyIfNotNull(binOp.rhs());
+        AstNode rhs = simplifyIfNonNull(binOp.rhs());
         binOp.setRhs(rhs);
         
         Token op = binOp.op();
@@ -292,7 +292,7 @@ public class AstSimplifier implements AstVisitor<AstNode> {
     }
     
     @SuppressWarnings("unchecked")
-    private <T extends AstNode> T simplifyIfNotNull(T node) {
+    private <T extends AstNode> T simplifyIfNonNull(T node) {
         return (node != null) ? (T) node.accept(this) : null;
     }
     
@@ -321,7 +321,7 @@ public class AstSimplifier implements AstVisitor<AstNode> {
     }
     
     public AstNode visitForStatement(AstNode.ForStatement forStatement) {
-        forStatement.setInitializer(simplifyIfNotNull(forStatement.initializer()));
+        forStatement.setInitializer(simplifyIfNonNull(forStatement.initializer()));
         forStatement.setConditionExpression(forStatement.conditionExpression().accept(this));
         forStatement.setUpdateExpression(forStatement.updateExpression().accept(this));
         forStatement.setBody(forStatement.body().accept(this));
@@ -341,12 +341,12 @@ public class AstSimplifier implements AstVisitor<AstNode> {
             newArguments[i] = oldArguments[i].accept(this);
         }
         call.setArguments(newArguments);
-        call.setInstance(simplifyIfNotNull(call.instance()));
+        call.setInstance(simplifyIfNonNull(call.instance()));
         return call;
     }
     
     public AstNode visitFunctionDefinition(AstNode.FunctionDefinition function) {
-        function.setBody(simplifyIfNotNull(function.body()));
+        function.setBody(simplifyIfNonNull(function.body()));
         return function;
     }
     
@@ -390,7 +390,7 @@ public class AstSimplifier implements AstVisitor<AstNode> {
     }
     
     public AstNode visitReturnStatement(AstNode.ReturnStatement returnStatement) {
-        returnStatement.setExpression(simplifyIfNotNull(returnStatement.expression()));
+        returnStatement.setExpression(simplifyIfNonNull(returnStatement.expression()));
         return returnStatement;
     }
     
