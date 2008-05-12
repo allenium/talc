@@ -776,10 +776,46 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         return null;
     }
     
+    private Void visitExternFunctionCall(AstNode.FunctionCall functionCall) {
+        AstNode.FunctionDefinition definition = functionCall.definition();
+        
+        String descriptor = definition.externFunctionDescriptor();
+        int dotIndex = descriptor.indexOf('.');
+        int colonIndex = descriptor.lastIndexOf(':');
+        if (dotIndex == -1 || colonIndex == -1) {
+            throw new TalcError(functionCall, "bad Java extern \"" + descriptor + "\"");
+        }
+        String className = descriptor.substring(0, dotIndex);
+        String methodName = descriptor.substring(dotIndex + 1, colonIndex);
+        String methodSignature = descriptor.substring(colonIndex + 1);
+        
+        List<TalcType> formalParameterTypes = definition.formalParameterTypes();
+        AstNode[] arguments = functionCall.arguments();
+        for (int i = 0; i < arguments.length; ++i) {
+            arguments[i].accept(this);
+            // FIXME: convert to the type the Java method's expecting.
+            cv.addInvoke(ByteCode.INVOKEVIRTUAL, "org/jessies/talc/RealValue", "doubleValue", "()D");
+        }
+        
+        // FIXME: use reflection to check the method exists?
+        cv.addInvoke(ByteCode.INVOKESTATIC, className, methodName, methodSignature);
+        
+        // FIXME: convert the result to the appropriate Talc type.
+        cv.addInvoke(ByteCode.INVOKESTATIC, "org/jessies/talc/RealValue", "valueOf", "(D)Lorg/jessies/talc/RealValue;");
+        
+        return null;
+    }
+    
     public Void visitFunctionCall(AstNode.FunctionCall functionCall) {
+        AstNode.FunctionDefinition definition = functionCall.definition();
+        
+        if (definition.isExtern()) {
+            visitExternFunctionCall(functionCall);
+            return null;
+        }
+        
         visitLineNumber(functionCall);
         String functionName = functionCall.functionName();
-        AstNode.FunctionDefinition definition = functionCall.definition();
         AstNode[] arguments = functionCall.arguments();
         
         // Assume we're dealing with a global user-defined function...
@@ -847,25 +883,24 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
                 cv.add(ByteCode.CHECKCAST, typeForTalcType(formalParameterTypes.get(i)));
             }
             
-            String name = definition.functionName();
-            if (name.equals("to_s")) {
-                name = "toString";
+            if (functionName.equals("to_s")) {
+                functionName = "toString";
             }
             String methodSignature = methodSignature(definition);
             if (proxyType != null) {
                 // We have to insert the argument representing "this" in these static methods.
                 methodSignature = "(" + ClassFileWriter.classNameToSignature(containingType) + methodSignature.substring(1);
-                cv.addInvoke(ByteCode.INVOKESTATIC, proxyType, name, methodSignature);
+                cv.addInvoke(ByteCode.INVOKESTATIC, proxyType, functionName, methodSignature);
             } else if (definition.isConstructor()) {
                 cv.addInvoke(ByteCode.INVOKESPECIAL, containingType, "<init>", methodSignature);
             } else if (functionCall.instance() != null) {
                 // Explicit "obj.m()".
-                cv.addInvoke(ByteCode.INVOKEVIRTUAL, containingType, name, methodSignature);
+                cv.addInvoke(ByteCode.INVOKEVIRTUAL, containingType, functionName, methodSignature);
             } else if (definition.containingType() != null) {
                 // Implicit "this.m()" (i.e. "m()" inside another method).
-                cv.addInvoke(ByteCode.INVOKEVIRTUAL, containingType, name, methodSignature);
+                cv.addInvoke(ByteCode.INVOKEVIRTUAL, containingType, functionName, methodSignature);
             } else {
-                cv.addInvoke(ByteCode.INVOKESTATIC, containingType, name, methodSignature);
+                cv.addInvoke(ByteCode.INVOKESTATIC, containingType, functionName, methodSignature);
             }
             
             // Because we implement generics by erasure, we should "checkcast" non-void return types.
@@ -876,7 +911,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
             }
             
             // FIXME: check here whether 'method' exists, and fail here rather than waiting for the verifier?
-            //throw new TalcError(functionCall, "don't know how to generate code for call to \"" + functionName + "\"");
+            //throw new TalcError(functionCall, "don't know how to generate code for call to \"" + definition.functionName() + "\"");
         }
         return null;
     }
@@ -929,6 +964,11 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     }
     
     public Void visitFunctionDefinition(AstNode.FunctionDefinition functionDefinition) {
+        if (functionDefinition.isExtern()) {
+            // We don't need to emit anything for an extern definition.
+            return null;
+        }
+        
         String functionName = functionDefinition.functionName();
         
         short flags = ClassFileWriter.ACC_PUBLIC;

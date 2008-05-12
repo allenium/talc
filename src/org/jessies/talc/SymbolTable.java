@@ -195,7 +195,7 @@ public class SymbolTable implements AstVisitor<Void> {
                 formalParameters.add(formalParameter);
             }
             functionDefinition.setFormalParameters(formalParameters);
-            functionDefinition.body().accept(this);
+            visitIfNonNull(functionDefinition.body());
         } finally {
             popScope();
         }

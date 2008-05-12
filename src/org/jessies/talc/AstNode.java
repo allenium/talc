@@ -545,6 +545,10 @@ public abstract class AstNode {
         private TalcType returnType;
         private AstNode body;
         
+        // "extern" functions have these two fields set.
+        private String externLanguageName;
+        private String externFunctionDescriptor;
+        
         // Null, or the type of the class this is a method on.
         private TalcType containingType;
         private boolean isClassMethod = false;
@@ -658,6 +662,23 @@ public abstract class AstNode {
         
         public void setBody(AstNode body) {
             this.body = body;
+        }
+        
+        public void setExtern(String externLanguageName, String externFunctionDescriptor) {
+            this.externLanguageName = externLanguageName;
+            this.externFunctionDescriptor = externFunctionDescriptor;
+        }
+        
+        public String externLanguageName() {
+            return externLanguageName;
+        }
+        
+        public String externFunctionDescriptor() {
+            return externFunctionDescriptor;
+        }
+        
+        public boolean isExtern() {
+            return (externLanguageName != null);
         }
         
         public String signature() {

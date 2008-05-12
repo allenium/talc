@@ -119,6 +119,7 @@ public enum Token {
     DO("do"),
     ELSE("else"),
     EXTENDS("extends"),
+    EXTERN("extern"),
     FALSE("false"),
     FINAL("final"),
     FOR("for"),

@@ -34,6 +34,7 @@ public class Lexer {
         KEYWORDS.put("do", Token.DO);
         KEYWORDS.put("else", Token.ELSE);
         KEYWORDS.put("extends", Token.EXTENDS);
+        KEYWORDS.put("extern", Token.EXTERN);
         KEYWORDS.put("false", Token.FALSE);
         KEYWORDS.put("final", Token.FINAL);
         KEYWORDS.put("for", Token.FOR);

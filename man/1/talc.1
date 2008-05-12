@@ -64,7 +64,7 @@ Shell-like comments begin with a # and extend to the end of the line. C++-like c
 Block comments begin with /* and extend to the next */. Block comments do not nest. Block comments make it possible to easily comment out large numbers of lines or comment out text within a line. Most scripting languages rely on dynamism and some kind of "if (false)" notation for the former use case and fail to support the latter.
 
 .SS Keywords
-The following are all keywords: "assert", "break", "class", "continue", "do", "else", "extends", "false", "final", "for", "function", "if", "implements", "in", "new", "null", "return", "true", "void", "while".
+The following are all keywords: "assert", "break", "class", "continue", "do", "else", "extends", "extern", "false", "final", "for", "function", "if", "implements", "in", "new", "null", "return", "true", "void", "while".
 
 In the grand tradition of the C family, not all words reserved as keywords are necessarily in use. Currently "extends" and "implements" are reserved but unused.
 .SS Types
@@ -208,6 +208,16 @@ A call to a member function looks like this:
 .sp
 .fi
 Note that in the rare case where the variable "i" is replaced by a numeric literal, it is necessary to enclose the literal in parentheses or insert a space before the "." to avoid misinterpretation as a malformed real literal.
+.SS Extern function definitions
+An extern function definition looks like this:
+.nf
+.sp
+  extern "Java" function cos(a:real):real = "java/lang/Math.cos:(D)D";
+.sp
+.fi
+The string literal after extern describes the calling convention. Currently only "Java" is supported.
+
+The format of the string literal after the assignment depends on the calling convention. In the case of Java, the string is the concatenation of the JVM-format class name, '.', the method name, ':', and the method signature.
 .SS Class definitions
 A class definition looks like this:
 .nf

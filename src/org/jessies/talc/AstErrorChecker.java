@@ -160,7 +160,7 @@ public class AstErrorChecker implements AstVisitor<Void> {
         if (functionDepth > 1) {
             throw new TalcError(functionDefinition, "functions cannot be nested");
         }
-        functionDefinition.body().accept(this);
+        visitIfNonNull(functionDefinition.body());
         --functionDepth;
         return null;
     }

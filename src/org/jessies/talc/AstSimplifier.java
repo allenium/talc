@@ -346,7 +346,7 @@ public class AstSimplifier implements AstVisitor<AstNode> {
     }
     
     public AstNode visitFunctionDefinition(AstNode.FunctionDefinition function) {
-        function.setBody(function.body().accept(this));
+        function.setBody(simplifyIfNotNull(function.body()));
         return function;
     }
     

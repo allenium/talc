@@ -392,7 +392,7 @@ public class AstTypeChecker implements AstVisitor<TalcType> {
         }
         
         // Check the function body, if we've been asked to.
-        if ((passBitmask & 2) != 0) {
+        if ((passBitmask & 2) != 0 && functionDefinition.body() != null) {
             currentFunctionDefinition = functionDefinition;
             functionDefinition.body().accept(this);
             currentFunctionDefinition = null;

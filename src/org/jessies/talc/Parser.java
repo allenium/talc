@@ -50,6 +50,7 @@ public class Parser {
         case CLASS: return parseClassDefinition();
         case CONTINUE: return parseContinueStatement();
         case DO: return parseDoStatement();
+        case EXTERN: return parseExternFunctionDefinition();
         case IF: return parseIfStatement();
         case FOR: return parseForStatement();
         case FUNCTION: return parseFunctionDefinition();
@@ -164,6 +165,43 @@ public class Parser {
         }
         expect(Token.CLOSE_BRACE);
         return new AstNode.ClassDefinition(location, className, fields, methods);
+    }
+    
+    private AstNode.FunctionDefinition parseExternFunctionDefinition() {
+        if (DEBUG_PARSER) { System.out.println("parseExternFunctionDefinition()"); }
+        
+        SourceLocation location = lexer.getLocation();
+        // extern
+        expect(Token.EXTERN);
+        // "Java"
+        String languageName = null;
+        if (lexer.token() == Token.STRING_LITERAL) {
+            languageName = lexer.identifier();
+        }
+        expect(Token.STRING_LITERAL);
+        // function
+        expect(Token.FUNCTION);
+        String functionName = expectIdentifier("extern function name");
+        // (a:real)
+        ArrayList<String> formalParameterNames = new ArrayList<String>();
+        ArrayList<TalcTypeDescriptor> formalParameterTypeDescriptors = new ArrayList<TalcTypeDescriptor>();
+        parseFormalParameters(Token.OPEN_PARENTHESIS, Token.CLOSE_PARENTHESIS, formalParameterNames, formalParameterTypeDescriptors);
+        // :
+        expect(Token.COLON);
+        // real
+        TalcTypeDescriptor returnTypeDescriptor = parseType();
+        // =
+        expect(Token.ASSIGN);
+        // "java/util/Math.cos:(D)D"
+        String externFunctionDescriptor = null;
+        if (lexer.token() == Token.STRING_LITERAL) {
+            externFunctionDescriptor = lexer.identifier();
+        }
+        expect(Token.STRING_LITERAL);
+        expect(Token.SEMICOLON);
+        AstNode.FunctionDefinition result = new AstNode.FunctionDefinition(location, functionName, Collections.unmodifiableList(formalParameterNames), Collections.unmodifiableList(formalParameterTypeDescriptors), returnTypeDescriptor, null);
+        result.setExtern(languageName, externFunctionDescriptor);
+        return result;
     }
     
     private AstNode.FunctionDefinition parseFunctionDefinition() {
