@@ -779,6 +779,10 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     private Void visitExternFunctionCall(AstNode.FunctionCall functionCall) {
         AstNode.FunctionDefinition definition = functionCall.definition();
         
+        if (definition.externLanguageName().equals("Java") == false) {
+            throw new TalcError(functionCall, "unsupported extern language \"" + definition.externLanguageName() + "\"");
+        }
+        
         String descriptor = definition.externFunctionDescriptor();
         int dotIndex = descriptor.indexOf('.');
         int colonIndex = descriptor.lastIndexOf(':');
