@@ -115,6 +115,8 @@ http://blogs.sun.com/chrisoliver/resource/f3.html - "format as" looks interestin
 
 http://pike.ida.liu.se/generated/manual/modref/
 
+http://fandev.org/doc/docCookbook/Files.html
+
 C#'s System.IO.File is pretty nice, though i'm unconvinced by the the File/Directory split. note that their File only has static methods that take String pathnames. there's a separate FileInfo class (like "struct stat").
 
 # environment variables
@@ -162,7 +164,7 @@ tty.clear():void
 tty.at(x:int, y:int):void # move cursor
 tty.fg() / tty.bg() # change colors? how to specify black/red/green/yellow/blue/magenta/cyan/white? (also distinguish default from black.)
 tty.isatty():bool
-tty.readline() # some kind of interface to GNU readline; maybe fall back to a stupid implementation
+tty.readline() # some kind of interface to GNU readline; maybe fall back to a stupid implementation. see also libjline-java (in Debian and RedHat distros).
 tty.input_int(), tty.input_real() # specializations for numeric input, refusing bad input?
 
 # convenient graphics interface ("picture"?) for PNG/SVG, and so on.
@@ -197,6 +199,7 @@ jvm.invoke_method(class_name:string, method_name:string, instance:object, args:l
 extern "Java" class Random = "java.util.Random"; # uses reflection to fill in the methods.
 
 # primitive access to the C library/POSIX/arbitrary shared libraries?
+# maybe extern "C" via JNA (https://jna.dev.java.net/) would avoid the need to write this stuff ourselves?
 dl.open(library_name:string):object # return some kind of object representing the library? or void?
 dl.invoke(library:object, function_name:string, args:list<object>):object # or pass the library name each time?
 dl.close() # worth offering? bad usefulness/safety trade-off?
@@ -250,7 +253,7 @@ should FILE_SEPARATOR and PATH_SEPARATOR be in class "file"?
 
 make sure all "value" classes return sensible hashCodes!
 
-simple input/output of CSV, TSV, XML. (anything else common?)
+simple input/output of CSV, TSV, XML, JSON (http://en.wikipedia.org/wiki/JSON). (anything else common?)
 
 
 LANGUAGE DEFECTS
