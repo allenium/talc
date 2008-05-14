@@ -202,7 +202,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
                 IntegerValue integerValue = (IntegerValue) constant;
                 cv.add(ByteCode.NEW, integerValueType);
                 cv.add(ByteCode.DUP);
-                // FIXME: we should choose valueOf(long) where possible (which will be in almost every case).
+                // FIXME: we should choose valueOf(long) where possible (which will be in almost every case). if ((BigInteger.bitLength() + 1) <= 64), the BigInteger fits in a long.
                 cv.addPush(integerValue.toString());
                 cv.addPush(10);
                 cv.addInvoke(ByteCode.INVOKESPECIAL, integerValueType, "<init>", "(Ljava/lang/String;I)V");
