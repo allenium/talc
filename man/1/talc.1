@@ -64,7 +64,7 @@ Shell-like comments begin with a # and extend to the end of the line. C++-like c
 Block comments begin with /* and extend to the next */. Block comments do not nest. Block comments make it possible to easily comment out large numbers of lines or comment out text within a line. Most scripting languages rely on dynamism and some kind of "if (false)" notation for the former use case and fail to support the latter.
 
 .SS Keywords
-The following are all keywords: "assert", "break", "class", "continue", "do", "else", "extends", "extern", "false", "final", "for", "function", "if", "implements", "in", "new", "null", "return", "true", "void", "while".
+The following are all keywords: "assert", "break", "class", "continue", "do", "else", "extends", "extern", "false", "final", "for", "function", "if", "implements", "import", "in", "new", "null", "return", "true", "void", "while".
 
 In the grand tradition of the C family, not all words reserved as keywords are necessarily in use. Currently "extends" and "implements" are reserved but unused.
 .SS Types
@@ -321,6 +321,15 @@ A "continue" statement transfers control to the loop-continuation test of the in
 A "return" statement returns control to the invoker of a function. If the enclosing function has return type "void", supplying a non-void expression to the "return" statement will result in a compile-time error. Otherwise, omitting an expression or providing an expression of an inappropriate type will result in compile-time errors.
 .SS Assert statements
 An "assert" statement consists of a boolean expression optionally followed by an explanatory expression of any type. If the boolean expression evaluates to false, an exception is thrown. If an explanatory expression was provided, it will be evaluated and used as the exception's detail message. If the boolean expression evaluates to true, the "assert" statement completes normally.
+.SS Import statements
+An "import" statement causes textual inclusion of the named library. The extension ".talc" is added if not already present, and each directory in the library path is searched until a match is found.
+.nf
+.sp
+  import "math";
+  puts(to_radians(180.0));
+.sp
+.fi
+Imports can only be made in the global scope, but can be used anywhere in the global scope (not just at the beginning, as in Java).
 .SH "BUILT-IN FUNCTIONALITY"
 Talc has a wide range of built-in functionality.
 .SS Built-in variables

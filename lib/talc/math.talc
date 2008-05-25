@@ -1,0 +1,16 @@
+extern "Java" function cos(a: real) : real = "java/lang/Math.cos:(D)D";
+extern "Java" function sin(a: real) : real = "java/lang/Math.sin:(D)D";
+extern "Java" function tan(a: real) : real = "java/lang/Math.tan:(D)D";
+
+extern "Java" function cosh(a: real) : real = "java/lang/Math.cosh:(D)D";
+extern "Java" function sinh(a: real) : real = "java/lang/Math.sinh:(D)D";
+extern "Java" function tanh(a: real) : real = "java/lang/Math.tanh:(D)D";
+
+extern "Java" function acos(a: real) : real = "java/lang/Math.acos:(D)D";
+extern "Java" function asin(a: real) : real = "java/lang/Math.asin:(D)D";
+extern "Java" function atan(a: real) : real = "java/lang/Math.atan:(D)D";
+
+extern "Java" function exp(a: real) : real = "java/lang/Math.exp:(D)D";
+
+extern "Java" function to_degrees(radians: real) : real = "java/lang/Math.toDegrees:(D)D";
+extern "Java" function to_radians(degrees: real) : real = "java/lang/Math.toRadians:(D)D";

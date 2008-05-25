@@ -18,6 +18,7 @@
 
 package org.jessies.talc;
 
+import java.io.*;
 import java.util.*;
 
 public class Parser {
@@ -30,15 +31,23 @@ public class Parser {
     
     public List<AstNode> parse() {
         ArrayList<AstNode> result = new ArrayList<AstNode>();
+        parse(result);
+        return result;
+    }
+    
+    private void parse(ArrayList<AstNode> result) {
         while (lexer.token() != Token.END_OF_INPUT) {
-            AstNode statement = parseStatement();
-            if (DEBUG_PARSER) { System.out.println("parsed " + statement); }
-            // Don't bother recording empty statements.
-            if (statement != null) {
-                result.add(statement);
+            if (lexer.token() == Token.IMPORT) {
+                parseImport(result);
+            } else {
+                AstNode statement = parseStatement();
+                if (DEBUG_PARSER) { System.out.println("parsed " + statement); }
+                // Don't bother recording empty statements.
+                if (statement != null) {
+                    result.add(statement);
+                }
             }
         }
-        return result;
     }
     
     private AstNode parseStatement() {
@@ -52,6 +61,9 @@ public class Parser {
         case DO: return parseDoStatement();
         case EXTERN: return parseExternFunctionDefinition();
         case IF: return parseIfStatement();
+        case IMPORT:
+            // This isn't necessary, but it's much more helpful than the errors we'd emit otherwise.
+            throw new TalcError(lexer, "imports are only allowed in the global scope");
         case FOR: return parseForStatement();
         case FUNCTION: return parseFunctionDefinition();
         case RETURN: return parseReturnStatement();
@@ -323,6 +335,58 @@ public class Parser {
             }
         }
         return new AstNode.IfStatement(location, expressions, blocks, elseBlock);
+    }
+    
+    private void parseImport(ArrayList<AstNode> result) {
+        if (DEBUG_PARSER) { System.out.println("parseImport()"); }
+        
+        // import "math.talc";
+        SourceLocation location = lexer.getLocation();
+        expect(Token.IMPORT);
+        String libraryName = null;
+        if (lexer.token() == Token.STRING_LITERAL) {
+            libraryName = lexer.identifier();
+        }
+        expect(Token.STRING_LITERAL);
+        expect(Token.SEMICOLON);
+        
+        // Parse the imported source file.
+        Lexer oldLexer = lexer;
+        lexer = makeLexerForLibrary(libraryName);
+        parse(result);
+        lexer = oldLexer;
+    }
+    
+    private Lexer makeLexerForLibrary(String libraryName) {
+        // FIXME: we should skip libraries we've already imported. We could return null here and skip the call to "parse" in "parseImport" above.
+        // Find the source file corresponding to the import.
+        File libraryFile = findLibrary(libraryName);
+        if (libraryFile == null) {
+            // FIXME: report the library path.
+            throw new TalcError(lexer, "couldn't find a match for import \"" + libraryName + "\" on the library path");
+        }
+        try {
+            return new Lexer(libraryFile);
+        } catch (IOException ex) {
+            // This probably means the library isn't readable?
+            throw new TalcError(lexer, "couldn't import \"" + libraryName + "\": " + ex.getMessage());
+        }
+    }
+    
+    private File findLibrary(String libraryName) {
+        if (libraryName.endsWith(".talc") == false) {
+            libraryName += ".talc";
+        }
+        // FIXME: the library path should be given to the parser.
+        // FIXME: we should support -I <directory>.
+        String[] libraryPath = new String[] { "/usr/lib/talc/", System.getProperty("org.jessies.projectRoot") + "/lib/talc/" };
+        for (String libraryDirectory : libraryPath) {
+            File libraryFile = new File(libraryDirectory, libraryName);
+            if (libraryFile.exists()) {
+                return libraryFile;
+            }
+        }
+        return null;
     }
     
     private AstNode parseReturnStatement() {

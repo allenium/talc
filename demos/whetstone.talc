@@ -54,11 +54,7 @@ function p3(x: real, y: real) : real {
 }
 
 // We need various mathematical functions.
-// FIXME: offer these pre-packaged in a 'math' library.
-extern "Java" function cos(a: real) : real = "java/lang/Math.cos:(D)D";
-extern "Java" function sin(a: real) : real = "java/lang/Math.sin:(D)D";
-extern "Java" function atan(a: real) : real = "java/lang/Math.atan:(D)D";
-extern "Java" function exp(a: real) : real = "java/lang/Math.exp:(D)D";
+import "math";
 
 function main() : void {
     

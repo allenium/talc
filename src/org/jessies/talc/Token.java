@@ -126,6 +126,7 @@ public enum Token {
     FUNCTION("function"),
     IF("if"),
     IMPLEMENTS("implements"),
+    IMPORT("import"),
     IN("in"),
     NEW("new"),
     NULL("null"),

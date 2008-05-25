@@ -41,6 +41,7 @@ public class Lexer {
         KEYWORDS.put("function", Token.FUNCTION);
         KEYWORDS.put("if", Token.IF);
         KEYWORDS.put("implements", Token.IMPLEMENTS);
+        KEYWORDS.put("import", Token.IMPORT);
         KEYWORDS.put("in", Token.IN);
         KEYWORDS.put("new", Token.NEW);
         KEYWORDS.put("null", Token.NULL);
