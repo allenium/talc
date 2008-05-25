@@ -1017,7 +1017,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         if (functionDefinition.isConstructor()) {
             // Constructors need to call their superclass constructor.
             thisAccessor.emitGet();
-            // FIXME: not all classes will have java/lang/Object as their superclass!
+            // FIXME: not all classes will have java/lang/Object as their direct superclass!
             cv.addInvoke(ByteCode.INVOKESPECIAL, "java/lang/Object", "<init>", "()V");
             thisAccessor.emitGet();
             cv.addInvoke(ByteCode.INVOKEVIRTUAL, containingClassName, "__init_fields__", "()V");
