@@ -14,3 +14,8 @@ extern "Java" function exp(a: real) : real = "java/lang/Math.exp:(D)D";
 
 extern "Java" function to_degrees(radians: real) : real = "java/lang/Math.toDegrees:(D)D";
 extern "Java" function to_radians(degrees: real) : real = "java/lang/Math.toRadians:(D)D";
+
+# FIXME: replace with extern variables when implemented.
+E : final real = 2.7182818284590452354;
+PI : final real = 3.14159265358979323846;
+π : final real = PI;
