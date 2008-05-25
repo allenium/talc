@@ -335,7 +335,7 @@ An "import" statement causes textual inclusion of the named library. The extensi
   puts(to_radians(180.0));
 .sp
 .fi
-Imports can only be made in the global scope, but can be used anywhere in the global scope (not just at the beginning, as in Java).
+Imports can only be made in the global scope, but can be used anywhere in the global scope (not just at the beginning, as in Java). Any attempt to import a library that's already been imported will be silently ignored; there is no need for anything like C's include guards.
 .SH "BUILT-IN FUNCTIONALITY"
 Talc has a wide range of built-in functionality.
 .SS Built-in variables

@@ -27,6 +27,8 @@ public class Parser {
     private Lexer lexer;
     private List<String> libraryPath;
     
+    private HashSet<String> importedLibraries = new HashSet<String>();
+    
     public Parser(Lexer lexer, List<String> libraryPath) {
         this.lexer = lexer;
         this.libraryPath = libraryPath;
@@ -353,15 +355,19 @@ public class Parser {
         expect(Token.STRING_LITERAL);
         expect(Token.SEMICOLON);
         
-        // Parse the imported source file.
-        Lexer oldLexer = lexer;
-        lexer = makeLexerForLibrary(libraryName);
-        parse(result);
-        lexer = oldLexer;
+        // Parse the imported source file, if we haven't seen it already.
+        if (importedLibraries.contains(libraryName) == false) {
+            Lexer oldLexer = lexer;
+            lexer = makeLexerForLibrary(libraryName);
+            if (lexer != null) {
+                parse(result);
+            }
+            lexer = oldLexer;
+            importedLibraries.add(libraryName);
+        }
     }
     
     private Lexer makeLexerForLibrary(String libraryName) {
-        // FIXME: we should skip libraries we've already imported. We could return null here and skip the call to "parse" in "parseImport" above.
         // Find the source file corresponding to the import.
         File libraryFile = findLibrary(libraryName);
         if (libraryFile == null) {
