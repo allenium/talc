@@ -21,10 +21,11 @@ package org.jessies.talc;
 import java.util.*;
 
 public class AstTypeChecker implements AstVisitor<TalcType> {
+    private final boolean DEBUG_TYPES = Talc.debugging('T');
+    
     private AstNode.ClassDefinition currentClassDefinition = null;
     private AstNode.FunctionDefinition currentFunctionDefinition = null;
     private long creationTime;
-    private boolean DEBUG_TYPES = Talc.debugging('T');
     
     public AstTypeChecker(List<AstNode> ast) {
         creationTime = System.nanoTime();

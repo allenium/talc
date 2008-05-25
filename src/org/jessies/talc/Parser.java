@@ -22,9 +22,10 @@ import java.io.*;
 import java.util.*;
 
 public class Parser {
+    private final boolean DEBUG_PARSER = Talc.debugging('p');
+    
     private Lexer lexer;
     private List<String> libraryPath;
-    private boolean DEBUG_PARSER = Talc.debugging('p');
     
     public Parser(Lexer lexer, List<String> libraryPath) {
         this.lexer = lexer;

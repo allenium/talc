@@ -51,11 +51,12 @@ public class Lexer {
         KEYWORDS.put("while", Token.WHILE);
     }
     
+    private final boolean DEBUG_LEXER = Talc.debugging('l');
+    
     private MyPushbackReader reader;
     private Token token;
     private String identifier;
     private Object numericLiteral;
-    private boolean DEBUG_LEXER = Talc.debugging('l');
     
     public Lexer(String expression) {
         this(new StringReader(expression));
