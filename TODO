@@ -32,9 +32,10 @@ TESTING
 
 * fix the tests to use "assert", so we get assertion failures if anything goes wrong.
 
-* increase test coverage. work out how to measure coverage; emma.sourceforge.net doesn't cope with our generated classes (why not?).
+* increase test coverage. work out how to measure coverage; emma.sourceforge.net doesn't work with any jessies.org projects (why not?).
 
 * benchmarking. (i.e. automated performance testing.) maybe a directory of programs, each written in both Talc and Java, and a script to run them against one another, checking for changes in the relative (percentage?) runtime. should be able to refer to some of the demos, too: mandelbrot.talc is a decent performance test for some areas.
+
 
 
 MISSING FEATURES
@@ -52,16 +53,15 @@ MISSING FEATURES
   [ ] final/synchronized methods (?)
   [ ] "final" (and make all built-in classes final?)
 
-* [medium] add map literals.
+* [medium] add map literals. what should they look like?
 
 * [medium] implement the ? : ternary operator.
 
 * [hard] exceptions, try-catch-finally, throw.
 
-* replace "prelude.txt" with some kind of textual "include" system. (note: the prelude is currently broken and disabled.)
- + add the remaining prelude math functions in "math.talc" as a trivial example.
- + add "set.talc" as an example, implementing the equivalent of Java's HashSet. (would require user-defined parametric types!)
- + should have some kind of "include path" (accessible in scripts as a list<string>?) that by default includes something like /usr/share/talc/<major-version?>/ so third-parties can add their libraries to the system independently of talc.
+* should "import" strip executable code? a .talc file that's imported imports only the definitions. you could have arbitrary code in there for testing purposes, or so a .talc file can be used as a script (i.e supply its own main program), but when imported, that stuff's just ignored.
+
+* add "set.talc" as an example, implementing the equivalent of Java's HashSet. (would require user-defined parametric types!)
 
 * should add an "Iterable" interface, change for-each to expect its expression has that type and then invoke "Iterable.iterator()" and use it. (though how does that get us keys as well as values? maybe not "Iterable" so much as "ForEachAble<K,V>"? "has_next() : bool", "key() : K", and "value() : V"?)
 
@@ -197,6 +197,8 @@ jvm.invoke_method(class_name:string, method_name:string, instance:object, args:l
 
 # language-level access?
 extern "Java" class Random = "java.util.Random"; # uses reflection to fill in the methods.
+extern "Java" E: real = "java/lang/Math:E";
+extern "Java" PI: real = "java/lang/Math:PI";
 
 # primitive access to the C library/POSIX/arbitrary shared libraries?
 # maybe extern "C" via JNA (https://jna.dev.java.net/) would avoid the need to write this stuff ourselves?
@@ -208,22 +210,6 @@ dl.close() # worth offering? bad usefulness/safety trade-off?
 ffi.call(function_name: string, return_type_descriptor:string, argument_type_descriptors:list<string>, args:list<object>):object
 # but it might be nice to offer the same "ffi_prep_cif"/"ffi_call" distinction as libffi.
 # it would also be awesome to offer an interface to ffi_type, and the ability to pass/return structs.
-
-# should we have a "math" class of static methods, or a "math" library of global functions?
-# the latter is less Java-like, but probably more popular and convenient for the intended users.
-# either way, i think this stuff could trivially be implemented in the language using the "jvm" class.
-math.e => Math.E
-math.pi => Math.PI
-math.sin => Math.sin
-math.cos => Math.cos
-math.tan => Math.tan
-math.asin => Math.asin
-math.acos => Math.acos
-math.atan => Math.atan # and atan2?
-math.sinh => Math.sinh
-math.cosh => Math.cosh
-math.tanh => Math.tanh
-math.exp => Math.exp
 
 Perl-like pack/unpack?
 Perl/Python/Ruby-like tr/tr_d? sufficiently useful?
@@ -254,6 +240,7 @@ should FILE_SEPARATOR and PATH_SEPARATOR be in class "file"?
 make sure all "value" classes return sensible hashCodes!
 
 simple input/output of CSV, TSV, XML, JSON (http://en.wikipedia.org/wiki/JSON). (anything else common?)
+
 
 
 LANGUAGE DEFECTS
@@ -289,6 +276,16 @@ if (x.starts_with("/")) {
 
 * improve Lexer.getLocation so we provide the start and end line/column rather than just the end (even just the start would be better than just the end, as we have at the moment; error messages point to the end of the problem where the start would be more natural).
 
+
+
+LAUNCHER
+
+* add a native (C++) driver so we can put a binary in /usr/bin and use Talc directly in executable scripts.
+
+
+
+JVM CODE GENERATOR
+
 * in the JVM code generator, we should try to reuse local variable slots when variables go out of scope. at the moment, we have really large numbers of locals which (a) makes verifier output hard to read and (b) isn't very Java-like, which may mean Hotspot isn't adapted to it. we probably need to switch to a BitSet to implement this correctly.
 
 * is it a mistake to generate the global code in the constructor? should it be in "main" instead? (or at least some kind of secondary static void method to keep the generated boilerplate of main distinct.)
@@ -302,7 +299,5 @@ if (x.starts_with("/")) {
 * we could replace RealValue with java.lang.Double but we'd need to put all the RealValue methods somewhere. more useful would be replacing LRealValue; with D. it's not too hard to treat "real" as a primitive double and call static (DD)D methods in RealValue (i've done it, as proof), but boxing and unboxing where necessary to maintain the illusion that "real" is an object type might be hard.
 
 * BooleanValue is more convenient than Boolean because we know there are only two instances and can compare them by identity. given the price of getstatic, it might be worth investigating converting BooleanValue to I in generated loops and conditionals (where generated boilerplate is the consumer of the BooleanValue).
-
-* add a native (C++) driver so we can put a binary in /usr/bin and use Talc directly in executable scripts.
 
 * JvmTalcConstantPool shouldn't store duplicates. (how important is that? the constant pool itself isn't a particularly convincing performance win. maybe optimizing IntegerValue construction would have been more useful? or implementing SmallIntegerValue and LargeIntegerValue or somesuch.)
