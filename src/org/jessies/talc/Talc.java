@@ -129,13 +129,14 @@ public class Talc {
     }
     
     private void usage(int exitStatus) {
-        System.err.println("usage: talc [talc-arguments] [--] [script-filename] [script-arguments]");
-        System.err.println("  -D flags           set debugging flags (-D ? for a list)");
-        System.err.println("  --dump-class name  describe the given class");
-        System.err.println("  --dump-classes     describe all built-in classes");
-        System.err.println("  -e program         one line of program; multiple -e's allowed, but omit explicit script filename");
-        System.err.println("  -I directory       add the given directory to the \"import\" search path");
-        System.err.println("  --copyright        show brief copyright information");
+        PrintStream out = (exitStatus == 0) ? System.out : System.err;
+        out.println("usage: talc [talc-arguments] [--] [script-filename] [script-arguments]");
+        out.println("  -D flags           set debugging flags (-D ? for a list)");
+        out.println("  --dump-class name  describe the given class");
+        out.println("  --dump-classes     describe all built-in classes");
+        out.println("  -e program         one line of program; multiple -e's allowed, but omit explicit script filename");
+        out.println("  -I directory       add the given directory to the \"import\" search path");
+        out.println("  --copyright        show brief copyright information");
         System.exit(exitStatus);
     }
     
@@ -242,26 +243,27 @@ public class Talc {
     }
     
     private static void reportCopyright() {
-        System.out.println("talc - http://code.google.com/p/talc/");
-        System.out.println();
-        System.out.println("Copyright (C) 2007-2008 Elliott Hughes <enh@jessies.org>.");
-        System.out.println();
-        System.out.println("Talc uses org.mozilla.classfile, written by Roger Lawrence.");
-        System.out.println();
-        System.out.println("Talc is free software; you can redistribute it and/or modify");
-        System.out.println("it under the terms of the GNU General Public License as published by");
-        System.out.println("the Free Software Foundation; either version 3 of the License, or");
-        System.out.println("(at your option) any later version.");
-        System.out.println();
-        System.out.println("Talc is distributed in the hope that it will be useful,");
-        System.out.println("but WITHOUT ANY WARRANTY; without even the implied warranty of");
-        System.out.println("MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the");
-        System.out.println("GNU General Public License for more details.");
-        System.out.println();
-        System.out.println("You should have received a copy of the GNU General Public License");
-        System.out.println("along with this program.  If not, see <http://www.gnu.org/licenses/>.");
-        System.out.println();
-        System.out.println("Documentation should be available via \"man talc\" or on the web.");
+        PrintStream out = System.out;
+        out.println("talc - http://code.google.com/p/talc/");
+        out.println();
+        out.println("Copyright (C) 2007-2008 Elliott Hughes <enh@jessies.org>.");
+        out.println();
+        out.println("Talc uses org.mozilla.classfile, written by Roger Lawrence.");
+        out.println();
+        out.println("Talc is free software; you can redistribute it and/or modify");
+        out.println("it under the terms of the GNU General Public License as published by");
+        out.println("the Free Software Foundation; either version 3 of the License, or");
+        out.println("(at your option) any later version.");
+        out.println();
+        out.println("Talc is distributed in the hope that it will be useful,");
+        out.println("but WITHOUT ANY WARRANTY; without even the implied warranty of");
+        out.println("MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the");
+        out.println("GNU General Public License for more details.");
+        out.println();
+        out.println("You should have received a copy of the GNU General Public License");
+        out.println("along with this program.  If not, see <http://www.gnu.org/licenses/>.");
+        out.println();
+        out.println("Documentation should be available via \"man talc\" or on the web.");
     }
     
     public static boolean debugging(char ch) {
