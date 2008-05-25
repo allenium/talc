@@ -23,10 +23,12 @@ import java.util.*;
 
 public class Parser {
     private Lexer lexer;
+    private List<String> libraryPath;
     private boolean DEBUG_PARSER = Talc.debugging('p');
     
-    public Parser(Lexer lexer) {
+    public Parser(Lexer lexer, List<String> libraryPath) {
         this.lexer = lexer;
+        this.libraryPath = libraryPath;
     }
     
     public List<AstNode> parse() {
@@ -377,9 +379,6 @@ public class Parser {
         if (libraryName.endsWith(".talc") == false) {
             libraryName += ".talc";
         }
-        // FIXME: the library path should be given to the parser.
-        // FIXME: we should support -I <directory>.
-        String[] libraryPath = new String[] { "/usr/lib/talc/", System.getProperty("org.jessies.projectRoot") + "/lib/talc/" };
         for (String libraryDirectory : libraryPath) {
             File libraryFile = new File(libraryDirectory, libraryName);
             if (libraryFile.exists()) {

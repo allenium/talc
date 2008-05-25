@@ -38,7 +38,16 @@ public class Talc {
         debuggingFlagNames['v'] = "verifies the generated code with ASM's verifier (implies 's'; libasm3-java must be installed)";
     }
     
+    private ArrayList<String> libraryPath;
+    
     public Talc() {
+        initLibraryPath();
+    }
+    
+    private void initLibraryPath() {
+        libraryPath = new ArrayList<String>();
+        libraryPath.add("/usr/lib/talc/");
+        libraryPath.add(System.getProperty("org.jessies.projectRoot") + "/lib/talc/");
     }
     
     private void reportTime(String task, long ns) {
@@ -53,7 +62,7 @@ public class Talc {
     private void parseAndEvaluate(String argv0, String[] args, Lexer lexer) {
         // 1. Parse.
         long parse0 = System.nanoTime();
-        List<AstNode> ast = new Parser(lexer).parse();
+        List<AstNode> ast = new Parser(lexer, libraryPath).parse();
         reportTime("parsing", System.nanoTime() - parse0);
         
         // 1a. Insert values for built-in constants.
@@ -120,7 +129,7 @@ public class Talc {
     }
     
     private void usage(int exitStatus) {
-        System.err.println("usage: talc [--copyright] [-D flags] [--dump-class name] [--dump-classes] [-f file] [-e program]");
+        System.err.println("usage: talc [--copyright] [-D flags] [-I directory] [--dump-class name] [--dump-classes] [-f file] [-e program]");
         System.err.println("where:");
         for (int i = 0; i < debuggingFlagNames.length; ++i) {
             if (debuggingFlagNames[i] != null) {
@@ -170,6 +179,15 @@ public class Talc {
             } else if (args[i].equals("-e")) {
                 expression = args[++i];
                 inScriptArgs = true;
+            } else if (args[i].startsWith("-I")) {
+                String directory = args[i].substring(2);
+                if (directory.length() == 0) {
+                    if (i + 1 >= args.length) {
+                        usage(1);
+                    }
+                    directory = args[++i];
+                }
+                libraryPath.add(directory);
             } else if (args[i].equals("--")) {
                 inScriptArgs = true;
             } else if (args[i].startsWith("-")) {
