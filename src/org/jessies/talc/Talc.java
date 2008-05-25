@@ -25,17 +25,17 @@ public class Talc {
     private static final boolean[] debuggingFlags = new boolean[127];
     private static final String[] debuggingFlagNames = new String[127];
     static {
-        debuggingFlagNames['C'] = "doesn't use a synthetic 'constant pool' for int and real constants";
-        debuggingFlagNames['i'] = "shows each inferred type as it's fixed up";
-        debuggingFlagNames['l'] = "shows each token returned by the lexer";
-        debuggingFlagNames['n'] = "doesn't execute the generated code";
-        debuggingFlagNames['o'] = "doesn't optimize the AST before generating code";
-        debuggingFlagNames['p'] = "shows information about parsing as it progresses, and the AST for each completed parse";
-        debuggingFlagNames['t'] = "shows timing information for each phase of compilation/execution";
-        debuggingFlagNames['T'] = "shows information helpful when debugging the type checker";
-        debuggingFlagNames['S'] = "shows the generated JVM bytecodes";
-        debuggingFlagNames['s'] = "saves the generated code to /tmp";
-        debuggingFlagNames['v'] = "verifies the generated code with ASM's verifier (implies 's'; libasm3-java must be installed)";
+        debuggingFlagNames['C'] = "don't use a synthetic 'constant pool' for int and real constants";
+        debuggingFlagNames['i'] = "show each inferred type as it's fixed up";
+        debuggingFlagNames['l'] = "show each token returned by the lexer";
+        debuggingFlagNames['n'] = "don't execute the generated code";
+        debuggingFlagNames['o'] = "don't optimize the AST before generating code";
+        debuggingFlagNames['p'] = "show information about parsing as it progresses, and the AST for each completed parse";
+        debuggingFlagNames['t'] = "show timing information for each phase of compilation/execution";
+        debuggingFlagNames['T'] = "show information helpful when debugging the type checker";
+        debuggingFlagNames['S'] = "show the generated JVM bytecodes";
+        debuggingFlagNames['s'] = "save the generated code to /tmp";
+        debuggingFlagNames['v'] = "verify the generated code with ASM's verifier (implies 's'; libasm3-java must be installed)";
     }
     
     private ArrayList<String> libraryPath;
@@ -129,13 +129,13 @@ public class Talc {
     }
     
     private void usage(int exitStatus) {
-        System.err.println("usage: talc [--copyright] [-D flags] [-I directory] [--dump-class name] [--dump-classes] [-f file] [-e program]");
-        System.err.println("where:");
-        for (int i = 0; i < debuggingFlagNames.length; ++i) {
-            if (debuggingFlagNames[i] != null) {
-                System.err.println("  -D " + ((char) i) + "\t" + debuggingFlagNames[i]);
-            }
-        }
+        System.err.println("usage: talc [talc-arguments] [--] [script-filename] [script-arguments]");
+        System.err.println("  -D flags           set debugging flags (-D ? for a list)");
+        System.err.println("  --dump-class name  describe the given class");
+        System.err.println("  --dump-classes     describe all built-in classes");
+        System.err.println("  -e program         one line of program; multiple -e's allowed, but omit explicit script filename");
+        System.err.println("  -I directory       add the given directory to the \"import\" search path");
+        System.err.println("  --copyright        show brief copyright information");
         System.exit(exitStatus);
     }
     
@@ -163,6 +163,9 @@ public class Talc {
                 }
                 parseDebuggingFlags(flags);
             } else if (args[i].equals("--dump-class")) {
+                if (i + 1 >= args.length) {
+                    usage(1);
+                }
                 String typeName = args[++i];
                 TalcType type = TalcType.byName(typeName);
                 if (type == null) {
@@ -177,8 +180,16 @@ public class Talc {
                 }
                 didSomethingUseful = true;
             } else if (args[i].equals("-e")) {
-                expression = args[++i];
-                inScriptArgs = true;
+                if (i + 1 >= args.length) {
+                    usage(1);
+                }
+                String newExpression = args[++i];
+                if (expression == null) {
+                    expression = newExpression;
+                } else {
+                    // Multiple -e's are allowed, and concatenated.
+                    expression += "\n" + newExpression;
+                }
             } else if (args[i].startsWith("-I")) {
                 String directory = args[i].substring(2);
                 if (directory.length() == 0) {
@@ -204,6 +215,9 @@ public class Talc {
             } else {
                 die("no script filename supplied");
             }
+        }
+        if (scriptFilename != null && expression != null) {
+            die("can't mix -e and an explicit script filename (\"" + scriptFilename + "\")");
         }
         Lexer lexer = (scriptFilename != null) ? new Lexer(new File(scriptFilename)) : new Lexer(expression);
         parseAndEvaluate(scriptFilename, scriptArgs.toArray(new String[scriptArgs.size()]), lexer);
@@ -261,11 +275,21 @@ public class Talc {
         for (int i = 0; i < flags.length(); ++i) {
             char ch = flags.charAt(i);
             if (debuggingFlagNames[ch] == null) {
-                usage(1);
+                reportUnknownDebuggingFlag(ch);
             } else {
                 debuggingFlags[ch] = true;
             }
         }
+    }
+    
+    private void reportUnknownDebuggingFlag(char unknownFlag) {
+        System.err.println("talc: unknown debugging flag '" + unknownFlag + "'; valid flags are:");
+        for (int i = 0; i < debuggingFlagNames.length; ++i) {
+            if (debuggingFlagNames[i] != null) {
+                System.err.println(" " + ((char) i) + " - " + debuggingFlagNames[i]);
+            }
+        }
+        System.exit(1);
     }
     
     public static void main(String[] args) throws IOException {

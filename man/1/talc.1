@@ -53,6 +53,8 @@ Inline mode.
 The \fIprogram\fR is evaluated.
 No special rules apply.
 No output will be produced unless the program calls an output function.
+Multiple -e arguments will be concatenated together into a single program.
+Any given invocation of talc can use -e or an explicit script filename, never both.
 .TP
 \-\fBI\fR \fIdirectory\fR
 Add \fIdirectory\fR to the library search path used by "import".
