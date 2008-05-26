@@ -211,7 +211,6 @@ ffi.call(function_name: string, return_type_descriptor:string, argument_type_des
 # but it might be nice to offer the same "ffi_prep_cif"/"ffi_call" distinction as libffi.
 # it would also be awesome to offer an interface to ffi_type, and the ability to pass/return structs.
 
-Perl-like pack/unpack?
 Perl/Python/Ruby-like tr/tr_d? sufficiently useful?
 should ARGV0 be of type "File" rather than "string"?
 access to stderr? ability to print/puts to files/sockets/pipes?
@@ -240,6 +239,12 @@ should FILE_SEPARATOR and PATH_SEPARATOR be in class "file"?
 make sure all "value" classes return sensible hashCodes!
 
 simple input/output of CSV, TSV, XML, JSON (http://en.wikipedia.org/wiki/JSON). (anything else common?)
+encode/decode base64, uri.
+Perl-like pack/unpack?
+gzip compress/decompress.
+adler32/crc.
+
+something like getopt. i've never seen a really convincing library for command-line arguments, but we should offer something.
 
 
 
