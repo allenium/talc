@@ -40,6 +40,9 @@ public class Talc {
     
     private ArrayList<String> libraryPath;
     
+    private boolean implicitInputMode = false; // -n
+    private boolean implicitInputOutputMode = false; // -p
+    
     public Talc() {
         initLibraryPath();
     }
@@ -64,8 +67,9 @@ public class Talc {
         long parse0 = System.nanoTime();
         List<AstNode> ast = new Parser(lexer, libraryPath).parse();
         reportTime("parsing", System.nanoTime() - parse0);
-        
-        // 1a. Insert values for built-in constants.
+        // 1a. Add any code implied by -n or -p options.
+        ast = addImplicitCode(ast);
+        // 1b. Insert values for built-in constants.
         Scope.initGlobalScope(argv0);
         
         // 2. Compile-time checking.
@@ -109,6 +113,29 @@ public class Talc {
         reportTime("execution", System.nanoTime() - execution0);
     }
     
+    private List<AstNode> addImplicitCode(List<AstNode> ast) {
+        if (!implicitInputMode && !implicitInputOutputMode) {
+            return ast;
+        }
+        
+        // _: string = null; while ((_ = gets()) != null) { ... puts(_); }
+        AstNode _ = new AstNode.VariableName(null, "_");
+        AstNode nullLiteral = new AstNode.Constant(SourceLocation.NONE, null, TalcType.NULL);
+        AstNode lhs = new AstNode.BinaryOperator(SourceLocation.NONE, Token.ASSIGN, _, new AstNode.FunctionCall(SourceLocation.NONE, "gets", (AstNode) null, new AstNode[0]));
+        AstNode expression = new AstNode.BinaryOperator(SourceLocation.NONE, Token.NE, lhs, nullLiteral);
+        
+        ArrayList<AstNode> loopBody = new ArrayList<AstNode>();
+        loopBody.addAll(ast);
+        if (implicitInputOutputMode) {
+            loopBody.add(new AstNode.FunctionCall(SourceLocation.NONE, "puts", (AstNode) null, new AstNode[] { _ }));
+        }
+        
+        ArrayList<AstNode> result = new ArrayList<AstNode>();
+        result.add(new AstNode.VariableDefinition(SourceLocation.NONE, "_", TalcType.STRING, nullLiteral, false));
+        result.add(new AstNode.WhileStatement(SourceLocation.NONE, expression, new AstNode.Block(SourceLocation.NONE, loopBody)));
+        return result;
+    }
+    
     private void interactiveReadEvaluatePrintLoop() throws IOException {
         LineReader lineReader = new LineReader();
         String line;
@@ -136,6 +163,8 @@ public class Talc {
         out.println("  --dump-classes     describe all built-in classes");
         out.println("  -e program         one line of program; multiple -e's allowed, but omit explicit script filename");
         out.println("  -I directory       add the given directory to the \"import\" search path");
+        out.println("  -n                 assume 'while ((_ = gets()) != null) { ... }' around script");
+        out.println("  -p                 assume 'while ((_ = gets()) != null) { ... puts(_); }' around script");
         out.println("  --copyright        show brief copyright information");
         System.exit(exitStatus);
     }
@@ -146,6 +175,7 @@ public class Talc {
         ArrayList<String> scriptArgs = new ArrayList<String>();
         boolean inScriptArgs = false;
         boolean didSomethingUseful = false;
+        // FIXME: this should be more like getopt(3) to cope with stuff like "-ne 'puts(_.uc());'"
         for (int i = 0; i < args.length; ++i) {
             if (inScriptArgs) {
                 scriptArgs.add(args[i]);
@@ -200,6 +230,10 @@ public class Talc {
                     directory = args[++i];
                 }
                 libraryPath.add(directory);
+            } else if (args[i].equals("-n")) {
+                implicitInputMode = true;
+            } else if (args[i].equals("-p")) {
+                implicitInputOutputMode = true;
             } else if (args[i].equals("--")) {
                 inScriptArgs = true;
             } else if (args[i].startsWith("-")) {
@@ -219,6 +253,9 @@ public class Talc {
         }
         if (scriptFilename != null && expression != null) {
             die("can't mix -e and an explicit script filename (\"" + scriptFilename + "\")");
+        }
+        if (implicitInputMode && implicitInputOutputMode) {
+            die("can't use -n and -p together");
         }
         Lexer lexer = (scriptFilename != null) ? new Lexer(new File(scriptFilename)) : new Lexer(expression);
         parseAndEvaluate(scriptFilename, scriptArgs.toArray(new String[scriptArgs.size()]), lexer);

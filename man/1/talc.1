@@ -58,6 +58,12 @@ Any given invocation of talc can use -e or an explicit script filename, never bo
 .TP
 \-\fBI\fR \fIdirectory\fR
 Add \fIdirectory\fR to the library search path used by "import".
+.TP
+\-\fBn\fR
+Adds 'while ((_ = gets()) != null) { ... }' around the user-supplied script. Note that the variable corresponding to the current line is called _ rather than $_.
+.TP
+\-\fBp\fR
+Adds 'while ((_ = gets()) != null) { ... puts(_); }' around the user-supplied script. Note that the variable corresponding to the current line is called _ rather than $_.
 .SH LEXICAL STRUCTURE
 .SS Comments
 Shell-like comments begin with a # and extend to the end of the line. C++-like comments begin with // and extend to the end of the line. Other than the use of # and //, shell\- and C++\-style comments are treated identically to one another.

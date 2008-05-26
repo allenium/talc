@@ -21,6 +21,9 @@ package org.jessies.talc;
 import java.io.File;
 
 public final class SourceLocation {
+    // This can be used for AstNodes that don't correspond to user source.
+    public static final SourceLocation NONE = new SourceLocation(null, 0, 0);
+    
     private File file;
     private int lineNumber;
     private int columnNumber;
