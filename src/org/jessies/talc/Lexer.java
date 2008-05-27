@@ -46,6 +46,7 @@ public class Lexer {
         KEYWORDS.put("new", Token.NEW);
         KEYWORDS.put("null", Token.NULL);
         KEYWORDS.put("return", Token.RETURN);
+        KEYWORDS.put("static", Token.STATIC);
         KEYWORDS.put("true", Token.TRUE);
         KEYWORDS.put("void", Token.VOID);
         KEYWORDS.put("while", Token.WHILE);

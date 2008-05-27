@@ -131,6 +131,7 @@ public enum Token {
     NEW("new"),
     NULL("null"),
     RETURN("return"),
+    STATIC("static"),
     TRUE("true"),
     VOID("void"),
     WHILE("while")
