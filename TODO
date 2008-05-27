@@ -53,7 +53,13 @@ MISSING FEATURES
   [ ] final/synchronized methods (?)
   [ ] "final" (and make all built-in classes final?)
 
-* [medium] add map literals. what should they look like?
+* static member functions. something like the sorely-needed n_copies methods need to be static methods.
+
+* should field declarations insist on an initializer? in practice it seems like you often can't say anything useful until the constructor. which suggests either a Ruby-like style for declaring member variables, or that we should relax the insistence on initializers for fields.
+
+* a function like "function draw_rectangle(x: int, y: int, width: int, height: int): void" is a little cumbersome. likewise the more common case of a constructor for a class that's just a bunch of strings. we could offer "function draw_rectangle(x, y, width, height: int): void", which is quite a bit less keyboarding. but then shouldn't we offer multiple variable definitions like "x, y, z := 0;" too? what would "l1, l2 := [];" mean? should they point to the same list or different lists?
+
+* add map literals. what should they look like? [key1:value1, key2:value2] is tempting, but then the empty list and the empty map look the same. D disallows empty hash literals, but at least for lists it's much more convenient to write "[]" than "new list<whatever>()". aren't empty hashes common?
 
 * [medium] implement the ? : ternary operator.
 
@@ -65,9 +71,11 @@ MISSING FEATURES
 
 * should add an "Iterable" interface, change for-each to expect its expression has that type and then invoke "Iterable.iterator()" and use it. (though how does that get us keys as well as values? maybe not "Iterable" so much as "ForEachAble<K,V>"? "has_next() : bool", "key() : K", and "value() : V"?)
 
+* given an "Iterable" interface, we can offer range literals like 3..6 so you can write "for (i in 3..6) {}" without having to actually have a list of the numbers as we would at present. range literals also let us implement slicing. we could do that with name[3,6] instead, but i'd like to reserve indexing with comma in case we ever support multi-dimensional array indexing more directly than the usual Java style.
+
 * warnings about hiding? what kinds are okay and what kinds aren't? i think we should outlaw all hiding.
 
-* [medium] implement regexp (type, literals (?), and basic operations). (a literal would give us compile-time regexp checking and ahead-of-time/once-off Pattern compilation.) go back over core library and see where we could usefully use regexp instead of string. (overloading might be handy.)
+* implement an explicit regexp type? literals? a literal would give us compile-time regexp checking and ahead-of-time/once-off Pattern compilation. we'd have to go back over core library and see where we could usefully use regexp instead of string. (overloading might be handy.)
 
 * [medium] overloaded methods/functions. useful for "system". probably some restriction like "no ambiguous/confusing overloads (ones where compile-time selection of an overload could produce different results than you'd expect if you thought overloads were selected at run-time)". http://www.informit.com/articles/article.aspx?p=31551&seqNum=4&rl=1
 
