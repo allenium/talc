@@ -107,8 +107,6 @@ MISSING FEATURES
 
 * [future] is a "switch" statement sufficiently useful to be worth adding? what kind?
 
-* [future] should the "for" initialization be as general as in similar languages? how can we do that without the hateful comma operator?
-
 * [future] do we need a "char" primitive type? scripting languages' higher-level string operations make most char-grubbing unnecessary. single-character strings might be sufficient. explicit char support might be clearer/more natural for the target audience. (but if we give them char, will they waste time doing C-like string manipulation instead of learning the higher-level stuff?) or int.to_char():string and string.asc():int (like Perl chr/ord)? we currently have the former but not the latter, and it actually works okay, though the name is a bit awkward.
 
 * [future] if we're going to have varargs "print" and "puts" built-ins, should we offer the same to user-defined functions? note that print and puts are special not only in that they can have any number of arguments, but also in that each argument can have a different type (though we could say they take object... [or whatever our notation is] because we call to_s on each argument; this would be cleaner and simpler). note that C-style varargs have problems compared to passing around a list, so really i'm talking about Java-like syntactic sugar (removing the need for [ and ] around the expression list), though at a loss of expressiveness and increase in complication. i think this is a questionable idea, but so is having magic "print" and "puts", but their functionality is invaluable in easing people into the water.
