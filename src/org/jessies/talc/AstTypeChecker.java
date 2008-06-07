@@ -501,7 +501,7 @@ public class AstTypeChecker implements AstVisitor<TalcType> {
     
     private static String describeType(TalcType type) {
         if (type == null) {
-            return type.toString();
+            return "unknown type";
         } else {
             return type.toString() + " (" + type.describe() + ")";
         }
