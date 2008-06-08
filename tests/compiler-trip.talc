@@ -136,6 +136,11 @@ assert !(1 < 1);
 assert 1 <= 1;
 assert 1 <= 2;
 
+# Arithmetic tests (from http://www.isthe.com/chongo/tech/comp/calc/calc-whatis.html).
+assert 3*(4+1) == 15;
+assert 3 * 19 ** 43 - 1 == 29075426613099201338473141505176993450849249622191102976;
+assert (2**23209-1)%(2**127-1) == 39614081257132168796771975167;
+
 if (true) {
  ++i;
 } else if (true) {
