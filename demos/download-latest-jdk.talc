@@ -8,7 +8,6 @@ local_jdks_directory := "/usr/java/";
 # Where to look on the internet for available JDKs.
 sun_site := "http://download.java.net";
 sun_binaries_url := sun_site + "/jdk7/binaries/";
-sun_changes_url := "https://mustang.dev.java.net/servlets/ProjectDocumentList?folderID=2855";
 
 jdk_version := "jdk1.7.0";
 
@@ -31,7 +30,7 @@ function desired_arch() : string {
   desired_arch := backquote("uname -m").trim();
   desired_arch = desired_arch.replace(@"^i\d86$", "i586");
   if (desired_arch == "x86_64") {
-    desired_arch = "amd64";
+    desired_arch = "x64";
   }
   return desired_arch;
 }
