@@ -201,6 +201,16 @@ A function definition looks like this:
 .sp
 .fi
 The keyword "function" followed by the function name introduces each definition. A parenthesized comma-separated list of parameter declarations follows. Finally comes a colon and the return type followed by a block for the function's body.
+
+Note that multiple parameters of the same type can be separated by commas:
+.nf
+.sp
+  function draw_line(x0, y0, x1, y1: int, c: color) : void {
+    // ...
+  }
+.sp
+.fi
+Whenever you find yourself writing this, though, ask whether you'd be better served by a new type. (Here either "Point" or maybe even "Line".)
 .SS Function calls
 A function call looks like this:
 .nf

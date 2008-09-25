@@ -5,7 +5,7 @@
 
 steps := 0;
 
-function hanoi(from:string, using:string, to:string, n:int) : void {
+function hanoi(from, using, to: string, n: int) : void {
  if (n == 0) {
   return;
  }

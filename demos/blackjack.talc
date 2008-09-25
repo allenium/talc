@@ -7,7 +7,7 @@ class Card {
   text: string = null;
   value: int = null;
   
-  function Card(name0: string, color0: string, suit0: string, value0: int) : Card {
+  function Card(name0, color0, suit0: string, value0: int) : Card {
     value = value0;
     text = color0 + " " + name0 + suit0 + " " + "\u001b[m";
   }
@@ -21,7 +21,7 @@ class Card {
   }
 }
 
-function family_of(color: string, suit: string) : list<Card> {
+function family_of(color, suit: string) : list<Card> {
   deck: list<Card> = [];
   # Ace.
   deck.push_back(new Card("A", color, suit, 1));

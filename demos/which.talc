@@ -2,7 +2,7 @@
 
 # Looks for the first occurrence of program within path.
 # Returns null if not found.
-function which(program:string, path:string) : string {
+function which(program, path: string) : string {
   for (directory in path.split(PATH_SEPARATOR)) {
     file := new file(directory + FILE_SEPARATOR + program);
     # Avoid /usr/lib/ruby, for example.

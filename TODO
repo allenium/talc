@@ -57,7 +57,7 @@ MISSING FEATURES
 
 * should field declarations insist on an initializer? in practice it seems like you often can't say anything useful until the constructor. which suggests either a Ruby-like style for declaring member variables, or that we should relax the insistence on initializers for fields.
 
-* a function like "function draw_rectangle(x: int, y: int, width: int, height: int): void" is a little cumbersome. likewise the more common case of a constructor for a class that's just a bunch of strings. we could offer "function draw_rectangle(x, y, width, height: int): void", which is quite a bit less keyboarding. but then shouldn't we offer multiple variable definitions like "x, y, z := 0;" too? what would "l1, l2 := [];" mean? should they point to the same list or different lists?
+* should we offer multiple variable definitions like "x, y, z := 0;"? what would "l1, l2 := [];" mean? should they point to the same list or different lists?
 
 * add map literals. what should they look like? [key1:value1, key2:value2] is tempting, but then the empty list and the empty map look the same. D disallows empty hash literals, but at least for lists it's much more convenient to write "[]" than "new list<whatever>()". aren't empty hashes common?
 

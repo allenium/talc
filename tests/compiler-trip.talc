@@ -450,3 +450,12 @@ class Point {
 
 # Test that we can generate code for a function with an unused argument.
 function unused_argument(unused: int) : void {}
+
+# Test that we can group formal parameters of the same type.
+function rectangle_f1(x: int, y: int, width: int, height: int) : int {
+ return x+y+width+height;
+}
+function rectangle_f2(x,y,width,height: int) : int {
+ return x+y+width+height;
+}
+assert rectangle_f1(1, 2, 3, 4) == rectangle_f2(1, 2, 3, 4);

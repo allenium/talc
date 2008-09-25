@@ -240,13 +240,23 @@ public class Parser {
     private void parseFormalParameters(Token startToken, Token endToken, ArrayList<String> names, ArrayList<TalcTypeDescriptor> typeDescriptors) {
         if (DEBUG_PARSER) { System.out.println("parseFormalParameters()"); }
         
+        // msg: string
+        // x, y, width, height: int
         expect(startToken);
         while (lexer.token() != Token.END_OF_INPUT && lexer.token() != endToken) {
             if (lexer.token() == Token.IDENTIFIER) {
-                names.add(lexer.identifier());
-                lexer.nextToken();
+                while (lexer.token() != Token.COLON) {
+                    names.add(lexer.identifier());
+                    lexer.nextToken();
+                    if (lexer.token() == Token.COMMA) {
+                        lexer.nextToken();
+                    }
+                }
                 expect(Token.COLON);
-                typeDescriptors.add(parseType());
+                final TalcTypeDescriptor type = parseType();
+                while (typeDescriptors.size() < names.size()) {
+                    typeDescriptors.add(type);
+                }
                 if (lexer.token() == Token.COMMA) {
                     lexer.nextToken();
                 } else if (lexer.token() != endToken) {

@@ -47,7 +47,7 @@ function p0() : void {
     e1[l] = e1[j];
 }
 
-function p3(x: real, y: real) : real {
+function p3(x, y: real) : real {
     x  = t * (x + y);
     y  = t * (x + y);
     return (x + y) /t2;
