@@ -340,6 +340,7 @@ public class Talc {
                 talc.parseArguments(args);
             } catch (Throwable th) {
                 reportError(th);
+                System.exit(1);
             }
         }
     }
