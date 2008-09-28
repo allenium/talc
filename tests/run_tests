@@ -1,0 +1,59 @@
+#!/usr/bin/ruby -w
+
+# Tested Talc scripts should exit(1) to report failure.
+
+require "pathname.rb"
+
+TALC_ROOT = Pathname.new(__FILE__).realpath().dirname().dirname()
+TALC_BIN = "#{TALC_ROOT}/bin"
+TALC_TESTS = "#{TALC_ROOT}/tests"
+$tests = 0
+$failures = 0
+
+def run_talc(script_name, args = [], expected_lines = nil)
+    $stderr.print("Running #{script_name}... ")
+    script_path = "#{TALC_TESTS}/#{script_name}"
+    script_args = args.join(" ")
+    command = "#{TALC_BIN}/talc #{script_path} #{script_args}"
+    lines = `#{TALC_BIN}/talc #{script_path} #{script_args}`.split("\n")
+    $tests += 1
+    if expected_lines != nil && lines != expected_lines
+        puts("FAIL")
+        puts("Ran:\n  " + command)
+        puts("Expected:\n  " + expected_lines.join("\n  "))
+        puts("But Got:\n  " + lines.join("\n  "))
+        $failures += 1
+    elsif not $?.success?()
+        puts("FAIL")
+        puts("Ran:\n  " + command)
+        puts("Got Non-Zero Exit Status: " + $?.exitstatus().to_s())
+        $failures += 1
+    else
+        puts("PASS")
+    end
+end
+
+run_talc("args.talc", [], ["#{TALC_TESTS}/args.talc", "[]"]);
+run_talc("args.talc", ["hello", "world"],
+         ["#{TALC_TESTS}/args.talc", "[hello, world]", "hello", "world"]);
+
+# Every time you add a test here, ask yourself if it couldn't just be another
+# case in the "compiler-trip.talc" script.
+
+run_talc("compiler-trip.talc")
+run_talc("decode.talc")
+run_talc("empty-list.talc")
+run_talc("factorial-table.talc")
+run_talc("fibonacci-table-recursive.talc")
+run_talc("fibonacci-table.talc")
+run_talc("fib.talc")
+run_talc("fib-real.talc")
+run_talc("file.talc")
+run_talc("lexer-unread.talc")
+run_talc("list.talc")
+run_talc("null.talc")
+run_talc("timed-loop.talc")
+run_talc("unicode.talc")
+
+puts("#{$failures} failures out of #{$tests} tests.")
+exit(($failures > 0) ? 1 : 0)

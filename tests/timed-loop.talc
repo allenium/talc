@@ -13,4 +13,3 @@ if (true) {
 }
 shell("date");
 system(["date"]);
-exit(2);
