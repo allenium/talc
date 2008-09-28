@@ -425,14 +425,22 @@ public class AstTypeChecker implements AstVisitor<TalcType> {
     
     public TalcType visitListLiteral(AstNode.ListLiteral listLiteral) {
         if (DEBUG_TYPES) { System.out.println("visitListLiteral()"); }
-        List<AstNode> expressions = listLiteral.expressions();
+        final List<AstNode> expressions = listLiteral.expressions();
         final int expressionCount = expressions.size();
-        
-        // If there are no expressions, we have the empty list.
         if (expressionCount == 0) {
-            return TalcType.LIST_OF_NOTHING;
+            // If there are no expressions, we have the empty list.
+            if (expressionCount == 0) {
+                return TalcType.LIST_OF_NOTHING;
+            }
         }
-        
+        final TalcType elementType = elementTypeOfExpressionList(new ExpressionListAccessor(expressions, expressionCount));
+        final TalcType listType = TalcType.instantiateType(TalcType.LIST_OF_T, elementType, null);
+        if (DEBUG_TYPES) { System.out.println("visitListLiteral() => elementType=" + elementType + " listType=" + listType); }
+        return listType;
+    }
+    
+    private TalcType elementTypeOfExpressionList(ExpressionListAccessor expressions) {
+        final int expressionCount = expressions.size();
         TalcType[] expressionTypes = new TalcType[expressionCount];
         for (int i = 0; i < expressionCount; ++i) {
             expressionTypes[i] = expressions.get(i).accept(this);
@@ -455,10 +463,44 @@ public class AstTypeChecker implements AstVisitor<TalcType> {
                 }
             }
         }
-        TalcType elementType = expressionTypes[0];
-        TalcType listType = TalcType.instantiateType(TalcType.LIST_OF_T, elementType, null);
-        if (DEBUG_TYPES) { System.out.println("visitListLiteral() => elementType=" + elementType + " listType=" + listType); }
-        return listType;
+        final TalcType elementType = expressionTypes[0];
+        return elementType;
+    }
+    
+    // Allows us to pass a List<AstNode> to elementTypeOfExpressionList, but also to present views onto an underlying list.
+    // This is useful because AstNode.MapLiteral doesn't currently distinguish its key expressions and value expressions.
+    // FIXME: we should probably just keep two separate lists.
+    private static class ExpressionListAccessor {
+        protected final List<AstNode> expressions;
+        private final int size;
+        
+        protected ExpressionListAccessor(List<AstNode> expressions, int size) {
+            this.expressions = expressions;
+            this.size = size;
+        }
+        
+        protected AstNode get(int i) {
+            return expressions.get(i);
+        }
+        
+        protected int size() {
+            return size;
+        }
+    }
+    
+    public TalcType visitMapLiteral(AstNode.MapLiteral mapLiteral) {
+        if (DEBUG_TYPES) { System.out.println("visitMapLiteral()"); }
+        final List<AstNode> expressions = mapLiteral.expressions();
+        final int pairCount = expressions.size() / 2;
+        final TalcType keyType = elementTypeOfExpressionList(new ExpressionListAccessor(expressions, pairCount) {
+            @Override protected AstNode get(int i) { return expressions.get(2*i); }
+        });
+        final TalcType valueType = elementTypeOfExpressionList(new ExpressionListAccessor(expressions, pairCount) {
+            @Override protected AstNode get(int i) { return expressions.get(2*i + 1); }
+        });
+        final TalcType mapType = TalcType.instantiateType(TalcType.MAP_OF_K_V, keyType, valueType);
+        if (DEBUG_TYPES) { System.out.println("visitMapLiteral() => keyType=" + keyType + " valueType=" + valueType + " mapType=" + mapType); }
+        return mapType;
     }
     
     public TalcType visitReturnStatement(AstNode.ReturnStatement returnStatement) {

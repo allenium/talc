@@ -801,6 +801,45 @@ public abstract class AstNode {
         }
     }
     
+    public static class MapLiteral extends AstNode {
+        private List<AstNode> expressions;
+        
+        // FIXME: we should probably separate the keyExpressions from the valueExpressions.
+        public MapLiteral(SourceLocation location, List<AstNode> expressions) {
+            this.location = location;
+            this.expressions = expressions;
+        }
+        
+        public <ResultT> ResultT accept(AstVisitor<ResultT> visitor) {
+            return visitor.visitMapLiteral(this);
+        }
+        
+        public List<AstNode> expressions() {
+            return expressions;
+        }
+        
+        public void setExpressions(List<AstNode> expressions) {
+            this.expressions = expressions;
+        }
+        
+        public String toString() {
+            final StringBuilder result = new StringBuilder();
+            result.append("[");
+            for (int i = 0; i < expressions.size(); ++i) {
+                if (i > 0) {
+                    result.append(", ");
+                }
+                final AstNode key = expressions.get(i++);
+                final AstNode value = expressions.get(i);
+                result.append(key);
+                result.append(":");
+                result.append(value);
+            }
+            result.append("]");
+            return result.toString();
+        }
+    }
+    
     public static class ReturnStatement extends AstNode {
         private AstNode expression;
         private TalcType returnType;

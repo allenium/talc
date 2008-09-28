@@ -32,6 +32,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     // FIXME: we often want the corresponding signatures. Add constants for them?
     private static final String integerValueType = "org/jessies/talc/IntegerValue";
     private static final String listValueType = "org/jessies/talc/ListValue";
+    private static final String mapValueType = "org/jessies/talc/MapValue";
     private static final String realValueType = "org/jessies/talc/RealValue";
     
     private static final String generatedClassType = "GeneratedClass";
@@ -562,7 +563,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         // FIXME: is there a cleaner way to do this?
         
         // If the code we generated for "statement" left a value on the stack, we need to pop it off!
-        if (node instanceof AstNode.BinaryOperator || node instanceof AstNode.Constant || node instanceof AstNode.ListLiteral || node instanceof AstNode.VariableDefinition || node instanceof AstNode.VariableName) {
+        if (node instanceof AstNode.BinaryOperator || node instanceof AstNode.Constant || node instanceof AstNode.ListLiteral || node instanceof AstNode.MapLiteral || node instanceof AstNode.VariableDefinition || node instanceof AstNode.VariableName) {
             cv.add(ByteCode.POP);
         } else if (node instanceof AstNode.FunctionCall) {
             // Pop unused return values from non-void functions.
@@ -945,7 +946,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
             return listValueType;
         } else if (talcType.rawName().equals("map")) {
             // FIXME: this is a particularly big hack.
-            return "org/jessies/talc/MapValue";
+            return mapValueType;
         } else if (talcType.isUserDefined()) {
             return talcType.rawName();
         } else {
@@ -1102,6 +1103,30 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         }
         
         //mg.popScope();
+        return null;
+    }
+    
+    public Void visitMapLiteral(AstNode.MapLiteral mapLiteral) {
+        // MapValue $anon$result = new MapValue();
+        visitLineNumber(mapLiteral);
+        cv.add(ByteCode.NEW, mapValueType);
+        cv.add(ByteCode.DUP);
+        cv.addInvoke(ByteCode.INVOKESPECIAL, mapValueType, "<init>", "()V");
+        
+        final List<AstNode> expressions = mapLiteral.expressions();
+        final int expressionCount = expressions.size();
+        int i = 0;
+        while (i < expressionCount) {
+            // <Generate code for the 'key' expression.>
+            expressions.get(i++).accept(this);
+            // <Generate code for the 'value' expression.>
+            expressions.get(i++).accept(this);
+            
+            // $anon$result[key] = value;
+            visitLineNumber(mapLiteral);
+            cv.addInvoke(ByteCode.INVOKEVIRTUAL, mapValueType, "__set_item__2", "(Ljava/lang/Object;Ljava/lang/Object;)Lorg/jessies/talc/MapValue;");
+        }
+        
         return null;
     }
     

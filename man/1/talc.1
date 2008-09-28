@@ -114,15 +114,23 @@ List literals are comma-separated lists of zero or more expressions enclosed in 
 .nf
 .sp
   [ 0xcafebabe, 0xdeadbeef ]  # has type list<int>
-
   [ "monkey", "head" ]        # has type list<string>
-
   [ 1, "infinite loop" ]      # has type list<object>
 
   word_bag:list<string> = []; # special case, assignable to any list
 .sp
 .fi
 As shown, the empty list is denoted [].
+.SS Map literals
+Map literals are comma-separated lists of one or more colon-separated key-value pairs, enclosed in square brackets. The inferred type is arrived at in the same manner as list literals, but treating the keys and values as two independent lists:
+.nf
+.sp
+  [ 1:'one', 2:'two' ]     # has type map<int, string>
+  [ '1':'one', '2':'two' ] # has type map<string, string>
+  [ 1:'one', '2':'two' ]   # has type map<object, object>
+.sp
+.fi
+There is no literal for the empty map, because it's not obviously useful.
 .SS Identifiers
 Identifiers are taken from the same set as Java identifiers.
 .SS Separators
@@ -177,10 +185,10 @@ Types are either simple types such as "object" or "int", or instantiated paramet
 As a shorthand, the type may be omitted, in which case the type is taken to be the exact type of the initializer expression. For example:
 .nf
 .sp
-  i := 0;               # implicitly i:int
-  r := 0.0;             # implicitly r:real
-  s := "hello, world!"; # implicitly s:string
-  lines := s.split("\n"); # implicitly lines:list<string>
+  i := 0;                 # implicitly i:int
+  r := 0.0;               # implicitly r:real
+  s := "hello, world!";   # implicitly s:string
+  lines := s.split("\\n"); # implicitly lines:list<string>
   constant: final = 123;  # implicitly constant:final int
 .sp
 .fi
@@ -218,7 +226,7 @@ A function call looks like this:
     nCr(5, 6);
 .sp
 .fi
-A call to a member function looks like this:
+A call to a member function (also known as a method) looks like this:
 .nf
 .sp
     i.to_s();
@@ -590,12 +598,8 @@ At the same time, it would be naive to pretend that some choices don't also have
 Talc is not yet ready for production use.
 
 It would be nice if the interactive interface saved its readline history somewhere. Also, we should offer custom tab-completion for functions and variables.
-.SS LANGUAGE CHANGES/EXTENSIONS UNDER CONSIDERATION
-A shorthand "function f() { ... }" for void functions, instead of "function f() : void { ... }".
 
-Losing the "function" keyword completely. As long as you have to write the parentheses for empty formal argument lists, functions and variables aren't ambiguous because at any given scope, only one or the other is valid. "function" is potentially useful for expressing function types, such as the first argument to a functional "map", for example.
-
-It might also be useful to support both "mod" and and "rem", though the likely confusion inherent in the fact that % is actually "rem" but generally called mod speaks against this. VHDL users report that the "mod"/"rem" distinction isn't very useful, but they're unlikely to be using signed values in the first place.
+See the TODO file in the repository for a detailed list.
 .SH "REPORTING BUGS"
 Report bugs at <http://code.google.com/p/talc/issues/list>.
 .SH ACKNOWLEDGMENTS

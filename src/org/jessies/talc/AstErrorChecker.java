@@ -183,6 +183,13 @@ public class AstErrorChecker implements AstVisitor<Void> {
         return null;
     }
     
+    public Void visitMapLiteral(AstNode.MapLiteral mapLiteral) {
+        for (AstNode expression : mapLiteral.expressions()) {
+            expression.accept(this);
+        }
+        return null;
+    }
+    
     public Void visitReturnStatement(AstNode.ReturnStatement returnStatement) {
         visitIfNonNull(returnStatement.expression());
         return null;

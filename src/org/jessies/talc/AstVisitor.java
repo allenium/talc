@@ -33,6 +33,7 @@ public interface AstVisitor<ResultT> {
     public ResultT visitFunctionDefinition(AstNode.FunctionDefinition functionDefinition);
     public ResultT visitIfStatement(AstNode.IfStatement ifStatement);
     public ResultT visitListLiteral(AstNode.ListLiteral listLiteral);
+    public ResultT visitMapLiteral(AstNode.MapLiteral mapLiteral);
     public ResultT visitReturnStatement(AstNode.ReturnStatement returnStatement);
     public ResultT visitVariableDefinition(AstNode.VariableDefinition variableDefinition);
     public ResultT visitVariableName(AstNode.VariableName variableName);

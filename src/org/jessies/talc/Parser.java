@@ -322,6 +322,38 @@ public class Parser {
         return list;
     }
     
+    private AstNode parseListOrMapLiteral() {
+        if (DEBUG_PARSER) { System.out.println("parseListOrMapLiteral()"); }
+        
+        // List literal "[ <expression1>, <expression2>... ]" or map literal "[ <key1>:<value1>, <key2>:<value2>... ]".
+        final SourceLocation location = lexer.getLocation();
+        expect(Token.OPEN_BRACKET);
+        ArrayList<AstNode> list = new ArrayList<AstNode>();
+        boolean isMap = false;
+        // FIXME: support Groovy-like empty map literals? emptyMap := [:];
+        while (lexer.token() != Token.CLOSE_BRACKET) {
+            AstNode expression = parseExpression();
+            list.add(expression);
+            if (isMap || lexer.token() == Token.COLON) {
+                expect(Token.COLON);
+                isMap = true;
+                AstNode expression2 = parseExpression();
+                list.add(expression2);
+            }
+            if (lexer.token() == Token.COMMA) {
+                lexer.nextToken();
+                continue;
+            } else if (lexer.token() == Token.CLOSE_BRACKET) {
+                break;
+            } else {
+                throw new TalcError(lexer, "expected \",\" or \"]\" next in " + (isMap ? "map" : "list") + " literal, got " + whatWeGot() + " instead");
+            }
+        }
+        expect(Token.CLOSE_BRACKET);
+        
+        return isMap ? new AstNode.MapLiteral(location, list) : new AstNode.ListLiteral(location, list);
+    }
+    
     private AstNode parseIfStatement() {
         if (DEBUG_PARSER) { System.out.println("parseIfStatement()"); }
         
@@ -803,8 +835,7 @@ public class Parser {
             lexer.nextToken();
             primary = constant;
         } else if (op == Token.OPEN_BRACKET) {
-            // List literal "[ <expression>... ]".
-            primary = new AstNode.ListLiteral(location, parseExpressionList(Token.OPEN_BRACKET, Token.CLOSE_BRACKET, "list literal"));
+            primary = parseListOrMapLiteral();
         } else if (op == Token.NEW) {
             // New expression "new <type-name> ( <expression> ... )".
             expect(Token.NEW);
@@ -819,7 +850,7 @@ public class Parser {
                 primary = parseVariableDefinition(location, identifier);
             } else if (lexer.token() == Token.OPEN_PARENTHESIS) {
                 // Function call "<identifier> ( <expression>... )".
-                List<AstNode> arguments = parseExpressionList(Token.OPEN_PARENTHESIS, Token.CLOSE_PARENTHESIS, "arguments to call of \"" + identifier + "\"");
+                List<AstNode> arguments = parseExpressionList(Token.OPEN_PARENTHESIS, Token.CLOSE_PARENTHESIS, "arguments to call of function \"" + identifier + "\"");
                 primary = new AstNode.FunctionCall(location, identifier, arguments.toArray(new AstNode[arguments.size()]));
             } else {
                 primary = new AstNode.VariableName(location, identifier);
@@ -845,7 +876,7 @@ public class Parser {
                 if (lexer.token() != Token.OPEN_PARENTHESIS) {
                     expect(Token.OPEN_PARENTHESIS);
                 }
-                List<AstNode> arguments = parseExpressionList(Token.OPEN_PARENTHESIS, Token.CLOSE_PARENTHESIS, "arguments to call of \"" + identifier + "\"");
+                List<AstNode> arguments = parseExpressionList(Token.OPEN_PARENTHESIS, Token.CLOSE_PARENTHESIS, "arguments to call of method \"" + identifier + "\"");
                 primary = new AstNode.FunctionCall(location, identifier, primary, arguments.toArray(new AstNode[arguments.size()]));
             } else {
                 // Handle operator[] and operator[]=.

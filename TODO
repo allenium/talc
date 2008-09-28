@@ -16,6 +16,14 @@ DOCUMENTATION
 * tic-tac-toe, connect four?
 * roman numerals.
 
+Limbo:
+* http://www.vitanuova.com/inferno/papers/limbo.html (reference)
+* http://www.vitanuova.com/inferno/papers/descent.html (tutorial & demos)
+
+Alef:
+* http://doc.cat-v.org/plan_9/2nd_edition/papers/alef/ref (reference)
+* http://doc.cat-v.org/plan_9/2nd_edition/papers/alef/ug (user guide)
+
 * http://merd.sourceforge.net/pixel/language-study/scripting-language/
 
 * http://www.angelfire.com/tx4/cus/shapes/index.html
@@ -58,8 +66,6 @@ MISSING FEATURES
 * should field declarations insist on an initializer? in practice it seems like you often can't say anything useful until the constructor. which suggests either a Ruby-like style for declaring member variables, or that we should relax the insistence on initializers for fields.
 
 * should we offer multiple variable definitions like "x, y, z := 0;"? what would "l1, l2 := [];" mean? should they point to the same list or different lists?
-
-* add map literals. what should they look like? [key1:value1, key2:value2] is tempting, but then the empty list and the empty map look the same. D disallows empty hash literals, but at least for lists it's much more convenient to write "[]" than "new list<whatever>()". aren't empty hashes common?
 
 * [medium] implement the ? : ternary operator.
 
@@ -266,6 +272,10 @@ LANGUAGE DEFECTS
   it's a mistake to translate [] and []= in the parser. i think we do need some kind of AstNode.IndexExpression, and to do the __get_item__/__set_item__ translation in a context-sensitive way. not clear on the details, but this will have to be looked at eventually. i don't mind outlawing ++ and -- on these expressions, but compound assignment seems like something that should work.
 
 * in Java "assert 0 == 0 == 0;" won't compile, with the complaint that you can't compare boolean with int. in Talc, you get a surprising result instead.
+
+* is the colon before a return type useful? "function f() string { ... }" would work equally well. but then how about the more C-like "function string f() { ... }"? this seems to conflict with the earlier idea of having a shorthand "function f() { ... }" for void functions, but we could still treat a missing return type as "void" (assuming we even decide this shorthand is a good idea).
+
+* alternatively, we could lose the "function" keyword completely. as long as you have to write the parentheses for empty formal argument lists, functions and variables aren't ambiguous because at any given scope, only one or the other is valid. "function" is potentially useful for expressing function types, such as the first argument to a functional "map", for example. (though "func" or "fn" might also be worth considering, if we're really into the whole brevity thing.)
 
 
 

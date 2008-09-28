@@ -34,6 +34,12 @@ public class MapValue {
         return map.put(key, value);
     }
     
+    // Used by JvmCodeGenerator.visitMapLiteral to avoid a "dup" and "pop" per key/value pair.
+    public MapValue __set_item__2(Object key, Object value) {
+        map.put(key, value);
+        return this;
+    }
+    
     public MapValue clear() {
         map.clear();
         return this;
@@ -61,7 +67,31 @@ public class MapValue {
     }
     
     public String toString() {
-        return map.toString();
+        // Adapted from AbstractMap.toString to use something closer to Talc's map literal syntax.
+        // Given "puts([1:"one",2:"two",3:"three"]);" we want:
+        //   [1:one, 2:two, 3:three]
+        // rather than:
+        //   {1=one, 2=two, 3=three}
+        final Iterator<Map.Entry<Object, Object>> it = map.entrySet().iterator();
+        if (!it.hasNext()) {
+            return "[:]";
+        }
+        
+        final StringBuilder result = new StringBuilder();
+        result.append('[');
+        while (it.hasNext()) {
+            final Map.Entry<Object,Object> e = it.next();
+            final Object key = e.getKey();
+            final Object value = e.getValue();
+            result.append((key == this) ? "(this map)" : key);
+            result.append(':');
+            result.append((value == this) ? "(this map)" : value);
+            if (it.hasNext()) {
+                result.append(", ");
+            }
+        }
+        result.append(']');
+        return result.toString();
     }
     
     public ListValue values() {

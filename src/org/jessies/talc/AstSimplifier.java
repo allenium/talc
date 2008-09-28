@@ -389,6 +389,11 @@ public class AstSimplifier implements AstVisitor<AstNode> {
         return listLiteral;
     }
     
+    public AstNode visitMapLiteral(AstNode.MapLiteral mapLiteral) {
+        mapLiteral.setExpressions(simplifyAstNodeList(mapLiteral.expressions()));
+        return mapLiteral;
+    }
+    
     public AstNode visitReturnStatement(AstNode.ReturnStatement returnStatement) {
         returnStatement.setExpression(simplifyIfNonNull(returnStatement.expression()));
         return returnStatement;

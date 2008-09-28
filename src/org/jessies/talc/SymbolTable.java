@@ -231,6 +231,13 @@ public class SymbolTable implements AstVisitor<Void> {
         return null;
     }
     
+    public Void visitMapLiteral(AstNode.MapLiteral mapLiteral) {
+        for (AstNode expression : mapLiteral.expressions()) {
+            expression.accept(this);
+        }
+        return null;
+    }
+    
     public Void visitReturnStatement(AstNode.ReturnStatement returnStatement) {
         setScope(returnStatement);
         visitIfNonNull(returnStatement.expression());
