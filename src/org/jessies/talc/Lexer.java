@@ -409,8 +409,7 @@ public class Lexer {
             this.columnNumber = 1;
         }
         
-        @Override
-        public int read() throws IOException {
+        @Override public int read() throws IOException {
             synchronized (lock) {
                 int result = (pos < buf.length) ? buf[pos++] : super.read();
                 ++columnNumber;
@@ -433,7 +432,7 @@ public class Lexer {
                 --columnNumber;
                 if (c == '\n') {
                     --lineNumber;
-                    throw new TalcError(getLocation(), "unread('\n') means we no longer know what column we're on"); // FIXME
+                    throw new TalcError(getLocation(), "unread('\\n') means we no longer know what column we're on"); // FIXME
                 }
                 buf[--pos] = (char) c;
             }
@@ -447,8 +446,7 @@ public class Lexer {
             return new SourceLocation(file, lineNumber, columnNumber);
         }
         
-        @Override
-        public boolean ready() throws IOException {
+        @Override public boolean ready() throws IOException {
             synchronized (lock) {
                 return (pos < buf.length) || super.ready();
             }
