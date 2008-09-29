@@ -231,6 +231,8 @@ public class Parser {
         ArrayList<TalcTypeDescriptor> formalParameterTypeDescriptors = new ArrayList<TalcTypeDescriptor>();
         parseFormalParameters(Token.OPEN_PARENTHESIS, Token.CLOSE_PARENTHESIS, formalParameterNames, formalParameterTypeDescriptors);
         // FIXME: allow "function f(x:int) { ... }" as shorthand for a void function?
+        // FIXME: is this colon useful in any way, or is it just cruft?
+        // FIXME: if we remove the colon, should we move the return type to right after the "function" keyword?
         expect(Token.COLON);
         TalcTypeDescriptor returnTypeDescriptor = parseType();
         AstNode.Block body = parseBlock();
