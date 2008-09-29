@@ -248,7 +248,7 @@ should list<t>.pop_back and list<T>.push_back just be "pop" and "push"?
 should we have list<T>.find(e:T):int ? should it take a start_index:int too, or return list<int>?
 should FILE_SEPARATOR and PATH_SEPARATOR be in class "file"?
 
-make sure all "value" classes return sensible hashCodes!
+make sure all *Value classes implement equals/hashCode correctly! (including list and map.)
 
 simple input/output of CSV, TSV, XML, JSON (http://en.wikipedia.org/wiki/JSON). (anything else common?)
 encode/decode base64, uri.
