@@ -54,22 +54,22 @@ public class Lexer {
     
     private final boolean DEBUG_LEXER = Talc.debugging('l');
     
-    private MyPushbackReader reader;
+    private final MyPushbackReader reader;
+    
     private Token token;
     private String identifier;
     private Object numericLiteral;
     
     public Lexer(String expression) {
-        this(new StringReader(expression));
+        this(new StringReader(expression), null);
     }
     
     public Lexer(File file) throws IOException {
-        this(new InputStreamReader(new FileInputStream(file)));
-        reader.setFile(file);
+        this(new InputStreamReader(new FileInputStream(file)), file);
     }
     
-    private Lexer(Reader reader) {
-        this.reader = new MyPushbackReader(new BufferedReader(reader));
+    private Lexer(Reader reader, File file) {
+        this.reader = new MyPushbackReader(new BufferedReader(reader), file);
         nextToken();
     }
     
@@ -391,22 +391,21 @@ public class Lexer {
      * Like the JDK PushbackReader, but with a larger default pushback buffer, and more intelligent behavior when pushing back EOF.
      */
     private static class MyPushbackReader extends FilterReader {
+        // The pushback buffer.
         private static final int BUFFER_SIZE = 8;
-        private char[] buf;
-        private int pos;
+        private final char[] buf = new char[BUFFER_SIZE];
+        private int pos = buf.length;
         
-        private File file;
-        private int lineNumber;
-        private int columnNumber;
+        // What file we're reading, or null if we're reading from a non-file source (such as a string).
+        private final File file;
         
-        public MyPushbackReader(Reader in) {
+        // Humans count lines from 1, and these are for error reporting.
+        private int lineNumber = 1;
+        private int columnNumber = 1;
+        
+        public MyPushbackReader(Reader in, File file) {
             super(in);
-            this.buf = new char[BUFFER_SIZE];
-            this.pos = buf.length;
-            
-            // Humans count lines from 1, and these are for error reporting.
-            this.lineNumber = 1;
-            this.columnNumber = 1;
+            this.file = file;
         }
         
         @Override public int read() throws IOException {
@@ -422,7 +421,9 @@ public class Lexer {
         }
         
         public void unread(int c) {
-            if (c == -1) {
+            if (c == EOF || c < ' ') {
+                // Don't push back stuff we'll only skip again anyway.
+                // In particular, pushing back \n to causes trouble because we don't know what column that puts us in.
                 return;
             }
             synchronized (lock) {
@@ -430,16 +431,8 @@ public class Lexer {
                     throw new TalcError(getLocation(), "pushback buffer overflow");
                 }
                 --columnNumber;
-                if (c == '\n') {
-                    --lineNumber;
-                    throw new TalcError(getLocation(), "unread('\\n') means we no longer know what column we're on"); // FIXME
-                }
                 buf[--pos] = (char) c;
             }
-        }
-        
-        public void setFile(File file) {
-            this.file = file;
         }
         
         public SourceLocation getLocation() {
