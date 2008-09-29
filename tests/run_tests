@@ -42,7 +42,6 @@ run_talc("args.talc", ["hello", "world"],
 
 run_talc("compiler-trip.talc")
 run_talc("decode.talc")
-run_talc("empty-list.talc")
 run_talc("factorial-table.talc")
 run_talc("fibonacci-table-recursive.talc")
 run_talc("fibonacci-table.talc")

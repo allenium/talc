@@ -52,13 +52,19 @@ public class ListValue {
         return BooleanValue.valueOf(list.contains(v));
     }
     
+    @Override public boolean equals(Object o) {
+        if (o instanceof ListValue) {
+            return list.equals(((ListValue) o).list);
+        }
+        return false;
+    }
+    
     public Object __get_item__(IntegerValue i) {
         return list.get(i.intValue());
     }
     
-    public Object __set_item__(IntegerValue i, Object v) {
-        list.set(i.intValue(), v);
-        return v;
+    @Override public int hashCode() {
+        return list.hashCode();
     }
     
     public BooleanValue is_empty() {
@@ -74,10 +80,6 @@ public class ListValue {
             result.append(list.get(i));
         }
         return result.toString();
-    }
-    
-    public IntegerValue size() {
-        return IntegerValue.valueOf(list.size());
     }
     
     public Object peek_back() {
@@ -126,6 +128,15 @@ public class ListValue {
             result.push_back(list.get(i));
         }
         return result;
+    }
+    
+    public Object __set_item__(IntegerValue i, Object v) {
+        list.set(i.intValue(), v);
+        return v;
+    }
+    
+    public IntegerValue size() {
+        return IntegerValue.valueOf(list.size());
     }
     
     public ListValue sort() {

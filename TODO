@@ -298,7 +298,13 @@ QUALITY OF IMPLEMENTATION
     $ ./bin/talc -e 'm:=[:]; m[1] = "one"; puts(m);'
     -:1:11: no instance method "__set_item__" in class empty-map
 
-  at what point should we rewrite these types?
+  and these should be equivalent:
+    $ ./bin/talc -e 'puts([0].push_back(1).push_back(2));'
+    [0, 1, 2]
+    $ ./bin/talc -e 'puts([].push_back(0).push_back(1).push_back(2));'
+    -:1:7: no instance method "push_back" in class empty-list
+
+  at what point should we rewrite these types? obviously when we see LIST_OF_NOTHING/MAP_OF_NOTHING on the rhs of an assignment or as receiver of a method call, but is there some more general way to state this? (it's only these special cases of the empty literals that are kind-of list<object> and map<object, object> but assignable to list<?> and map<?, ?>, so we can't get rid of LIST_OF_NOTHING/MAP_OF_NOTHING completely. i'm not sure about the empty map, but it's genuinely useful to be able to write [] for any empty map.)
 
 * report sensible error when global function used before definition. (or cope, as we do with methods? global variables obviously shouldn't be treated like fields in terms of usability before definition, and global functions can refer to global variables, so presumably we should treat global functions specially to avoid this kind of weirdness?)
 

@@ -351,6 +351,34 @@ for (i:int = 1; i < names.size(); ++i) {
  assert names.size() == 0;
 }
 
+# Test lists.
+{
+ words:list<string> = [];
+ words.push_back("hello");
+ words.push_back("world");
+ assert words == [ "hello", "world" ];
+ assert words != "helloworld";
+ assert words.to_s() == "[hello, world]";
+ assert words != "[hello, world]";
+ assert words != [ "hello", "world", "monkeys" ];
+ assert words != [ "world", "hello" ];
+ 
+ nums:list<int> = [];
+ nums.push_back(0);
+ nums.push_back(1);
+ assert nums == [ 0, 1 ];
+ assert nums != "01";
+ assert nums.to_s() == "[0, 1]";
+ assert nums != "[0, 1]";
+ assert nums != [ 0, 1, 2 ];
+ assert nums != [ 1, 0 ];
+}
+function string_list_size_to_s(strings: list<string>): string {
+ return strings.size().to_s();
+}
+assert string_list_size_to_s(["hello", "world"]) == "2";
+assert string_list_size_to_s([]) == "0";
+
 # Check we can have a global function called to_s.
 function to_s(n:int):string {
  return n.to_s();
