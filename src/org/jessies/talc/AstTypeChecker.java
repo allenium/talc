@@ -429,9 +429,7 @@ public class AstTypeChecker implements AstVisitor<TalcType> {
         final int expressionCount = expressions.size();
         if (expressionCount == 0) {
             // If there are no expressions, we have the empty list.
-            if (expressionCount == 0) {
-                return TalcType.LIST_OF_NOTHING;
-            }
+            return TalcType.LIST_OF_NOTHING;
         }
         final TalcType elementType = elementTypeOfExpressionList(new ExpressionListAccessor(expressions, expressionCount));
         final TalcType listType = TalcType.instantiateType(TalcType.LIST_OF_T, elementType, null);
@@ -492,6 +490,10 @@ public class AstTypeChecker implements AstVisitor<TalcType> {
         if (DEBUG_TYPES) { System.out.println("visitMapLiteral()"); }
         final List<AstNode> expressions = mapLiteral.expressions();
         final int pairCount = expressions.size() / 2;
+        if (pairCount == 0) {
+            // If there are no pairs, we have the empty map.
+            return TalcType.MAP_OF_NOTHING;
+        }
         final TalcType keyType = elementTypeOfExpressionList(new ExpressionListAccessor(expressions, pairCount) {
             @Override protected AstNode get(int i) { return expressions.get(2*i); }
         });

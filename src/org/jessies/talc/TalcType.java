@@ -53,8 +53,9 @@ public class TalcType {
     // The type of "null".
     public static final TalcType NULL = new TalcType(null, "null-type");
     
-    // The special type of list literals. The type checker will find a suitable more specific type.
+    // The special types of empty list or map literals. The type checker will find a suitable more specific type.
     public static final TalcType LIST_OF_NOTHING = new TalcType(null, "empty-list");
+    public static final TalcType MAP_OF_NOTHING = new TalcType(null, "empty-map");
     
     static {
         addMemberFunction(OBJECT, new BuiltInFunction("to_s", TalcType.STRING));
@@ -340,6 +341,10 @@ public class TalcType {
         
         // The LIST_OF_NOTHING type, used for empty list literals, can be assigned to any list type.
         if (this == LIST_OF_NOTHING && declaredType.isInstantiatedParametricType() && declaredType.uninstantiatedParametricType().equals(LIST_OF_T)) {
+            return true;
+        }
+        // The MAP_OF_NOTHING type, used for empty map literals, can be assigned to any map type.
+        if (this == MAP_OF_NOTHING && declaredType.isInstantiatedParametricType() && declaredType.uninstantiatedParametricType().equals(MAP_OF_K_V)) {
             return true;
         }
         

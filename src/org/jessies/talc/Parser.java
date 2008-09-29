@@ -327,12 +327,20 @@ public class Parser {
     private AstNode parseListOrMapLiteral() {
         if (DEBUG_PARSER) { System.out.println("parseListOrMapLiteral()"); }
         
-        // List literal "[ <expression1>, <expression2>... ]" or map literal "[ <key1>:<value1>, <key2>:<value2>... ]".
+        // List literals look like this: "[ <expression1>, <expression2>... ]"
+        // Map literals look like this: "[ <key1>:<value1>, <key2>:<value2>... ]".
         final SourceLocation location = lexer.getLocation();
         expect(Token.OPEN_BRACKET);
         ArrayList<AstNode> list = new ArrayList<AstNode>();
+        
+        // Empty map literal?
+        if (lexer.token() == Token.COLON) {
+            expect(Token.COLON);
+            expect(Token.CLOSE_BRACKET);
+            return new AstNode.MapLiteral(location, list);
+        }
+        
         boolean isMap = false;
-        // FIXME: support Groovy-like empty map literals? emptyMap := [:];
         while (lexer.token() != Token.CLOSE_BRACKET) {
             AstNode expression = parseExpression();
             list.add(expression);

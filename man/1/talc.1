@@ -128,9 +128,11 @@ Map literals are comma-separated lists of one or more colon-separated key-value 
   [ 1:'one', 2:'two' ]     # has type map<int, string>
   [ '1':'one', '2':'two' ] # has type map<string, string>
   [ 1:'one', '2':'two' ]   # has type map<object, object>
+  
+  env:map<string, string> = [:]; # special case, assignable to any map
 .sp
 .fi
-There is no literal for the empty map, because it's not obviously useful.
+As shown, the empty map is denoted [:].
 .SS Identifiers
 Identifiers are taken from the same set as Java identifiers.
 .SS Separators
