@@ -53,6 +53,8 @@ import java.util.*;
  * 1. Replace org.mozilla dependencies with JDK dependencies. (2008-04-12)
  * 2. Removed large unused (commented-out) method. (2008-04-12)
  * 3. Corrected an error message in addLineNumberEntry. (2008-04-12)
+ * 4. Switched to Short.valueOf instead of "new Short". (2008-09-28)
+ * 5. Switched to StringBuilder instead of StringBuffer. (2008-09-28)
  * 
  * @author Roger Lawrence
  * @author Elliott Hughes
@@ -917,7 +919,7 @@ public class ClassFileWriter {
 
     /**
      * Generate the code to leave on stack the given string even if the
-     * string encoding exeeds the class file limit for single string constant
+     * string encoding exceeds the class file limit for single string constant.
      *
      * @param k the constant
      */
@@ -928,13 +930,13 @@ public class ClassFileWriter {
             addLoadConstant(k);
             return;
         }
-        // Split string into picies fitting the UTF limit and generate code for
-        // StringBuffer sb = new StringBuffer(length);
+        // Split string into pieces fitting the UTF limit and generate code for
+        // StringBuilder sb = new StringBuilder(length);
         // sb.append(loadConstant(piece_1));
         // ...
         // sb.append(loadConstant(piece_N));
         // sb.toString();
-        final String SB = "java/lang/StringBuffer";
+        final String SB = "java/lang/StringBuilder";
         add(ByteCode.NEW, SB);
         add(ByteCode.DUP);
         addPush(length);
@@ -945,7 +947,7 @@ public class ClassFileWriter {
             String s = k.substring(cursor, limit);
             addLoadConstant(s);
             addInvoke(ByteCode.INVOKEVIRTUAL, SB, "append",
-                      "(Ljava/lang/String;)Ljava/lang/StringBuffer;");
+                      "(Ljava/lang/String;)Ljava/lang/StringBuilder;");
             add(ByteCode.POP);
             if (limit == length) {
                 break;
@@ -1447,7 +1449,7 @@ public class ClassFileWriter {
     }
 
     /**
-     * Get the class file as array of bytesto the OutputStream.
+     * Get the class file as array of bytes.
      */
     public byte[] toByteArray()
     {
