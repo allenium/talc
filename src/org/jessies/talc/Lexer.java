@@ -139,8 +139,6 @@ public class Lexer {
         switch (ch) {
             case EOF: return Token.END_OF_INPUT;
             
-            case '\n': return nextToken0();
-            
             case ':': return Token.COLON;
             case ';': return Token.SEMICOLON;
             case ',': return Token.COMMA;
