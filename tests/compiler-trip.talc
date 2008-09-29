@@ -2,7 +2,14 @@
 
 # Test assertions.
 assert true;
+assert !false;
+assert true == true;
+assert false == false;
+assert true != false;
 assert 0 == 0;
+assert 0 != 1;
+assert "hello" == "hello";
+assert "hello" != "world";
 
 # Test Unicode escapes in string literals.
 assert "\u0068\u0065\u006c\u006c\u006f\u0020world" == 'hello world';
