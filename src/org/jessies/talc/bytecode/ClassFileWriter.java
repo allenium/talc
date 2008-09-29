@@ -110,7 +110,7 @@ public class ClassFileWriter {
      */
     public void addInterface(String interfaceName) {
         short interfaceIndex = itsConstantPool.addClass(interfaceName);
-        itsInterfaces.add(new Short(interfaceIndex));
+        itsInterfaces.add(Short.valueOf(interfaceIndex));
     }
 
     public static final short
