@@ -955,7 +955,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     }
     
     private String methodSignature(AstNode.FunctionDefinition definition) {
-        StringBuffer result = new StringBuffer("(");
+        StringBuilder result = new StringBuilder("(");
         for (TalcType talcType : definition.formalParameterTypes()) {
             result.append(ClassFileWriter.classNameToSignature(typeForTalcType(talcType)));
         }
