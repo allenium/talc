@@ -1,4 +1,0 @@
-#!/usr/bin/talc
-
-puts("\u0068\u0065\u006c\u006c\u006f\u0020world");
-puts("Copyright \u00A9 2007, Elliott Hughes");

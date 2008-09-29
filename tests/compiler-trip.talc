@@ -6,6 +6,7 @@ assert 0 == 0;
 
 # Test Unicode escapes in string literals.
 assert "\u0068\u0065\u006c\u006c\u006f\u0020world" == 'hello world';
+assert 'Copyright \u00A9 2007, Elliott Hughes' == "Copyright © 2007, Elliott Hughes";
 
 i := 0;
 
