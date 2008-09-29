@@ -51,7 +51,6 @@ run_talc("fib-real.talc")
 run_talc("file.talc")
 run_talc("lexer-unread.talc")
 run_talc("list.talc")
-run_talc("null.talc")
 run_talc("timed-loop.talc")
 run_talc("unicode.talc")
 

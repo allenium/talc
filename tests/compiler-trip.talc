@@ -176,6 +176,43 @@ assert i == 14;
  }
 }
 
+# Test null and some aspects of the type system.
+{
+ o:object = null;
+ 
+ assert o == null;
+ o = 2;
+ assert o == 2;
+ assert o.to_s() == "2";
+ o = "hello";
+ assert o == "hello";
+ 
+ i:int = null;
+ i = 2;
+ 
+ s:string = null;
+ s = "hello";
+ 
+ strings:list<string> = null;
+ strings = [ "1", "2" ];
+ 
+ objects:list<object> = [ 1, 2 ];
+ s1 := "";
+ for (i := 0; i < objects.size(); ++i) {
+  s1 += objects[i].to_s();
+ }
+ 
+ objects = strings;
+ # FIXME: how do we test that you couldn't say "strings = objects;"?
+ 
+ s2 := "";
+ for (i:int = 0; i < objects.size(); ++i) {
+  s2 += objects[i].to_s();
+ }
+ 
+ assert s1 == s2;
+}
+
 # Test "do" loops.
 {
  i := 0;
