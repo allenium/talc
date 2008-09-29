@@ -399,7 +399,7 @@ function to_s(n:int):string {
  assert s == "0 1 2 3 4 ";
 }
 
-# Check that two way of computing the nth triangular number are equivalent.
+# Check that two ways of computing the nth triangular number are equivalent.
 # Test iteration.
 function triangular_number_1(n : int) : int {
  j : int = 0;
@@ -532,3 +532,15 @@ function rectangle_f2(x,y,width,height: int) : int {
  return x+y+width+height;
 }
 assert rectangle_f1(1, 2, 3, 4) == rectangle_f2(1, 2, 3, 4);
+
+# Some company used this as a bozo filter for internet job applications: they
+# just gave the string literal and asked for a Ruby script to turn it into
+# something more readable.
+{
+ puzzle_string := "68 65 6c 6c 6f    20    77 6f 72 6c 64 0a";
+ result := "";
+ for (word in puzzle_string.split(" +")) {
+  result += ("0x" + word).to_i().to_char();
+ }
+ assert result == "hello world\n";
+}
