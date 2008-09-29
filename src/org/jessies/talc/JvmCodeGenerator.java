@@ -1082,22 +1082,19 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     }
     
     public Void visitListLiteral(AstNode.ListLiteral listLiteral) {
-        // ListValue result = new ListValue();
+        // ListValue $anon$result = new ListValue();
         visitLineNumber(listLiteral);
         cv.add(ByteCode.NEW, listValueType);
         cv.add(ByteCode.DUP);
         cv.addInvoke(ByteCode.INVOKESPECIAL, listValueType, "<init>", "()V");
         //mg.pushScope();
-        int result = maxLocals++;
-        cv.add(ByteCode.DUP);
-        cv.addAStore(result);
         
         List<AstNode> expressions = listLiteral.expressions();
         for (AstNode expression : expressions) {
             // <Generate code for the expression.>
             expression.accept(this);
             
-            // result.push_back(expression);
+            // $anon$result.push_back(expression);
             visitLineNumber(listLiteral);
             cv.addInvoke(ByteCode.INVOKEVIRTUAL, listValueType, "push_back", "(Ljava/lang/Object;)Lorg/jessies/talc/ListValue;");
         }
