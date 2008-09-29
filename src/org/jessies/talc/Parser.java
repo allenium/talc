@@ -413,8 +413,8 @@ public class Parser {
         // Find the source file corresponding to the import.
         File libraryFile = findLibrary(libraryName);
         if (libraryFile == null) {
-            // FIXME: report the library path.
-            throw new TalcError(lexer, "couldn't find a match for import \"" + libraryName + "\" on the library path");
+            final String path = new ListValue(libraryPath).join(":");
+            throw new TalcError(lexer, "couldn't find a match for import \"" + libraryName + "\" on library path \"" + path + "\"");
         }
         try {
             return new Lexer(libraryFile);
