@@ -40,6 +40,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     private static final String javaLangAssertionErrorType = "java/lang/AssertionError";
     private static final String javaLangObjectType = "java/lang/Object";
     private static final String javaLangStringType = "java/lang/String";
+    private static final String javaUtilIteratorType = "java/util/Iterator";
     
     // Our highly sophisticated register allocator.
     // Also used to set the value of the eponymous field of the Code attribute.
@@ -694,8 +695,14 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     }
     
     public Void visitForEachStatement(AstNode.ForEachStatement forEachStatement) {
-        // FIXME: we need some kind of "iterable" concept in the language. until then, this code assumes we're dealing with a list or string.
-        // Even if we have an "iterable" concept, we'll still need to cope with the fact that "string" is a bit of a special case, thanks to StringFunctions.
+        final String collectionType = typeForTalcType(forEachStatement.expressionType());
+        if (collectionType.equals(mapValueType)) {
+            return visitForEachStatementForMap(forEachStatement);
+        } else if (collectionType.equals(javaLangStringType) == false && collectionType.equals(listValueType) == false) {
+            // FIXME: we need some kind of "iterable" concept in the language. until then, this code assumes we're dealing with a list or string.
+            // Even if we have an "iterable" concept, we'll still need to cope with the fact that "string" is a bit of a special case, thanks to StringFunctions.
+            throw new TalcError(forEachStatement, "can't iterate over expression of type '" + forEachStatement.expressionType() + "'");
+        }
         
         visitLineNumber(forEachStatement);
         ArrayList<AstNode.VariableDefinition> loopVariables = (ArrayList<AstNode.VariableDefinition>) forEachStatement.loopVariableDefinitions();
@@ -722,7 +729,6 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         // collection: list = <expression>;
         forEachStatement.expression().accept(this);
         visitLineNumber(forEachStatement);
-        String collectionType = typeForTalcType(forEachStatement.expressionType());
         JvmLocalVariableAccessor collection = new JvmLocalVariableAccessor("$collection", ClassFileWriter.classNameToSignature(collectionType), maxLocals++);
         cv.add(ByteCode.CHECKCAST, collectionType);
         cv.add(ByteCode.DUP);
@@ -770,6 +776,77 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         k.emitPut();
         // goto headLabel;
         cv.add(ByteCode.GOTO, headLabel);
+        // breakLabel:
+        cv.markLabel(loopInfo.breakLabel);
+        
+        leaveLoop();
+        return null;
+    }
+    
+    private Void visitForEachStatementForMap(AstNode.ForEachStatement forEachStatement) {
+        visitLineNumber(forEachStatement);
+        final ArrayList<AstNode.VariableDefinition> loopVariables = (ArrayList<AstNode.VariableDefinition>) forEachStatement.loopVariableDefinitions();
+        AstNode.VariableDefinition kDefinition;
+        if (loopVariables.size() == 1) {
+            // The user didn't ask for the key, but we'll be needing it, so synthesize it before visiting the loop variable definitions.
+            final TalcType keyType = forEachStatement.expressionType().typeParameter(TalcType.K);
+            kDefinition = new AstNode.VariableDefinition(null, "$key", keyType, null, false);
+            loopVariables.add(0, kDefinition);
+        } else {
+            // The user did ask for the key, but won't (can't!) have supplied an initializer.
+            kDefinition = loopVariables.get(0);
+        }
+        kDefinition.setInitializer(new AstNode.Constant(null, null, TalcType.NULL));
+        
+        for (AstNode.VariableDefinition loopVariable : loopVariables) {
+            visitVariableDefinition(loopVariable);
+            popAnythingLeftBy(loopVariable);
+        }
+        
+        // $collection: MapValue = <expression>;
+        forEachStatement.expression().accept(this);
+        visitLineNumber(forEachStatement);
+        final String collectionType = typeForTalcType(forEachStatement.expressionType());
+        final JvmLocalVariableAccessor collection = new JvmLocalVariableAccessor("$collection", ClassFileWriter.classNameToSignature(collectionType), maxLocals++);
+        cv.add(ByteCode.CHECKCAST, collectionType);
+        cv.add(ByteCode.DUP);
+        collection.emitPut();
+        
+        // $iterator: java.util.Iterator = <expression>.keyIterator();
+        final JvmLocalVariableAccessor iterator = new JvmLocalVariableAccessor("$iterator", ClassFileWriter.classNameToSignature(javaUtilIteratorType), maxLocals++);
+        cv.addInvoke(ByteCode.INVOKEVIRTUAL, mapValueType, "keyIterator", "()Ljava/util/Iterator;");
+        iterator.emitPut();
+        
+        final VariableAccessor k = loopVariables.get(0).accessor();
+        final VariableAccessor v = loopVariables.get(1).accessor();
+        final String kType = typeForTalcType(loopVariables.get(0).type());
+        final String vType = typeForTalcType(loopVariables.get(1).type());
+        
+        // continueLabel:
+        final LoopInfo loopInfo = enterLoop();
+        cv.markLabel(loopInfo.continueLabel);
+        
+        // if (!$iterator.hasNext()) goto breakLabel;
+        iterator.emitGet();
+        cv.addInvoke(ByteCode.INVOKEINTERFACE, javaUtilIteratorType, "hasNext", "()Z");
+        cv.add(ByteCode.IFEQ, loopInfo.breakLabel);
+        
+        // k = (K) $iterator.next();
+        iterator.emitGet();
+        cv.addInvoke(ByteCode.INVOKEINTERFACE, javaUtilIteratorType, "next", "()Ljava/lang/Object;");
+        cv.add(ByteCode.CHECKCAST, kType);
+        k.emitPut();
+        // v = (V) $collection.__get_item__(k);
+        collection.emitGet();
+        k.emitGet();
+        cv.addInvoke(ByteCode.INVOKEVIRTUAL, mapValueType, "__get_item__", "(Ljava/lang/Object;)Ljava/lang/Object;");
+        cv.add(ByteCode.CHECKCAST, vType);
+        v.emitPut();
+        
+        // <body>
+        forEachStatement.body().accept(this);
+        // goto continueLabel;
+        cv.add(ByteCode.GOTO, loopInfo.continueLabel);
         // breakLabel:
         cv.markLabel(loopInfo.breakLabel);
         

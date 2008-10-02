@@ -322,13 +322,17 @@ A for-each loop iterates over a collection, evaluating a block once for each val
 .nf
 .sp
   # Iterate over the values in the collection:
-  for (w in [ "hello", "world" ]) {
-    puts(s);
+  for (word in [ "hello", "world" ]) {
+    puts(word);
   }
 
   # Iterate over the key, value pairs in the collection:
-  for (i, w in [ "hello", "world" ]) {
-    puts(i, " : ", s);
+  for (k, v in [ 123:"hello", 456:"world" ]) {
+    puts(k, " : ", v);
+  }
+  # (For a list, the keys are the integer indexes.)
+  for (i, word in [ "hello", "world" ]) {
+    puts(i, " : ", word);
   }
   
   # Iterate over the characters in a string:

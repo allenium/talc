@@ -53,6 +53,11 @@ public class MapValue {
         return BooleanValue.valueOf(map.containsValue(value));
     }
     
+    // Used in JvmCodeGenerator to implement for-each for maps.
+    public Iterator<Object> keyIterator() {
+        return map.keySet().iterator();
+    }
+    
     public ListValue keys() {
         return new ListValue(map.keySet());
     }

@@ -289,6 +289,22 @@ assert i == 14;
   }
   assert j == words.size();
  }
+
+ # For-each over a map.
+ {
+  doubles := [ 1:2, 2:4, 3:6 ];
+  for (k,v in doubles) {
+   assert 2*k == v;
+  }
+  from_s := [ "1":1, "2":2, "3":3 ];
+  for (k,v in from_s) {
+   assert k == v.to_s();
+  }
+  # This behavior is consistent with list, but is it useful?
+  for (v in doubles) {
+   assert (v % 2) == 0;
+  }
+ }
 }
 
 # Test "while" loops.
