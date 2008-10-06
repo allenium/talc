@@ -130,12 +130,10 @@ public class RealValue implements Comparable<RealValue> {
         return new RealValue(d);
     }
     
-    /** Returns the equivalent IntegerValue, or throws an exception. */
     public IntegerValue to_i() {
         return IntegerValue.valueOf((long) value);
     }
     
-    /** Returns the equivalent RealValue, or throws an exception. */
     public RealValue to_r() {
         return this;
     }
