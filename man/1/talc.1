@@ -241,7 +241,7 @@ Note that in the rare case where the variable "i" is replaced by a numeric liter
 An extern function definition looks like this:
 .nf
 .sp
-  extern "Java" function cos(a:real):real = "java/lang/Math.cos:(D)D";
+  extern "Java" function real cos(a:real) = "java/lang/Math.cos:(D)D";
 .sp
 .fi
 The string literal after extern describes the calling convention. Currently only "Java" is supported.

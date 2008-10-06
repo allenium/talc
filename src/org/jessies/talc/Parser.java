@@ -187,6 +187,10 @@ public class Parser {
     private AstNode.FunctionDefinition parseExternFunctionDefinition() {
         if (DEBUG_PARSER) { System.out.println("parseExternFunctionDefinition()"); }
         
+        // FIXME: why do we parse extern and non-extern function definitions so differently?
+        // How about: function real cos(a:real) = extern "Java" "java/lang/Math.cos:(D)D";
+        // Decide which we're looking at based on whether we get a '{' or a '='.
+        
         SourceLocation location = lexer.getLocation();
         // extern
         expect(Token.EXTERN);
@@ -198,15 +202,18 @@ public class Parser {
         expect(Token.STRING_LITERAL);
         // function
         expect(Token.FUNCTION);
-        String functionName = expectIdentifier("extern function name");
+        // real
+        final TalcTypeDescriptor returnTypeDescriptor = parseType();
+        String functionName;
+        if (lexer.token() == Token.OPEN_PARENTHESIS) {
+            functionName = returnTypeDescriptor.toString();
+        } else {
+            functionName = expectIdentifier("extern function name");
+        }
         // (a:real)
         ArrayList<String> formalParameterNames = new ArrayList<String>();
         ArrayList<TalcTypeDescriptor> formalParameterTypeDescriptors = new ArrayList<TalcTypeDescriptor>();
         parseFormalParameters(Token.OPEN_PARENTHESIS, Token.CLOSE_PARENTHESIS, formalParameterNames, formalParameterTypeDescriptors);
-        // :
-        expect(Token.COLON);
-        // real
-        TalcTypeDescriptor returnTypeDescriptor = parseType();
         // =
         expect(Token.ASSIGN);
         // "java/util/Math.cos:(D)D"
