@@ -4,7 +4,7 @@
 # Order matters, and each object can be chosen only once.
 # n: number of objects from which to choose.
 # r: number of objects to be chosen.
-function permutations(n, r: int): int {
+function int permutations(n, r: int) {
     assert n > r;
     return n!/(n-r)!;
 }
@@ -13,7 +13,7 @@ function permutations(n, r: int): int {
 # Order does not matter, and each object can be chosen only once.
 # n: number of objects from which to choose.
 # k: number of objects to be chosen.
-function combinations(n, k: int): int {
+function int combinations(n, k: int) {
     return n!/(k! * (n-k)!);
 }
 
@@ -21,7 +21,7 @@ function combinations(n, k: int): int {
 # Order does not matter, and each object can be chosen multiple times.
 # n: number of objects from which to choose.
 # k: number of objects to be chosen.
-function multiset_coefficient(n, k: int): int {
+function int multiset_coefficient(n, k: int) {
     return (n + k - 1)!/(k! * (n - 1)!);
 }
 

@@ -273,10 +273,6 @@ LANGUAGE DEFECTS
 
 * in Java "assert 0 == 0 == 0;" won't compile, with the complaint that you can't compare boolean with int. in Talc, you get a surprising result instead.
 
-* is the colon before a return type useful? "function f() string { ... }" would work equally well. but then how about the more C-like "function string f() { ... }"? this seems to conflict with the earlier idea of having a shorthand "function f() { ... }" for void functions, but we could still treat a missing return type as "void" (assuming we even decide this shorthand is a good idea).
-
-* alternatively, we could lose the "function" keyword completely. as long as you have to write the parentheses for empty formal argument lists, functions and variables aren't ambiguous because at any given scope, only one or the other is valid. "function" is potentially useful for expressing function types, such as the first argument to a functional "map", for example. (though "func" or "fn" might also be worth considering, if we're really into the whole brevity thing.)
-
 
 
 QUALITY OF IMPLEMENTATION

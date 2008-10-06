@@ -6,7 +6,7 @@
 row: list<int> = [ 0, 0, 0, 0, 0, 0, 0, 0 ];
 solution_count := 0;
 
-function is_safe(x, y: int) : bool {
+function bool is_safe(x, y: int) {
     for (i := 1; i <= y; ++i) {
         if (row[y - i] == x || row[y - i] == x - i || row[y - i] == x + i) {
             return false;
@@ -15,7 +15,7 @@ function is_safe(x, y: int) : bool {
     return true;
 }
 
-function show_solution() : void {
+function void show_solution() {
     puts("Solution #", ++solution_count, ":");
     puts("---------------------------------");
     for (y := 0; y < 8; ++y) {
@@ -32,7 +32,7 @@ function show_solution() : void {
     puts();
 }
 
-function solve_row(y: int) : void {
+function void solve_row(y: int) {
     for (x := 0; x < 8; ++x) {
         row[y - 1] = x;
         if (is_safe(x, y - 1)) {

@@ -17,7 +17,7 @@ NATO_ALPHABET := [
   '7':'seven',  '8':'eight',    '9':'nine'
 ];
 
-function to_nato(s: string): string {
+function string to_nato(s: string) {
   result := "";
   for (c in s) {
     nato_c := NATO_ALPHABET[c.lc()];

@@ -1,14 +1,13 @@
 # The formatting here is deliberately awkward to exercise the lexer's ability
 # to cope with calls to 'unread(\n)'.
 function
+int
 fib
 (
 a
 :
 int
 )
-:
-int
 {
 if
 (

@@ -14,19 +14,19 @@ jdk_version := "jdk1.7.0";
 should_be_quiet := false;
 
 # Output an error message and exit.
-function die(message: string) : void {
+function void die(message: string) {
   puts(message);
   exit(1);
 }
 
 # Get the OS in Sun's nomenclature.
-function desired_os() : string {
+function string desired_os() {
   # FIXME: this works for "Linux" -> "linux", but not for the other OSes Sun supports.
   return backquote("uname").trim().lc();
 }
 
 # Get the architecture in Sun's nomenclature.
-function desired_arch() : string {
+function string desired_arch() {
   desired_arch := backquote("uname -m").trim();
   desired_arch = desired_arch.replace(@"^i\d86$", "i586");
   if (desired_arch == "x86_64") {
@@ -35,7 +35,7 @@ function desired_arch() : string {
   return desired_arch;
 }
 
-function install_changes_html(jdk_build_number: string) : void {
+function void install_changes_html(jdk_build_number: string) {
   url := "http://download.java.net/jdk7/changes/jdk7" + jdk_build_number + ".html";
   if (url != null) {
     puts("Downloading " + url + "...");
@@ -43,7 +43,7 @@ function install_changes_html(jdk_build_number: string) : void {
   }
 }
 
-function install_jdk(jdk_url, jdk_filename, jdk_build_number: string) : void {
+function void install_jdk(jdk_url, jdk_filename, jdk_build_number: string) {
   if (new file(local_jdks_directory).is_directory() == false) {
     die("You need to create the " + local_jdks_directory + " directory before you can use this script.");
   }
@@ -73,7 +73,7 @@ function install_jdk(jdk_url, jdk_filename, jdk_build_number: string) : void {
   }
 }
 
-function check_web_site() : void {
+function void check_web_site() {
   for (line in backquote("wget -q -O - " + sun_binaries_url).split("\n")) {
     m := line.match("href=\"(.*(jdk-7.*(-b\\d+).*\\.(?:bin|exe|sh)).*)\"");
     if (m != null) {
@@ -95,7 +95,7 @@ function check_web_site() : void {
   }
 }
 
-function main() : void {
+function void main() {
   accept_sun_license := false;
   for (arg in ARGS) {
     if (arg == "-q") {

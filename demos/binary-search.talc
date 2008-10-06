@@ -2,7 +2,7 @@
 
 # FIXME: should be able to write binarySearch(xs: list<T>, x: T) : int.
 
-function binarySearch(xs: list<int>, x: int) : int {
+function int binarySearch(xs: list<int>, x: int) {
   low := 0;
   high := xs.size() - 1;
   while (low <= high) {

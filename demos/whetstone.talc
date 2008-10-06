@@ -16,7 +16,7 @@
 ITERATIONS : final = 10; /* 1 Million Whetstone instructions */
 POUT : final = true;
 
-function pout(n: int, j: int, k: int, x1: real, x2: real, x3: real, x4: real) : void {
+function void pout(n: int, j: int, k: int, x1: real, x2: real, x3: real, x4: real) {
     printf("%6d%6d%6d  %5e  %5e  %5e  %5e\n", n, j, k, x1, x2, x3, x4);
 }
 
@@ -30,7 +30,7 @@ t   : final =   0.499975;
 t1  : final =   0.50025;
 t2  : final =   2.0;
 
-function pa(e: list<real>) : void {
+function void pa(e: list<real>) {
     j := 0;
     do {
         e[0] = (  e[0] + e[1] + e[2] - e[3] ) * t;
@@ -41,13 +41,13 @@ function pa(e: list<real>) : void {
     } while (j < 6);
 }
 
-function p0() : void {
+function void p0() {
     e1[j] = e1[k];
     e1[k] = e1[l];
     e1[l] = e1[j];
 }
 
-function p3(x, y: real) : real {
+function real p3(x, y: real) {
     x  = t * (x + y);
     y  = t * (x + y);
     return (x + y) /t2;
@@ -56,7 +56,7 @@ function p3(x, y: real) : real {
 // We need various mathematical functions.
 import "math";
 
-function main() : void {
+function void main() {
     
     /* set values of module weights */
     

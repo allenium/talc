@@ -6,7 +6,7 @@
 size := 10000;
 
 # FIXME: list should have something like n_copies(n: int, item: T).
-function n_trues(n: int) : list<bool> {
+function list<bool> n_trues(n: int) {
     result: list<bool> = [];
     for (i := 0; i < n; ++i) {
         result.push_back(true);

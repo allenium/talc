@@ -7,21 +7,21 @@ class Card {
   text: string = null;
   value: int = null;
   
-  function Card(name0, color0, suit0: string, value0: int) : Card {
+  function Card(name0, color0, suit0: string, value0: int) {
     value = value0;
     text = color0 + " " + name0 + suit0 + " " + "\u001b[m";
   }
   
-  function to_s() : string {
+  function string to_s() {
     return text;
   }
   
-  function value() : int {
+  function int value() {
     return value;
   }
 }
 
-function family_of(color, suit: string) : list<Card> {
+function list<Card> family_of(color, suit: string) {
   deck: list<Card> = [];
   # Ace.
   deck.push_back(new Card("A", color, suit, 1));
@@ -36,7 +36,7 @@ function family_of(color, suit: string) : list<Card> {
   return deck;
 }
 
-function shuffle(deck: list<Card>) : void {
+function void shuffle(deck: list<Card>) {
   for (i := deck.size(); i > 1; --i) {
     j := rnd(i);
     tmp := deck[i - 1];
@@ -45,7 +45,7 @@ function shuffle(deck: list<Card>) : void {
   }
 }
 
-function new_deck() : list<Card> {
+function list<Card> new_deck() {
   // Escape sequences for the colors.
   BLACK/*ON_WHITE*/ := "\u001b[30;47m";
   RED/*ON_WHITE*/ := "\u001b[31;47m";
@@ -64,7 +64,7 @@ function new_deck() : list<Card> {
   return cards;
 }
 
-function show_hand(prefix: string, hand: list<Card>, show_all: bool) : void {
+function void show_hand(prefix: string, hand: list<Card>, show_all: bool) {
   print(prefix);
   if (show_all) {
     for (card in hand) {
@@ -82,7 +82,7 @@ function show_hand(prefix: string, hand: list<Card>, show_all: bool) : void {
 # Totals the given hand, returning a list of the possible interpretations.
 # We can't return a single value because aces can be soft or hard.
 # We don't return "bust" totals (those over 21) to simplify the callers.
-function total_hand(hand: list<Card>) : list<int> {
+function list<int> total_hand(hand: list<Card>) {
   high_total := 0;
   low_total := 0;
   for (card in hand) {
@@ -104,7 +104,7 @@ function total_hand(hand: list<Card>) : list<int> {
   return result;
 }
 
-function max(xs: list<int>) : int {
+function int max(xs: list<int>) {
   result := xs[0];
   for (i := 1; i < xs.size(); ++i) {
     if (xs[i] > result) {
@@ -117,14 +117,14 @@ function max(xs: list<int>) : int {
 dealer_hand: list<Card> = [];
 player_hand: list<Card> = [];
 
-function game_over(message: string) : void {
+function void game_over(message: string) {
   show_hand("    Your hand: ", player_hand, true);
   show_hand("Dealer's hand: ", dealer_hand, true);
   puts(message);
   exit(0);
 }
 
-function play_blackjack() : void {
+function void play_blackjack() {
   # We play with one deck in the shoe, to increase the house advantage.
   deck_count: final = 1;
   shoe: list<Card> = [];

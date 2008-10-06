@@ -6,7 +6,7 @@
 size := 13;
 
 # FIXME: list should have something like n_copies(n: int, item: T).
-function n_zeros(n: int) : list<int> {
+function list<int> n_zeros(n: int) {
     result: list<int> = [];
     for (i := 0; i < n; ++i) {
         result.push_back(0);
@@ -15,7 +15,7 @@ function n_zeros(n: int) : list<int> {
 }
 
 # FIXME: list (and any other mutable containers) should have something like copy().
-function copy(l: list<int>) : list<int> {
+function list<int> copy(l: list<int>) {
     result: list<int> = [];
     for (i := 0; i< l.size(); ++i) {
         result.push_back(l[i]);
@@ -24,7 +24,7 @@ function copy(l: list<int>) : list<int> {
 }
 
 # FIXME: string should have something like n_copies(n: int, s: string).
-function n_spaces(n: int) : string {
+function string n_spaces(n: int) {
     result := '';
     for (i := 0; i < n; ++i) {
         result += ' ';

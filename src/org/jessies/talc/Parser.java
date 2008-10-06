@@ -224,18 +224,21 @@ public class Parser {
     private AstNode.FunctionDefinition parseFunctionDefinition() {
         if (DEBUG_PARSER) { System.out.println("parseFunctionDefinition()"); }
         
-        SourceLocation location = lexer.getLocation();
+        // Normal function: "function" <return-type> <name> "(" <formal-parameters> ")" <block>
+        // Constructors: "function" <return-type> "(" <formal-parameters> ")" <block>
+        final SourceLocation location = lexer.getLocation();
         expect(Token.FUNCTION);
-        String functionName = expectIdentifier("function name");
-        ArrayList<String> formalParameterNames = new ArrayList<String>();
-        ArrayList<TalcTypeDescriptor> formalParameterTypeDescriptors = new ArrayList<TalcTypeDescriptor>();
+        final TalcTypeDescriptor returnTypeDescriptor = parseType();
+        String functionName;
+        if (lexer.token() == Token.OPEN_PARENTHESIS) {
+            functionName = returnTypeDescriptor.toString();
+        } else {
+            functionName = expectIdentifier("function name");
+        }
+        final ArrayList<String> formalParameterNames = new ArrayList<String>();
+        final ArrayList<TalcTypeDescriptor> formalParameterTypeDescriptors = new ArrayList<TalcTypeDescriptor>();
         parseFormalParameters(Token.OPEN_PARENTHESIS, Token.CLOSE_PARENTHESIS, formalParameterNames, formalParameterTypeDescriptors);
-        // FIXME: allow "function f(x:int) { ... }" as shorthand for a void function?
-        // FIXME: is this colon useful in any way, or is it just cruft?
-        // FIXME: if we remove the colon, should we move the return type to right after the "function" keyword?
-        expect(Token.COLON);
-        TalcTypeDescriptor returnTypeDescriptor = parseType();
-        AstNode.Block body = parseBlock();
+        final AstNode.Block body = parseBlock();
         return new AstNode.FunctionDefinition(location, functionName, Collections.unmodifiableList(formalParameterNames), Collections.unmodifiableList(formalParameterTypeDescriptors), returnTypeDescriptor, body);
     }
     

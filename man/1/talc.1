@@ -205,17 +205,17 @@ As proof that this isn't unsafe, note that the usual case where you can't use th
 A function definition looks like this:
 .nf
 .sp
-  function nCr(n: int, r: int) : int {
+  function int nCr(n: int, r: int) {
     return n!/(k! * (n-k)!);
   }
 .sp
 .fi
-The keyword "function" followed by the function name introduces each definition. A parenthesized comma-separated list of parameter declarations follows. Finally comes a colon and the return type followed by a block for the function's body.
+The keyword "function" followed by the return type and function name introduces each definition. A parenthesized comma-separated list of parameter declarations follows. Finally comes a block for the function's body.
 
 Note that multiple parameters of the same type can be separated by commas:
 .nf
 .sp
-  function draw_line(x0, y0, x1, y1: int, c: color) : void {
+  function void draw_line(x0, y0, x1, y1: int, c: color) {
     // ...
   }
 .sp
@@ -253,18 +253,18 @@ A class definition looks like this:
     x: int = 0;
     y: int = 0;
 
-    function Point(x0: int, y0: int) : Point {
+    function Point(x0: int, y0: int) {
       x = x0;
       y = y0;
     }
 
-    function to_s() : string {
+    function string to_s() {
       return "(" + x.to_s() + "," + y.to_s() + ")";
     }
   }
 .sp
 .fi
-The body of a class definition contains zero or more variable definitions mixed with zero or more function definitions. A function with the same name and return type as the class is the constructor, invoked by the "new" operator to initialize new instances.
+The body of a class definition contains zero or more variable definitions mixed with zero or more function definitions. A function with the same name as the class (and no return type) is the constructor, invoked by the "new" operator to initialize new instances.
 .SS Empty statements
 The empty statement (";") does nothing.
 .SS Expression statements
@@ -597,9 +597,11 @@ Talc arose out of dissatisfaction with existing scripting languages, in particul
 
 * You can't please all the people all the time. Worse, trying to do so ends up pleasing no-one. (Hence, Perl, Python, and Ruby aren't so much the competition as alternative lifestyle choices, interesting only when they provide useful precedent.)
 
+* A scripting language for professional programmers should assume it's not the user's primary language. This makes it important to strive for something easy to learn and easy to remember, both of which seem to imply that it should aim to be like the user's primary language: a member of the C family. It also seems to imply that it's better to offer a few general data structures than every possibility.
+
 At the same time, it would be naive to pretend that some choices don't also have negative consequences:
 
-* You can't avoid all syntactic confusion. No-one gets confused switching between, say, Java and Lisp. They look too different. But switching between C++ and Java, it's easy to confuse "bool" and "boolean", for example. The languages as a whole are superficially quite similar, so the little differences cause needless trouble. And since the languages of the C family already contain plenty of these little traps for those switching between them, it's impossible for a new C-family language like Talc to avoid both inheriting and adding to this confusion. Whose for-each syntax to use? Whose way of specifying superclass and interfaces? Whose names for the common types and functions?
+* You can't avoid all syntactic confusion. No-one gets confused switching between, say, Java and Lisp. They look too different. But switching between C++ and Java, it's easy to confuse "bool" and "boolean", for example. The languages as a whole are superficially quite similar, so the little differences cause needless trouble. And since the languages of the C family already contain plenty of these little traps for those switching between them, it's impossible for a new C-family language like Talc to avoid both inheriting and adding to this confusion. Whose for-each syntax to use? Whose way of specifying superclass and interfaces? Whose names for the common types and functions? Part of being a convenient scripting language is not causing unnecessary interference with the user's primary language. The idea of "implicit void", for example, while handy in Talc, encourages people to omit "void" return types when they go back to C++ or Java, a cost that probably outweighs the benefit.
 .SH BUGS
 Talc is not yet ready for production use.
 

@@ -1,6 +1,6 @@
 #!/usr/bin/talc
 
-function print_row(i:int):void {
+function void print_row(i:int) {
  print(i, "\t", i!, "\n");
  # error: return expression has type "int" but must be assignable to "void"
  #return 2;

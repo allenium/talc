@@ -3,7 +3,7 @@
 max_count := 35;
 
 # http://en.wikipedia.org/wiki/Fibonacci_number
-function fib(n:int):int {
+function int fib(n:int) {
   if (n < 2) {
     return n;
   } else {

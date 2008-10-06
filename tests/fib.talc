@@ -1,6 +1,6 @@
 #!/usr/bin/talc
 
-function fib(n:int) : int {
+function int fib(n:int) {
   if (n == 0 || n == 1) {
     return n;
   } else {

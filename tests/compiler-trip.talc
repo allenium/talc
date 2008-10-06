@@ -321,14 +321,14 @@ assert i == 14;
 # that case isn't tested.)
 n : int = 1;
 m : int = 1;
-function double(n : int) : int { m := 2; assert m == 2; return 2*n; }
+function int double(n : int) { m := 2; assert m == 2; return 2*n; }
 assert double(3) == 6;
 assert n == 1;
 assert m == 1;
 
 # Test short-circuit relational operators with function calls.
-function okay_to_call() : bool { assert true; return true; }
-function not_okay_to_call() : bool { assert false; return true; }
+function bool okay_to_call() { assert true; return true; }
+function bool not_okay_to_call() { assert false; return true; }
 {
  true || not_okay_to_call();
  false || okay_to_call();
@@ -341,7 +341,7 @@ function not_okay_to_call() : bool { assert false; return true; }
 assert true : not_okay_to_call();
 
 # Two ways to translate a small int into a string.
-function name_from_list(n : int) : string {
+function string name_from_list(n : int) {
  names:list<string> = [ "one", "two", "three" ];
  name:string = names[n - 1];
  return name;
@@ -349,7 +349,7 @@ function name_from_list(n : int) : string {
 # FIXME: what should we do about map literals?
 names:map<int,string> = new map<int,string>();
 names[1] = "one"; names[2] = "two"; names[3] = "three";
-function name_from_map(n:int):string {
+function string name_from_map(n:int) {
  return names[n];
 }
 # Check the two functions are equivalent.
@@ -397,14 +397,14 @@ for (i:int = 1; i < names.size(); ++i) {
  assert nums != [ 0, 1, 2 ];
  assert nums != [ 1, 0 ];
 }
-function string_list_size_to_s(strings: list<string>): string {
+function string string_list_size_to_s(strings: list<string>) {
  return strings.size().to_s();
 }
 assert string_list_size_to_s(["hello", "world"]) == "2";
 assert string_list_size_to_s([]) == "0";
 
 # Check we can have a global function called to_s.
-function to_s(n:int):string {
+function string to_s(n:int) {
  return n.to_s();
 }
 {
@@ -417,7 +417,7 @@ function to_s(n:int):string {
 
 # Check that two ways of computing the nth triangular number are equivalent.
 # Test iteration.
-function triangular_number_1(n : int) : int {
+function int triangular_number_1(n : int) {
  j : int = 0;
  for (i : int = 1; i <= n; ++i) {
   j += i;
@@ -425,7 +425,7 @@ function triangular_number_1(n : int) : int {
  return j;
 }
 # Test exponentiation.
-function triangular_number_2(n : int) : int {
+function int triangular_number_2(n : int) {
  return (n**2 + n) / 2;
 }
 for (i:int = 1; i < 200; ++i) {
@@ -435,23 +435,23 @@ for (i:int = 1; i < 200; ++i) {
 
 # Test basic user-defined type functionality.
 class EmptyClass {
- function EmptyClass() : EmptyClass {
+ function EmptyClass() {
   // Check that we can call a method from the constructor.
   m();
  }
  
- function m() : void {
+ function void m() {
   // Check that we can call a method from a method.
   assert m2();
   // Check that we can call the special to_s/toString method.
   assert to_s() == "!";
  }
  
- function m2() : bool {
+ function bool m2() {
   return true;
  }
  
- function to_s() : string {
+ function string to_s() {
   return "!";
  }
 }
@@ -468,30 +468,30 @@ class Point {
  x: int = 0;
  y: int = 0;
  
- function Point(x0: int, y0: int) : Point {
+ function Point(x0: int, y0: int) {
   x = x0;
   y = y0;
  }
  
- function x() : int {
+ function int x() {
   return x;
  }
  
- function y() : int {
+ function int y() {
   return y;
  }
  
- function moveBy(dx: int, dy: int) : void {
+ function void moveBy(dx: int, dy: int) {
   x += dx;
   y += dy;
  }
  
- function moveTo(x0: int, y0: int) : void {
+ function void moveTo(x0: int, y0: int) {
   x = x0;
   y = y0;
  }
  
- function to_s() : string {
+ function string to_s() {
   return "(" + x.to_s() + "," + y.to_s() + ")";
  }
 }
@@ -538,13 +538,13 @@ class Point {
 }
 
 # Test that we can generate code for a function with an unused argument.
-function unused_argument(unused: int) : void {}
+function void unused_argument(unused: int) {}
 
 # Test that we can group formal parameters of the same type.
-function rectangle_f1(x: int, y: int, width: int, height: int) : int {
+function int rectangle_f1(x: int, y: int, width: int, height: int) {
  return x+y+width+height;
 }
-function rectangle_f2(x,y,width,height: int) : int {
+function int rectangle_f2(x,y,width,height: int) {
  return x+y+width+height;
 }
 assert rectangle_f1(1, 2, 3, 4) == rectangle_f2(1, 2, 3, 4);
