@@ -21,13 +21,13 @@ package org.jessies.talc;
 import java.util.regex.*;
 
 public class MatchValue {
-    private Matcher matcher;
+    private final Matcher matcher;
     
     public MatchValue(Matcher matcher) {
         this.matcher = matcher;
     }
     
-    public boolean equals(Object o) {
+    @Override public boolean equals(Object o) {
         if (o instanceof MatchValue) {
             return matcher.equals(((MatchValue) o).matcher);
         }
@@ -42,7 +42,7 @@ public class MatchValue {
         return IntegerValue.valueOf(matcher.groupCount());
     }
     
-    public int hashCode() {
+    @Override public int hashCode() {
         return matcher.hashCode();
     }
     

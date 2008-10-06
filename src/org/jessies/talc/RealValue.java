@@ -22,7 +22,7 @@ public class RealValue implements Comparable<RealValue> {
     private static final RealValue ZERO = new RealValue(0.0);
     private static final RealValue ONE = new RealValue(1.0);
     
-    private double value;
+    private final double value;
     
     public RealValue(String digits) {
         this.value = Double.parseDouble(digits);
@@ -100,7 +100,7 @@ public class RealValue implements Comparable<RealValue> {
         return new RealValue(Math.sqrt(value));
     }
     
-    public boolean equals(Object o) {
+    @Override public boolean equals(Object o) {
         if (o instanceof RealValue) {
             return Double.doubleToLongBits(value) == Double.doubleToLongBits(((RealValue) o).value);
         }
@@ -108,7 +108,7 @@ public class RealValue implements Comparable<RealValue> {
     }
     
     // Match java.lang.Double's behavior.
-    public int hashCode() {
+    @Override public int hashCode() {
         long bits = Double.doubleToLongBits(value);
         return (int)(bits ^ (bits >>> 32));
     }

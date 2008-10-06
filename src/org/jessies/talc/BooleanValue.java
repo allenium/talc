@@ -33,8 +33,20 @@ public class BooleanValue {
         return (booleanValue() ? FALSE : TRUE);
     }
     
-    public boolean booleanValue() {
+    private boolean booleanValue() {
         return (this == TRUE);
+    }
+    
+    @Override public boolean equals(Object o) {
+        if (o instanceof BooleanValue) {
+            return (o == this);
+        }
+        return false;
+    }
+    
+    // Match java.lang.Boolean's behavior.
+    @Override public int hashCode() {
+        return booleanValue() ? 1231 : 1237;
     }
     
     public String toString() {

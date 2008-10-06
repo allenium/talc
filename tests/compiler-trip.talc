@@ -374,6 +374,18 @@ for (i:int = 1; i < names.size(); ++i) {
  assert names.size() == 2;
  assert names.clear().to_s() == "[:]";
  assert names.size() == 0;
+ 
+ m1 := [1:'one',2:'two'];
+ m2 := [1:'one',2:'two'];
+ m3 := [2:'two',1:'one'];
+ m4 := [2:'two',1:'one',0:'zero'];
+ m5 := [2:'too',1:'one'];
+ assert m1 == m1;
+ assert m1 == m2;
+ assert m2 == m3;
+ assert m3 != m4;
+ assert m4 == m4;
+ assert m4 != m5;
 }
 
 # Test lists.

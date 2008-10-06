@@ -21,7 +21,7 @@ package org.jessies.talc;
 import java.util.*;
 
 public class ListValue {
-    private ArrayList<Object> list = new ArrayList<Object>();
+    private final ArrayList<Object> list = new ArrayList<Object>();
     
     public ListValue() {
     }

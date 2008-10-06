@@ -22,7 +22,7 @@ import java.io.*;
 import java.nio.*;
 
 public class FileValue {
-    private File file;
+    private final File file;
     
     public FileValue(String filename) {
         this.file = new File(filename);
@@ -32,8 +32,19 @@ public class FileValue {
         writeOrAppend(content, true);
     }
     
+    @Override public boolean equals(Object o) {
+        if (o instanceof FileValue) {
+            return file.equals(((FileValue) o).file);
+        }
+        return false;
+    }
+    
     public BooleanValue exists() {
         return BooleanValue.valueOf(file.exists());
+    }
+    
+    @Override public int hashCode() {
+        return file.hashCode();
     }
     
     public BooleanValue is_directory() {

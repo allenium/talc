@@ -30,7 +30,7 @@ public class IntegerValue implements Comparable<IntegerValue> {
         }
     }
     
-    private BigInteger value;
+    private final BigInteger value;
     
     public static IntegerValue valueOf(long l) {
         if (l >= -128 && l <= 127) {
@@ -130,14 +130,14 @@ public class IntegerValue implements Comparable<IntegerValue> {
         return IntegerValue.valueOf(value.signum());
     }
     
-    public boolean equals(Object o) {
+    @Override public boolean equals(Object o) {
         if (o instanceof IntegerValue) {
             return value.equals(((IntegerValue) o).value);
         }
         return false;
     }
     
-    public int hashCode() {
+    @Override public int hashCode() {
         return value.hashCode();
     }
     

@@ -21,7 +21,7 @@ package org.jessies.talc;
 import java.util.*;
 
 public class MapValue {
-    private HashMap<Object, Object> map = new HashMap<Object, Object>();
+    private final HashMap<Object, Object> map = new HashMap<Object, Object>();
     
     public MapValue() {
     }
@@ -45,12 +45,23 @@ public class MapValue {
         return this;
     }
     
+    @Override public boolean equals(Object o) {
+        if (o instanceof MapValue) {
+            return map.equals(((MapValue) o).map);
+        }
+        return false;
+    }
+    
     public BooleanValue has_key(Object key) {
         return BooleanValue.valueOf(map.containsKey(key));
     }
     
     public BooleanValue has_value(Object value) {
         return BooleanValue.valueOf(map.containsValue(value));
+    }
+    
+    @Override public int hashCode() {
+        return map.hashCode();
     }
     
     // Used in JvmCodeGenerator to implement for-each for maps.
