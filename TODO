@@ -271,7 +271,7 @@ LANGUAGE DEFECTS
       ++a[i];          # ERROR
   it's a mistake to translate [] and []= in the parser. i think we do need some kind of AstNode.IndexExpression, and to do the __get_item__/__set_item__ translation in a context-sensitive way. not clear on the details, but this will have to be looked at eventually. i don't mind outlawing ++ and -- on these expressions, but compound assignment seems like something that should work.
 
-* in Java "assert 0 == 0 == 0;" won't compile, with the complaint that you can't compare boolean with int. in Talc, you get a surprising result instead.
+* a bool variable (and int and real?) should never be allowed to be null. "everything's an object" is all well and good, but we don't really want a tri-state boolean.
 
 
 

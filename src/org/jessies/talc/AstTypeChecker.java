@@ -81,9 +81,8 @@ public class AstTypeChecker implements AstVisitor<TalcType> {
             case PRE_DECREMENT:  return checkNumeric(binOp);
             case PRE_INCREMENT:  return checkNumeric(binOp);
             
-            // FIXME: what constraints do we need here?
-            case EQ:             binOp.lhs().accept(this); binOp.rhs().accept(this); return TalcType.BOOL;
-            case NE:             binOp.lhs().accept(this); binOp.rhs().accept(this); return TalcType.BOOL;
+            case EQ:             return checkEqualityTestable(binOp);
+            case NE:             return checkEqualityTestable(binOp);
             // FIXME: need a language concept of "comparable" (or just look for a "compareTo" method?)
             case LE:             checkNumeric(binOp); return TalcType.BOOL;
             case GE:             checkNumeric(binOp); return TalcType.BOOL;
@@ -167,6 +166,25 @@ public class AstTypeChecker implements AstVisitor<TalcType> {
             throw new TalcError(lhs, "operands to " + binOp.op() + " must be numeric, got " + lhsType);
         }
         return lhsType;
+    }
+    
+    private TalcType checkEqualityTestable(AstNode.BinaryOperator binOp) {
+        // We want to avoid cases like "0 == 0 == 0" which should be a compile-time error.
+        // If we interpret "(0 == 0) == 0" as "true == 0", we'll get "false", which is weird.
+        // We also want to avoid "0 == 0.0", because we take Java's line that instances of different classes are non-equal.
+        // It could be that Talc's whole approach for equality/inequality is broken.
+        final TalcType lhsType = binOp.lhs().accept(this);
+        final TalcType rhsType = binOp.rhs().accept(this);
+        if ((lhsType == TalcType.BOOL || rhsType == TalcType.BOOL) && lhsType != rhsType) {
+            throw new TalcError(binOp, "if one operand to " + binOp.op() + " is of type bool, so must the other be; got " + lhsType + " and " + rhsType);
+        }
+        if ((lhsType == TalcType.INT || rhsType == TalcType.INT) && lhsType != rhsType) {
+            throw new TalcError(binOp, "if one operand to " + binOp.op() + " is of type int, so must the other be; got " + lhsType + " and " + rhsType);
+        }
+        if ((lhsType == TalcType.REAL || rhsType == TalcType.REAL) && lhsType != rhsType) {
+            throw new TalcError(binOp, "if one operand to " + binOp.op() + " is of type real, so must the other be; got " + lhsType + " and " + rhsType);
+        }
+        return TalcType.BOOL;
     }
     
     public TalcType visitBlock(AstNode.Block block) {

@@ -190,7 +190,8 @@ assert i == 14;
  
  assert o == null;
  o = 2;
- assert o == 2;
+ # FIXME: comparison of 'int' and 'object' is not allowed, and we don't have casts yet.
+ #assert o == 2;
  assert o.to_s() == "2";
  o = "hello";
  assert o == "hello";
