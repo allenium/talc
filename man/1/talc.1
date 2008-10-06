@@ -153,6 +153,8 @@ There are also the array operators "[]" and "[]=" for array indexing and array a
 You can create new instances of classes with the "new" operator.
 
 FIXME: detail operator precedence.
+
+FIXME: explain equality/inequality.
 .SH SYNTAX
 .SS Blocks
 A block is a sequence of statements surrounded by braces such as:
@@ -390,19 +392,19 @@ The underlying platform's native PATH component separator. (On Unix, this is ":"
 .SS Built-in functions
 There are a handful of global functions:
 .TP
-.B backquote(command: string) : string
+.B string backquote(command: string)
 Captures the output of the given command as a string.
 .TP
-.B exit(status: int) : void
+.B void exit(status: int)
 Exits the running program, reporting the given status to the parent process.
 .TP
-.B getenv(name: string) : string
+.B string getenv(name: string)
 Returns the value of the given environment variable, or null.
 .TP
-.B gets() : string
+.B string gets()
 Returns the next line from stdin, or null if there's an error or no more input.
 .TP
-.B print(...) : void
+.B void print(...)
 The "print" function is special; it takes an arbitrary number of arguments of arbitrary types, converts each one to a string and outputs it to stdout. It is not currently possible to write such functions in the language itself.
 
 Note that, although you can use string concatenation to prepare text for output, providing multiple arguments to "print" is an alternative that may be more convenient and/or more efficient. Compare:
@@ -419,25 +421,25 @@ to:
 .fi
 for example.
 .TP
-.B printf(format: string, ...) : void
+.B void printf(format: string, ...)
 The "printf" function takes a format string followed by an arbitrary number of arguments of arbitrary types. It offers C-like formatting of the arguments based on format specifiers in the format string. It's useful for sophisticated formatting, but less efficient than "print" or "puts".
 .TP
-.B prompt(prompt: string) : string
+.B string prompt(prompt: string)
 Prompts for input, using the given text, and returns what the user enters.
 .TP
-.B puts(...) : void
+.B void puts(...)
 Like "print", but appends a newline.
 .TP
-.B rnd(n: int) : int
+.B int rnd(n: int)
 Returns a random integer between 0 (inclusive) and n (exclusive).
 .TP
-.B shell(command: string) : int
+.B int shell(command: string)
 Executes the given command in a subshell. Returns the return status of the command, or -1 if it was unable to start the command.
 .TP
-.B system(command: list<string>) : int
+.B int system(command: list<string>)
 Executes the given command, specified as a list containing the program name and its arguments. Returns the return status of the command, or -1 if it was unable to start the command.
 .TP
-.B time_ms() : int
+.B int time_ms()
 Returns the time in milliseconds since the program started.
 .SS Built-in classes
 Talc has relatively few built-in classes. Few enough that we can reasonably comfortably summarize them all here.
