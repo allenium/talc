@@ -19,11 +19,11 @@ function int binarySearch(xs: list<int>, x: int) {
   return -1;
 }
 
-puts(binarySearch([], 3) == -1);
-puts(binarySearch([3], 3) == 0);
-puts(binarySearch([4], 3) == -1);
-puts(binarySearch([1,2,3,4,5,6], 3) == 2);
-puts(binarySearch([1,2,3,4,5,6], 4) == 3);
-puts(binarySearch([1,2,3,4,5,6], 14) == -1);
-puts(binarySearch([1,2,3,4,5,6], -4) == -1);
-puts(binarySearch([1,2,4,8,16,32], 16) == 4);
+assert binarySearch([], 3) == -1;
+assert binarySearch([3], 3) == 0;
+assert binarySearch([4], 3) == -1;
+assert binarySearch([1,2,3,4,5,6], 3) == 2;
+assert binarySearch([1,2,3,4,5,6], 4) == 3;
+assert binarySearch([1,2,3,4,5,6], 14) == -1;
+assert binarySearch([1,2,3,4,5,6], -4) == -1;
+assert binarySearch([1,2,4,8,16,32], 16) == 4;

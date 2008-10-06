@@ -6,13 +6,13 @@ require "pathname.rb"
 
 TALC_ROOT = Pathname.new(__FILE__).realpath().dirname().dirname()
 TALC_BIN = "#{TALC_ROOT}/bin"
+TALC_DEMOS = "#{TALC_ROOT}/demos"
 TALC_TESTS = "#{TALC_ROOT}/tests"
 $tests = 0
 $failures = 0
 
-def run_talc(script_name, args = [], expected_lines = nil)
-    $stderr.print("Running #{script_name}... ")
-    script_path = "#{TALC_TESTS}/#{script_name}"
+def run_talc(script_path, args = [], expected_lines = nil)
+    $stderr.print("Running #{script_path}... ")
     script_args = args.join(" ")
     command = "#{TALC_BIN}/talc #{script_path} #{script_args}"
     lines = `#{TALC_BIN}/talc #{script_path} #{script_args}`.split("\n")
@@ -33,23 +33,33 @@ def run_talc(script_name, args = [], expected_lines = nil)
     end
 end
 
-run_talc("args.talc", [], ["#{TALC_TESTS}/args.talc", "[]"]);
-run_talc("args.talc", ["hello", "world"],
-         ["#{TALC_TESTS}/args.talc", "[hello, world]", "hello", "world"]);
+run_talc("#{TALC_TESTS}/args.talc", [], ["#{TALC_TESTS}/args.talc", "[]"]);
+run_talc("#{TALC_TESTS}/args.talc", ["hello", "world"], ["#{TALC_TESTS}/args.talc", "[hello, world]", "hello", "world"]);
+
+run_talc("#{TALC_DEMOS}/which.talc", ["bash", "make"], ["/bin/bash", "/usr/bin/make"]);
 
 # Every time you add a test here, ask yourself if it couldn't just be another
 # case in the "compiler-trip.talc" script.
 
-run_talc("compiler-trip.talc")
-run_talc("factorial-table.talc")
-run_talc("fibonacci-table-recursive.talc")
-run_talc("fibonacci-table.talc")
-run_talc("fib.talc")
-run_talc("fib-real.talc")
-run_talc("file.talc")
-run_talc("lexer-unread.talc")
-run_talc("list.talc")
-run_talc("timed-loop.talc")
+run_talc("#{TALC_DEMOS}/ack.talc")
+run_talc("#{TALC_DEMOS}/ansi-colors.talc")
+run_talc("#{TALC_DEMOS}/binary-search.talc")
+run_talc("#{TALC_DEMOS}/binomial-triangle.talc")
+run_talc("#{TALC_DEMOS}/factorial-table.talc")
+run_talc("#{TALC_DEMOS}/hanoi.talc")
+run_talc("#{TALC_DEMOS}/queens.talc")
+run_talc("#{TALC_DEMOS}/sieve.talc")
+run_talc("#{TALC_DEMOS}/whetstone.talc")
+run_talc("#{TALC_TESTS}/compiler-trip.talc")
+run_talc("#{TALC_TESTS}/factorial-table.talc")
+run_talc("#{TALC_TESTS}/fibonacci-table-recursive.talc")
+run_talc("#{TALC_TESTS}/fibonacci-table.talc")
+run_talc("#{TALC_TESTS}/fib.talc")
+run_talc("#{TALC_TESTS}/fib-real.talc")
+run_talc("#{TALC_TESTS}/file.talc")
+run_talc("#{TALC_TESTS}/lexer-unread.talc")
+run_talc("#{TALC_TESTS}/list.talc")
+run_talc("#{TALC_TESTS}/timed-loop.talc")
 
 puts("#{$failures} failures out of #{$tests} tests.")
 exit(($failures > 0) ? 1 : 0)
