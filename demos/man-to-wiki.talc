@@ -14,6 +14,10 @@ while ((s := gets()) != null) {
     // FIXME: we're supposed to support C++-like scoping of variable definitions within if guards!
     m: match = null;
     
+    // The wiki markup doesn't use \ as an escape character, but groff does.
+    // We need to remove one level of \-escaping.
+    s = s.replace("\\\\", "\\");
+    
     if (in_verbatim == false) {
         // Rewrite common groff-isms.
         s = s.replace(@"\(co", "\u00A9");
