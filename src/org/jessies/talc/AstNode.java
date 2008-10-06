@@ -683,7 +683,11 @@ public abstract class AstNode {
         
         public String signature() {
             StringBuilder result = new StringBuilder();
-            result.append(functionName);
+            result.append((returnType != null ? returnType.toString() : returnTypeDescriptor.toString()));
+            if (!isConstructor()) {
+                result.append(" ");
+                result.append(functionName);
+            }
             result.append("(");
             if (isVarArgs()) {
                 result.append("...");
@@ -695,8 +699,7 @@ public abstract class AstNode {
                     result.append((formalParameterTypes != null) ? formalParameterTypes.get(i) : formalParameterTypeDescriptors.get(i));
                 }
             }
-            result.append(") : ");
-            result.append((returnType != null ? returnType.toString() : returnTypeDescriptor.toString()));
+            result.append(")");
             return result.toString();
         }
         

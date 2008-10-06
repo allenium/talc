@@ -445,98 +445,100 @@ Talc has relatively few built-in classes. Few enough that we can reasonably comf
 bool : object
 
 file : object
-  append(content: string) : void
-  exists() : bool
-  file(filename: string) : file
-  is_directory() : bool
-  is_executable() : bool
-  mkdir() : bool
-  mkdir_p() : bool
-  read() : string
-  read_lines() : list<string>
-  realpath() : file
-  write(content: string) : void
+  void append(content: string)
+  string basename()
+  file dirname()
+  bool exists()
+  file(filename: string)
+  bool is_directory()
+  bool is_executable()
+  bool mkdir()
+  bool mkdir_p()
+  string read()
+  list<string> read_lines()
+  file realpath()
+  void write(content: string)
 
 int : object
-  abs() : int
-  signum() : int
-  to_base(base: int) : string
-  to_char() : string
-  to_i() : int
-  to_r() : real
+  int abs()
+  int signum()
+  string to_base(base: int)
+  string to_char()
+  int to_i()
+  real to_r()
 
 list<T> : object
-  __get_item__(index: int) : T
-  __set_item__(index: int, value: T) : T
-  add_all(others: list<T>) : list<T>
-  clear() : list<T>
-  contains(value: T) : bool
-  is_empty() : bool
-  join(separator: string) : string
-  list() : list<T>
-  peek_back() : T
-  peek_front() : T
-  pop_back() : T
-  pop_front() : T
-  push_back(value: T) : list<T>
-  push_front(value: T) : list<T>
-  remove_all(others: list<T>) : list<T>
-  remove_at(index: int) : list<T>
-  remove_first(value: T) : bool
-  reverse() : list<T>
-  size() : int
-  sort() : list<T>
-  to_s() : string
-  uniq() : list<T>
+  T __get_item__(index: int)
+  T __set_item__(index: int, value: T)
+  list<T> add_all(others: list<T>)
+  list<T> clear()
+  bool contains(value: T)
+  bool is_empty()
+  string join(separator: string)
+  list<T>()
+  T peek_back()
+  T peek_front()
+  T pop_back()
+  T pop_front()
+  list<T> push_back(value: T)
+  list<T> push_front(value: T)
+  list<T> remove_all(others: list<T>)
+  list<T> remove_at(index: int)
+  bool remove_first(value: T)
+  list<T> reverse()
+  int size()
+  list<T> sort()
+  string to_s()
+  list<T> uniq()
 
 map<K,V> : object
-  __get_item__(key: K) : V
-  __set_item__(key: K, value: V) : V
-  clear() : map<K,V>
-  has_key(key: K) : bool
-  has_value(value: V) : bool
-  keys() : list<K>
-  map() : map<K,V>
-  remove(key: K) : map<K,V>
-  size() : int
-  values() : list<V>
+  V __get_item__(key: K)
+  V __set_item__(key: K, value: V)
+  map<K,V> clear()
+  bool has_key(key: K)
+  bool has_value(value: V)
+  list<K> keys()
+  map<K,V>()
+  map<K,V> remove(key: K)
+  int size()
+  list<V> values()
 
 match : object
-  group(n: int) : string
+  string group(n: int)
 
 object
-  to_s() : string
+  string to_s()
 
 real : object
-  abs() : real
-  cbrt() : real
-  log(base: real) : real
-  log10() : real
-  logE() : real
-  signum() : real
-  sqrt() : real
-  to_i() : int
-  to_r() : real
+  real abs()
+  real cbrt()
+  real log(base: real)
+  real log10()
+  real logE()
+  real signum()
+  real sqrt()
+  int to_i()
+  real to_r()
 
 string : object
-  __get_item__(index: int) : string
-  contains(substring: string) : bool
-  ends_with(suffix: string) : bool
-  escape_html() : string
-  gsub(pattern: string, replacement: string) : string
-  lc() : string
-  lc_first() : string
-  match(pattern: string) : match
-  replace(old: string, new: string) : string
-  size() : int
-  split(pattern: string) : list<string>
-  starts_with(prefix: string) : bool
-  sub(pattern: string, replacement: string) : string
-  to_i() : int
-  to_r() : real
-  trim() : string
-  uc() : string
-  uc_first() : string
+  string __get_item__(index: int)
+  bool contains(substring: string)
+  bool ends_with(suffix: string)
+  string escape_html()
+  string gsub(pattern: string, replacement: string)
+  string lc()
+  string lc_first()
+  match match(pattern: string)
+  string replace(old: string, new: string)
+  int size()
+  list<string> split(pattern: string)
+  bool starts_with(prefix: string)
+  string sub(pattern: string, replacement: string)
+  int to_i()
+  real to_r()
+  string trim()
+  string uc()
+  string uc_first()
 
 This output was produced by the command "talc --dump-classes".
 .SH CONVENTIONS AND IDIOMS
