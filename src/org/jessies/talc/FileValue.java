@@ -25,11 +25,23 @@ public class FileValue {
     private final File file;
     
     public FileValue(String filename) {
-        this.file = new File(filename);
+        this(new File(filename));
+    }
+    
+    private FileValue(File file) {
+        this.file = file;
     }
     
     public void append(String content) {
         writeOrAppend(content, true);
+    }
+    
+    public String basename() {
+        return file.getName();
+    }
+    
+    public FileValue dirname() {
+        return new FileValue(file.getParentFile());
     }
     
     @Override public boolean equals(Object o) {

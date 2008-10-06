@@ -155,8 +155,6 @@ int.to_s(base:int) # currently, we don't have overloading, so this is called int
 TalcPrimitives: chmod, chown, lstat, stat
 
 shouldn't "file" really be "path"?
-file.basename():file
-file.dirname():file
 file.chmod(mode:int):bool # plus symbolic constants?
 file.chown(uid:int, gid:int):bool
 file.is_reg():bool # et cetera? or should all this stuff be via stat?

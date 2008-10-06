@@ -65,6 +65,8 @@ public class TalcType {
         
         addConstructor(FILE, new BuiltInFunction("file", Arrays.asList("filename"), Arrays.asList(TalcType.STRING), TalcType.FILE));
         addMemberFunction(FILE, new BuiltInFunction("append", Arrays.asList("content"), Arrays.asList(TalcType.STRING), TalcType.VOID));
+        addMemberFunction(FILE, new BuiltInFunction("basename", TalcType.STRING));
+        addMemberFunction(FILE, new BuiltInFunction("dirname", TalcType.FILE));
         addMemberFunction(FILE, new BuiltInFunction("exists", TalcType.BOOL));
         addMemberFunction(FILE, new BuiltInFunction("is_directory", TalcType.BOOL));
         addMemberFunction(FILE, new BuiltInFunction("is_executable", TalcType.BOOL));
