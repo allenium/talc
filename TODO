@@ -328,4 +328,4 @@ JVM CODE GENERATOR
 
 * BooleanValue is more convenient than Boolean because we know there are only two instances and can compare them by identity. given the price of getstatic, it might be worth investigating converting BooleanValue to I in generated loops and conditionals (where generated boilerplate is the consumer of the BooleanValue).
 
-* JvmTalcConstantPool shouldn't store duplicates. (how important is that? the constant pool itself isn't a particularly convincing performance win. maybe optimizing IntegerValue construction would have been more useful? or implementing SmallIntegerValue and LargeIntegerValue or somesuch.)
+* JvmTalcConstantPool shouldn't store duplicates. (how important is that? the constant pool itself isn't a particularly convincing performance win.)
