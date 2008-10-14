@@ -1,0 +1,21 @@
+// A very simple demo class, to produce an easy-to-profile CPU-bound
+// program.  I'd like to see this program ported to as many different
+// JVM-based languages as possible, such as Scala, Clojure, JRuby, etc.
+// See Cliff Click's "A Plea For Programs", 
+// http://blogs.azulsystems.com/cliff/2008/09/a-plea-for-prog.html
+
+function int test(sum: int) {
+  for( i:=1; i<10000000; i++ ) {
+    sum &= 0x3FFFFFFF;
+    sum += (sum^i)/i;
+  }
+  return sum;
+}
+
+sum:=0;
+for( i:=0; i<100; i++ ) {
+  sum += test(sum);
+  sum &= 0x3FFFFFFF;
+}
+puts(sum);
+assert sum == 649113011;

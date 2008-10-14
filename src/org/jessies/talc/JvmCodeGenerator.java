@@ -197,17 +197,21 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         
         private void emitConstant(Object constant) {
             if (constant instanceof RealValue) {
-                RealValue realValue = (RealValue) constant;
+                final RealValue realValue = (RealValue) constant;
                 cv.addPush(realValue.doubleValue());
                 cv.addInvoke(ByteCode.INVOKESTATIC, realValueType, "valueOf", "(D)L" + realValueType + ";");
             } else {
-                IntegerValue integerValue = (IntegerValue) constant;
-                cv.add(ByteCode.NEW, integerValueType);
-                cv.add(ByteCode.DUP);
-                // FIXME: we should choose valueOf(long) where possible (which will be in almost every case). if ((BigInteger.bitLength() + 1) <= 64), the BigInteger fits in a long.
-                cv.addPush(integerValue.toString());
-                cv.addPush(10);
-                cv.addInvoke(ByteCode.INVOKESPECIAL, integerValueType, "<init>", "(Ljava/lang/String;I)V");
+                final IntegerValue integerValue = (IntegerValue) constant;
+                if (integerValue.isBig()) {
+                    cv.add(ByteCode.NEW, integerValueType);
+                    cv.add(ByteCode.DUP);
+                    cv.addPush(integerValue.toString());
+                    cv.addPush(10);
+                    cv.addInvoke(ByteCode.INVOKESPECIAL, integerValueType, "<init>", "(Ljava/lang/String;I)V");
+                } else {
+                    cv.addPush(integerValue.longValue());
+                    cv.addInvoke(ByteCode.INVOKESTATIC, integerValueType, "valueOf", "(J)L" + integerValueType + ";");
+                }
             }
         }
     }
