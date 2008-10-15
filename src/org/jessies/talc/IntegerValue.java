@@ -143,7 +143,7 @@ public class IntegerValue implements Comparable<IntegerValue> {
     
     public IntegerValue mod(IntegerValue rhs) {
         if (isBig() || rhs.isBig()) {
-            return IntegerValue.valueOf(big().mod(rhs.big()));
+            return IntegerValue.valueOf(big().remainder(rhs.big()));
         } else {
             return IntegerValue.valueOf(fixnum % rhs.fixnum);
         }

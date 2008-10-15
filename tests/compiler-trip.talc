@@ -169,6 +169,20 @@ assert (-(0x8000000000000000)).abs() == 0x8000000000000000;
  assert -x == 0x8000000000000000;
 }
 
+{
+ // Test fixnum %.
+ assert 4 % 3 == 1;
+ assert -4 % 3 == -1;
+ assert -4 % -3 == -1;
+ assert 4 % -3 == 1;
+ // Test bignum %.
+ x := 10**40;
+ assert (4*x) % (3*x) == x;
+ assert (-4*x) % (3*x) == -x;
+ assert (-4*x) % (-3*x) == -x;
+ assert (4*x) % (-3*x) == x;
+}
+
 if (true) {
  ++i;
 } else if (true) {
