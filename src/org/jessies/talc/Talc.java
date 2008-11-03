@@ -208,6 +208,7 @@ public class Talc {
             } else if (args[i].equals("--dump-classes")) {
                 for (TalcType type : TalcType.documentedTypes()) {
                     System.out.println(type.describeClass());
+                    System.out.println();
                 }
                 didSomethingUseful = true;
             } else if (args[i].equals("-e")) {

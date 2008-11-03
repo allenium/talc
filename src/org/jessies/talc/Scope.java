@@ -86,6 +86,9 @@ public class Scope {
     
     public String describeScope() {
         StringBuilder result = new StringBuilder();
+        if (variables != null || functions != null) {
+            result.append("\n");
+        }
         if (variables != null) {
             TreeMap<String, AstNode.VariableDefinition> sortedVariables = new TreeMap<String, AstNode.VariableDefinition>(variables);
             for (AstNode.VariableDefinition variableDefinition : sortedVariables.values()) {
@@ -99,10 +102,23 @@ public class Scope {
                 result.append("\n");
             }
             TreeMap<String, AstNode.FunctionDefinition> sortedFunctions = new TreeMap<String, AstNode.FunctionDefinition>(functions);
-            for (AstNode.FunctionDefinition functionDefinition : sortedFunctions.values()) {
-                result.append("  ");
-                result.append(functionDefinition.signature());
-                result.append("\n");
+            int constructorCount = 0;
+            for (int pass = 0; pass < 2; ++pass) {
+                if (constructorCount > 0) {
+                    result.append("\n");
+                }
+                for (AstNode.FunctionDefinition functionDefinition : sortedFunctions.values()) {
+                    // We dump the constructors on pass 0, everything else on pass 1.
+                    if (functionDefinition.isConstructor() != (pass == 0)) {
+                        continue;
+                    }
+                    if (pass == 0) {
+                        ++constructorCount;
+                    }
+                    result.append("  ");
+                    result.append(functionDefinition.signature());
+                    result.append("\n");
+                }
             }
         }
         return result.toString();
