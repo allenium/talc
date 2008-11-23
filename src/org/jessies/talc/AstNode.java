@@ -67,6 +67,14 @@ public abstract class AstNode {
         public void setExplanatoryExpression(AstNode explanatoryExpression) {
             this.explanatoryExpression = explanatoryExpression;
         }
+        
+        @Override public String toString() {
+            String result = "assert " + testExpression;
+            if (explanatoryExpression != null) {
+                result += " : " + explanatoryExpression;
+            }
+            return result;
+        }
     }
     
     public static class BinaryOperator extends AstNode {
