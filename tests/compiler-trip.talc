@@ -230,8 +230,14 @@ assert i == 14;
  o = "hello";
  assert o == "hello";
  
- i:int = null;
- i = 2;
+ # FIXME: make this a compile-failure test.
+ # b:bool = null;
+ # FIXME: make this a compile-failure test.
+ # b:bool;
+ # FIXME: make this a compile-failure test.
+ # b:bool = true;
+ # b = null;
+ # FIXME: make the same tests for "int" and "real".
  
  s:string = null;
  s = "hello";

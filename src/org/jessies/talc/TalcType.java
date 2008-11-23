@@ -61,6 +61,7 @@ public class TalcType {
         addMemberFunction(OBJECT, new BuiltInFunction("to_s", TalcType.STRING));
         addClass(OBJECT);
         
+        BOOL.isNullable = false;
         addClass(BOOL);
         
         addConstructor(FILE, new BuiltInFunction("file", Arrays.asList("filename"), Arrays.asList(TalcType.STRING), TalcType.FILE));
@@ -78,6 +79,7 @@ public class TalcType {
         addMemberFunction(FILE, new BuiltInFunction("write", Arrays.asList("content"), Arrays.asList(TalcType.STRING), TalcType.VOID));
         addClass(FILE);
         
+        INT.isNullable = false;
         addMemberFunction(INT, new BuiltInFunction("abs", TalcType.INT));
         addMemberFunction(INT, new BuiltInFunction("signum", TalcType.INT));
         addMemberFunction(INT, new BuiltInFunction("to_base", Arrays.asList("base"), Arrays.asList(TalcType.INT), TalcType.STRING));
@@ -127,6 +129,7 @@ public class TalcType {
         addMemberFunction(MATCH, new BuiltInFunction("group", Arrays.asList("n"), Arrays.asList(TalcType.INT), TalcType.STRING));
         addClass(MATCH);
         
+        REAL.isNullable = false;
         addMemberFunction(REAL, new BuiltInFunction("abs", TalcType.REAL));
         addMemberFunction(REAL, new BuiltInFunction("cbrt", TalcType.REAL));
         addMemberFunction(REAL, new BuiltInFunction("log", Arrays.asList("base"), Arrays.asList(TalcType.REAL), TalcType.REAL));
@@ -168,6 +171,7 @@ public class TalcType {
     private TalcType keyType;
     private TalcType valueType;
     private Scope members;
+    private boolean isNullable = true;
     private boolean isTypeVariable;
     private boolean isUserDefined;
     
@@ -276,6 +280,11 @@ public class TalcType {
         return result;
     }
     
+    // Is 'null' a valid member of this type's values?
+    public boolean isNullable() {
+        return isNullable;
+    }
+    
     // Is this an instantiated parametric type?
     public boolean isInstantiatedParametricType() {
         return (uninstantiatedParametricType != null);
@@ -323,9 +332,13 @@ public class TalcType {
     }
     
     public boolean canBeAssignedTo(TalcType declaredType) {
-        // A "null" value can be assigned to any type.
         // All types' values can be assigned to the same type.
-        if (this == NULL || this.equals(declaredType)) {
+        if (this.equals(declaredType)) {
+            return true;
+        }
+        
+        // A "null" value can be assigned to any non-nullable type.
+        if (this == NULL && declaredType.isNullable()) {
             return true;
         }
         

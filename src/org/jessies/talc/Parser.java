@@ -507,14 +507,14 @@ public class Parser {
         ArrayList<AstNode.VariableDefinition> loopVariableDefinitions = new ArrayList<AstNode.VariableDefinition>();
         
         // First, obligatory loop variable.
-        loopVariableDefinitions.add(new AstNode.VariableDefinition(location1, variableName, (TalcType) null, new AstNode.Constant(location1, null, TalcType.NULL), false));
+        loopVariableDefinitions.add(new AstNode.VariableDefinition(location1, variableName, (TalcType) null, null, false));
         
         // Second, optional loop variable.
         if (lexer.token() == Token.COMMA) {
             expect(Token.COMMA);
             SourceLocation location2 = lexer.getLocation();
             String variableName2 = expectIdentifier("second loop variable name in for-each loop");
-            loopVariableDefinitions.add(new AstNode.VariableDefinition(location2, variableName2, (TalcType) null, new AstNode.Constant(location2, null, TalcType.NULL), false));
+            loopVariableDefinitions.add(new AstNode.VariableDefinition(location2, variableName2, (TalcType) null, null, false));
         }
         
         expect(Token.IN);

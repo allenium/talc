@@ -565,7 +565,7 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
     }
     
     private void popAnythingLeftBy(AstNode node) {
-        // FIXME: is there a cleaner way to do this?
+        // FIXME: is there a cleaner way to do this? ClassFileWriter knows how much stuff is on the stack (getStackTop).
         
         // If the code we generated for "statement" left a value on the stack, we need to pop it off!
         if (node instanceof AstNode.BinaryOperator || node instanceof AstNode.Constant || node instanceof AstNode.ListLiteral || node instanceof AstNode.MapLiteral || node instanceof AstNode.VariableDefinition || node instanceof AstNode.VariableName) {
@@ -1249,11 +1249,17 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
             accessor = new JvmLocalVariableAccessor(variableDefinition.identifier(), signature, maxLocals++);
         }
         variableDefinition.setAccessor(accessor);
-        variableDefinition.initializer().accept(this);
-        visitLineNumber(variableDefinition);
-        cv.add(ByteCode.CHECKCAST, type);
-        cv.add(ByteCode.DUP);
-        accessor.emitPut();
+        if (variableDefinition.initializer() != null) {
+            variableDefinition.initializer().accept(this);
+            visitLineNumber(variableDefinition);
+            cv.add(ByteCode.CHECKCAST, type);
+            cv.add(ByteCode.DUP);
+            accessor.emitPut();
+        } else {
+            // FIXME: it would be good if we had some kind of guarantee this no-initializer case only happens for for/for-each loop variables.
+            // FIXME: this is only needed because popAnythingLeftBy expects junk on the stack.
+            cv.add(ByteCode.ACONST_NULL);
+        }
         return null;
     }
     
