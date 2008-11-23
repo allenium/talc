@@ -3,6 +3,7 @@
 # Tested Talc scripts should exit(1) to report failure.
 
 require "pathname.rb"
+require "thread.rb"
 
 TALC_ROOT = Pathname.new(__FILE__).realpath().dirname().dirname()
 TALC_BIN = "#{TALC_ROOT}/bin"
@@ -10,56 +11,69 @@ TALC_DEMOS = "#{TALC_ROOT}/demos"
 TALC_TESTS = "#{TALC_ROOT}/tests"
 $tests = 0
 $failures = 0
+$mutex = Mutex.new()
 
-def run_talc(script_path, args = [], expected_lines = nil)
-    $stderr.print("Running #{script_path}... ")
+def run_talc(script_path, args, expected_lines)
     script_args = args.join(" ")
     command = "#{TALC_BIN}/talc #{script_path} #{script_args}"
     lines = `#{TALC_BIN}/talc #{script_path} #{script_args}`.split("\n")
     $tests += 1
-    if expected_lines != nil && lines != expected_lines
-        puts("FAIL")
-        puts("Ran:\n  " + command)
-        puts("Expected:\n  " + expected_lines.join("\n  "))
-        puts("But Got:\n  " + lines.join("\n  "))
-        $failures += 1
-    elsif not $?.success?()
-        puts("FAIL")
-        puts("Ran:\n  " + command)
-        puts("Got Non-Zero Exit Status: " + $?.exitstatus().to_s())
-        $failures += 1
-    else
-        puts("PASS")
-    end
+    $mutex.synchronize() {
+        print("Running #{script_path}... ")
+        if expected_lines != nil && lines != expected_lines
+            puts("FAIL")
+            puts("Ran:\n  " + command)
+            puts("Expected:\n  " + expected_lines.join("\n  "))
+            puts("But Got:\n  " + lines.join("\n  "))
+            $failures += 1
+        elsif not $?.success?()
+            puts("FAIL")
+            puts("Ran:\n  " + command)
+            puts("Got Non-Zero Exit Status: " + $?.exitstatus().to_s())
+            $failures += 1
+        else
+            puts("PASS")
+        end
+    }
 end
 
-run_talc("#{TALC_TESTS}/args.talc", [], ["#{TALC_TESTS}/args.talc", "[]"]);
-run_talc("#{TALC_TESTS}/args.talc", ["hello", "world"], ["#{TALC_TESTS}/args.talc", "[hello, world]", "hello", "world"]);
+def talc_runner(script_path, args = [], expected_lines = nil)
+    return Thread.new() { run_talc(script_path, args, expected_lines) }
+end
 
-run_talc("#{TALC_DEMOS}/which.talc", ["bash", "make"], ["/bin/bash", "/usr/bin/make"]);
+threads = []
+
+threads << talc_runner("#{TALC_TESTS}/args.talc", [], ["#{TALC_TESTS}/args.talc", "[]"])
+threads << talc_runner("#{TALC_TESTS}/args.talc", ["hello", "world"], ["#{TALC_TESTS}/args.talc", "[hello, world]", "hello", "world"])
+
+threads << talc_runner("#{TALC_DEMOS}/which.talc", ["bash", "make"], ["/bin/bash", "/usr/bin/make"])
 
 # Every time you add a test here, ask yourself if it couldn't just be another
 # case in the "compiler-trip.talc" script.
 
-run_talc("#{TALC_DEMOS}/ack.talc")
-run_talc("#{TALC_DEMOS}/ansi-colors.talc")
-run_talc("#{TALC_DEMOS}/binary-search.talc")
-run_talc("#{TALC_DEMOS}/binomial-triangle.talc")
-run_talc("#{TALC_DEMOS}/factorial-table.talc")
-run_talc("#{TALC_DEMOS}/hanoi.talc")
-run_talc("#{TALC_DEMOS}/queens.talc")
-run_talc("#{TALC_DEMOS}/sieve.talc")
-run_talc("#{TALC_DEMOS}/whetstone.talc")
-run_talc("#{TALC_TESTS}/compiler-trip.talc")
-run_talc("#{TALC_TESTS}/factorial-table.talc")
-run_talc("#{TALC_TESTS}/fibonacci-table-recursive.talc")
-run_talc("#{TALC_TESTS}/fibonacci-table.talc")
-run_talc("#{TALC_TESTS}/fib.talc")
-run_talc("#{TALC_TESTS}/fib-real.talc")
-run_talc("#{TALC_TESTS}/file.talc")
-run_talc("#{TALC_TESTS}/lexer-unread.talc")
-run_talc("#{TALC_TESTS}/list.talc")
-run_talc("#{TALC_TESTS}/timed-loop.talc")
+[
+    "#{TALC_DEMOS}/ack.talc",
+    "#{TALC_DEMOS}/ansi-colors.talc",
+    "#{TALC_DEMOS}/binary-search.talc",
+    "#{TALC_DEMOS}/binomial-triangle.talc",
+    "#{TALC_DEMOS}/factorial-table.talc",
+    "#{TALC_DEMOS}/hanoi.talc",
+    "#{TALC_DEMOS}/queens.talc",
+    "#{TALC_DEMOS}/sieve.talc",
+    "#{TALC_DEMOS}/whetstone.talc",
+    "#{TALC_TESTS}/compiler-trip.talc",
+    "#{TALC_TESTS}/factorial-table.talc",
+    "#{TALC_TESTS}/fibonacci-table-recursive.talc",
+    "#{TALC_TESTS}/fibonacci-table.talc",
+    "#{TALC_TESTS}/fib.talc",
+    "#{TALC_TESTS}/fib-real.talc",
+    "#{TALC_TESTS}/file.talc",
+    "#{TALC_TESTS}/lexer-unread.talc",
+    "#{TALC_TESTS}/list.talc",
+    "#{TALC_TESTS}/timed-loop.talc",
+].each() { |script| threads << talc_runner(script) }
+
+threads.each() { |t| t.join() }
 
 puts("#{$failures} failures out of #{$tests} tests.")
 exit(($failures > 0) ? 1 : 0)
