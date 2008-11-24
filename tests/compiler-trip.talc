@@ -231,13 +231,16 @@ assert i == 14;
  assert o == "hello";
  
  # FIXME: make this a compile-failure test.
- # b:bool = null;
+ # function void v() { return; } puts(v());
+ 
  # FIXME: make this a compile-failure test.
- # b:bool;
+ # function void v() { return 123; }
+ 
  # FIXME: make this a compile-failure test.
- # b:bool = true;
- # b = null;
- # FIXME: make the same tests for "int" and "real".
+ # function void v() { return null; }
+ 
+ # FIXME: make this a compile-failure test.
+ # function int f(v:void) { return null; }
  
  s:string = null;
  s = "hello";

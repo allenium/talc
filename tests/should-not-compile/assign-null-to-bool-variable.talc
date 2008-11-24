@@ -1,0 +1,3 @@
+b:bool = true;
+// EXPECTED ERROR: type null-type cannot be assigned to variable "b" of type bool
+b = null;

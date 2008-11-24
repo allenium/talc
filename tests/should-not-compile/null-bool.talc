@@ -1,0 +1,2 @@
+// EXPECTED ERROR: variable "b" has an initializer of type null
+b:bool = null;

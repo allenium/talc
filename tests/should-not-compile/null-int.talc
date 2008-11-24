@@ -1,0 +1,2 @@
+// EXPECTED ERROR: variable "i" has an initializer of type null
+i:int = null;

@@ -1,0 +1,2 @@
+// EXPECTED ERROR: variable "r" has an initializer of type null
+r:real = null;

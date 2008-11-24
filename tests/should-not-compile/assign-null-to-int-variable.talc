@@ -1,0 +1,3 @@
+i:int = 0;
+// EXPECTED ERROR: type null-type cannot be assigned to variable "i" of type int
+i = null;

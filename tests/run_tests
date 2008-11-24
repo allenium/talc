@@ -13,32 +13,76 @@ $tests = 0
 $failures = 0
 $mutex = Mutex.new()
 
-def run_talc(script_path, args, expected_lines)
-    script_args = args.join(" ")
+def fail(script_path)
+    puts("\x1b[31;1mFAIL\x1b[0m #{script_path}")
+    $failures += 1
+end
+
+def pass(script_path)
+    puts("\x1b[32;1mPASS\x1b[0m #{script_path}")
+end
+
+def run_talc(script_path, script_args, expected_lines)
     command = "#{TALC_BIN}/talc #{script_path} #{script_args}"
-    lines = `#{TALC_BIN}/talc #{script_path} #{script_args}`.split("\n")
-    $tests += 1
+    lines = `#{TALC_BIN}/talc #{script_path} #{script_args} 2>&1`.split("\n")
     $mutex.synchronize() {
-        print("Running #{script_path}... ")
+        $tests += 1
         if expected_lines != nil && lines != expected_lines
-            puts("FAIL")
+            fail(script_path)
             puts("Ran:\n  " + command)
             puts("Expected:\n  " + expected_lines.join("\n  "))
             puts("But Got:\n  " + lines.join("\n  "))
-            $failures += 1
         elsif not $?.success?()
-            puts("FAIL")
+            fail(script_path)
             puts("Ran:\n  " + command)
             puts("Got Non-Zero Exit Status: " + $?.exitstatus().to_s())
-            $failures += 1
         else
-            puts("PASS")
+            pass(script_path)
         end
     }
 end
 
-def talc_runner(script_path, args = [], expected_lines = nil)
-    return Thread.new() { run_talc(script_path, args, expected_lines) }
+def talc_runner(script_path, script_args = [], expected_lines = nil)
+    return Thread.new() { run_talc(script_path, script_args.join(" "), expected_lines) }
+end
+
+def compile_talc(script_path)
+    command = "#{TALC_BIN}/talc -Dn #{script_path}"
+    output = `#{command} 2>&1`
+    
+    # What error are we expecting?
+    expected_error = nil
+    IO.readlines(script_path).each() {
+        |line|
+        if line =~ /EXPECTED ERROR:\s*(.*)/
+            expected_error = $1
+        end
+    }
+    
+    $mutex.synchronize() {
+        $tests += 1
+        if $?.success?()
+            # We weren't expecting to be able to compile this script!
+            fail(script_path)
+        elsif expected_error == nil
+            # How can we check we got the right error if we don't know what to expect?
+            fail(script_path)
+            puts("**** no EXPECTED ERROR line in #{script_path}")
+            puts(output)
+        else
+            # Check that we got the error we were expecting...
+            if output.include?(expected_error) == false
+                fail(script_path)
+                puts(output)
+            else
+                pass(script_path)
+            end
+        end
+    }
+end
+
+def compile_failure_runner(script_path)
+    return Thread.new() { compile_talc(script_path) }
 end
 
 threads = []
@@ -48,10 +92,8 @@ threads << talc_runner("#{TALC_TESTS}/args.talc", ["hello", "world"], ["#{TALC_T
 
 threads << talc_runner("#{TALC_DEMOS}/which.talc", ["bash", "make"], ["/bin/bash", "/usr/bin/make"])
 
-# Every time you add a test here, ask yourself if it couldn't just be another
-# case in the "compiler-trip.talc" script.
-
 [
+    # Enlist all the demos that can be run without arguments as ad hoc tests.
     "#{TALC_DEMOS}/ack.talc",
     "#{TALC_DEMOS}/ansi-colors.talc",
     "#{TALC_DEMOS}/binary-search.talc",
@@ -61,6 +103,9 @@ threads << talc_runner("#{TALC_DEMOS}/which.talc", ["bash", "make"], ["/bin/bash
     "#{TALC_DEMOS}/queens.talc",
     "#{TALC_DEMOS}/sieve.talc",
     "#{TALC_DEMOS}/whetstone.talc",
+    
+    # Every time you add a test here, ask yourself if it couldn't just be another
+    # case in the "compiler-trip.talc" script.
     "#{TALC_TESTS}/compiler-trip.talc",
     "#{TALC_TESTS}/factorial-table.talc",
     "#{TALC_TESTS}/fibonacci-table-recursive.talc",
@@ -71,9 +116,17 @@ threads << talc_runner("#{TALC_DEMOS}/which.talc", ["bash", "make"], ["/bin/bash
     "#{TALC_TESTS}/lexer-unread.talc",
     "#{TALC_TESTS}/list.talc",
     "#{TALC_TESTS}/timed-loop.talc",
-].each() { |script| threads << talc_runner(script) }
+].each() {
+    |script|
+    threads << talc_runner(script)
+}
+
+Dir.glob("#{TALC_TESTS}/should-not-compile/*.talc") {
+    |script|
+    threads << compile_failure_runner(script)
+}
 
 threads.each() { |t| t.join() }
 
-puts("#{$failures} failures out of #{$tests} tests.")
+puts("\n#{$failures} failures out of #{$tests} tests.")
 exit(($failures > 0) ? 1 : 0)
