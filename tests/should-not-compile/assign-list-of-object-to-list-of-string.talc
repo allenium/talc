@@ -1,0 +1,5 @@
+strings:list<string> = [ "1", "2" ];
+objects:list<object> = [ "1", "2" ];
+objects = strings;
+// EXPECTED ERROR: type list<object> cannot be assigned to variable "strings" of type list<string>
+strings = objects;

@@ -1,0 +1,2 @@
+// EXPECTED ERROR: return expression has type null-type but must be assignable to int
+function int f() { return null; }

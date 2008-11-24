@@ -1,0 +1,4 @@
+function void f() {}
+// It's important that "puts" isVarArgs; type checking is weaker for them.
+// EXPECTED ERROR: argument 0 to global function "puts" has type void
+puts(f());

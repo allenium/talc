@@ -190,7 +190,8 @@ public class SymbolTable implements AstVisitor<Void> {
             // FIXME: could we set these VariableDefinitions up earlier? maybe create them in Parser, even?
             ArrayList<AstNode.VariableDefinition> formalParameters = new ArrayList<AstNode.VariableDefinition>();
             for (int i = 0; i < names.size(); ++i) {
-                AstNode.VariableDefinition formalParameter = new AstNode.VariableDefinition(null, names.get(i), typeDescriptors.get(i), null, false);
+                // FIXME: if we created these in Parser, we'd be able to supply a more precise location.
+                AstNode.VariableDefinition formalParameter = new AstNode.VariableDefinition(functionDefinition.location(), names.get(i), typeDescriptors.get(i), null, false);
                 formalParameter.accept(this);
                 formalParameters.add(formalParameter);
             }

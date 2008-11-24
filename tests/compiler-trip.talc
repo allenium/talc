@@ -230,18 +230,6 @@ assert i == 14;
  o = "hello";
  assert o == "hello";
  
- # FIXME: make this a compile-failure test.
- # function void v() { return; } puts(v());
- 
- # FIXME: make this a compile-failure test.
- # function void v() { return 123; }
- 
- # FIXME: make this a compile-failure test.
- # function void v() { return null; }
- 
- # FIXME: make this a compile-failure test.
- # function int f(v:void) { return null; }
- 
  s:string = null;
  s = "hello";
  
@@ -255,7 +243,6 @@ assert i == 14;
  }
  
  objects = strings;
- # FIXME: how do we test that you couldn't say "strings = objects;"?
  
  s2 := "";
  for (i:int = 0; i < objects.size(); ++i) {
@@ -390,7 +377,6 @@ function string name_from_list(n : int) {
  name:string = names[n - 1];
  return name;
 }
-# FIXME: what should we do about map literals?
 names:map<int,string> = new map<int,string>();
 names[1] = "one"; names[2] = "two"; names[3] = "three";
 function string name_from_map(n:int) {
@@ -400,6 +386,9 @@ function string name_from_map(n:int) {
 for (i:int = 1; i < names.size(); ++i) {
  assert name_from_list(i) == name_from_map(i);
 }
+# Test that a map created via a map literal is equal to one created manually.
+names2:map<int,string> = [1:"one", 2:"two", 3:"three"];
+assert names == names2;
 
 # Test map methods.
 {

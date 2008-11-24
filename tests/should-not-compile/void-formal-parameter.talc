@@ -1,0 +1,2 @@
+// EXPECTED ERROR: variables such as "v" cannot have void type
+function int f(v:void) { return 123; }

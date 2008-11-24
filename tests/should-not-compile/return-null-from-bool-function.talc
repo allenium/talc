@@ -1,0 +1,2 @@
+// EXPECTED ERROR: return expression has type null-type but must be assignable to bool
+function bool f() { return null; }

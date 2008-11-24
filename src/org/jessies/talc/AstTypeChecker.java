@@ -351,7 +351,12 @@ public class AstTypeChecker implements AstVisitor<TalcType> {
         }
         for (int i = 0; i < actualParameters.length; ++i) {
             TalcType actualParameterType = actualParameters[i].accept(this);
-            if (functionDefinition.isVarArgs() == false) {
+            if (functionDefinition.isVarArgs()) {
+                // About the only thing we can say here is that "void" is not acceptable.
+                if (actualParameterType == TalcType.VOID) {
+                    throw new TalcError(functionCall, "argument " + i + " to " + what + " has type " + actualParameterType);
+                }
+            } else {
                 TalcType requiredType = resolveTypeParameters(functionCall, searchType, formalParameterTypes.get(i));
                 if (actualParameterType.canBeAssignedTo(requiredType) == false) {
                     throw new TalcError(functionCall, "argument " + i + " to " + what + " has type " + actualParameterType + " but must be assignable to type " + requiredType + " (in " + searchType + ")");
@@ -552,6 +557,9 @@ public class AstTypeChecker implements AstVisitor<TalcType> {
         
         variableDefinition.fixUpType(actualType);
         TalcType declaredType = variableDefinition.type();
+        if (declaredType == TalcType.VOID) {
+            throw new TalcError(variableDefinition, "variables such as \"" + variableDefinition.identifier() + "\" cannot have void type");
+        }
         
         if (variableDefinition.initializer() != null) {
             if (actualType == null || actualType.canBeAssignedTo(declaredType) == false) {

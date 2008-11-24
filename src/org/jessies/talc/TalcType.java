@@ -160,6 +160,9 @@ public class TalcType {
         addMemberFunction(STRING, new BuiltInFunction("uc", TalcType.STRING));
         addMemberFunction(STRING, new BuiltInFunction("uc_first", TalcType.STRING));
         addClass(STRING);
+        
+        // You can't assign *anything* to void.
+        VOID.isNullable = false;
     }
     
     // Cached hash code.
