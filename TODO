@@ -38,8 +38,6 @@ Alef:
 
 TESTING
 
-* fix the tests to use "assert", so we get assertion failures if anything goes wrong.
-
 * increase test coverage. work out how to measure coverage; emma.sourceforge.net doesn't work with any jessies.org projects (why not?).
 
 * benchmarking. (i.e. automated performance testing.) maybe a directory of programs, each written in both Talc and Java, and a script to run them against one another, checking for changes in the relative (percentage?) runtime. should be able to refer to some of the demos, too: mandelbrot.talc is a decent performance test for some areas.
@@ -297,7 +295,7 @@ QUALITY OF IMPLEMENTATION
     $ ./bin/talc -e 'puts([].push_back(0).push_back(1).push_back(2));'
     -:1:7: no instance method "push_back" in class empty-list
 
-  at what point should we rewrite these types? obviously when we see LIST_OF_NOTHING/MAP_OF_NOTHING on the rhs of an assignment or as receiver of a method call, but is there some more general way to state this? (it's only these special cases of the empty literals that are kind-of list<object> and map<object, object> but assignable to list<?> and map<?, ?>, so we can't get rid of LIST_OF_NOTHING/MAP_OF_NOTHING completely. i'm not sure about the empty map, but it's genuinely useful to be able to write [] for any empty map.)
+  at what point should we rewrite these types? obviously when we see LIST_OF_NOTHING/MAP_OF_NOTHING on the rhs of an assignment or as receiver of a method call, but is there some more general way to state this? (it's only these special cases of the empty literals that are kind-of list<object> and map<object, object> but assignable to list<?> and map<?, ?>, so we can't get rid of LIST_OF_NOTHING/MAP_OF_NOTHING completely. i'm not sure about the empty map, but it's genuinely useful to be able to write [] for any empty list.)
 
 * report sensible error when global function used before definition. (or cope, as we do with methods? global variables obviously shouldn't be treated like fields in terms of usability before definition, and global functions can refer to global variables, so presumably we should treat global functions specially to avoid this kind of weirdness?)
 
@@ -328,3 +326,5 @@ JVM CODE GENERATOR
 * BooleanValue is more convenient than Boolean because we know there are only two instances and can compare them by identity. given the price of getstatic, it might be worth investigating converting BooleanValue to I in generated loops and conditionals (where generated boilerplate is the consumer of the BooleanValue).
 
 * JvmTalcConstantPool shouldn't store duplicates. (how important is that? the constant pool itself isn't a particularly convincing performance win.)
+
+* are we leaving junk on the stack? popAnythingLeftBy is a bit primitive and error-prone.
