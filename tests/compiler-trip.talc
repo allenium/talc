@@ -112,6 +112,7 @@ if (false != false) {
 }
 
 # Test unary and binary operators.
+assert 0! == 1;
 assert 1! == 1;
 assert 2! == 2;
 assert 3! == 6;
