@@ -36,6 +36,7 @@ def run_talc(script_path, script_args, expected_lines)
             fail(script_path)
             puts("Ran:\n  " + command)
             puts("Got Non-Zero Exit Status: " + $?.exitstatus().to_s())
+            puts("Output Was:\n  " + lines.join("\n  "))
         else
             pass(script_path)
         end

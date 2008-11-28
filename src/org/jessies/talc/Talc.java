@@ -62,7 +62,7 @@ public class Talc {
         }
     }
     
-    private void parseAndEvaluate(String argv0, String[] args, Lexer lexer) {
+    private void parseAndEvaluate(String argv0, String[] args, Lexer lexer) throws Throwable {
         // 1. Parse.
         long parse0 = System.nanoTime();
         List<AstNode> ast = new Parser(lexer, libraryPath).parse();
@@ -103,14 +103,9 @@ public class Talc {
         try {
             Class<?> generatedClass = loader.getClass("GeneratedClass");
             generatedClass.getMethod("main", String[].class).invoke(null, (Object) args);
-        } catch (Throwable th) {
-            if (th.getCause() != null) {
-                th.getCause().printStackTrace();
-            } else {
-                th.printStackTrace();
-            }
+        } finally {
+            reportTime("execution", System.nanoTime() - execution0);
         }
-        reportTime("execution", System.nanoTime() - execution0);
     }
     
     private List<AstNode> addImplicitCode(List<AstNode> ast) {
@@ -169,7 +164,7 @@ public class Talc {
         System.exit(exitStatus);
     }
     
-    private void parseArguments(String[] args) throws IOException {
+    private void parseArguments(String[] args) throws Throwable {
         String scriptFilename = null;
         String expression = null;
         ArrayList<String> scriptArgs = new ArrayList<String>();
@@ -274,6 +269,11 @@ public class Talc {
             for (StackTraceElement e : th.getStackTrace()) {
                 System.err.println("    " + e);
             }
+        } else if (th instanceof java.lang.reflect.InvocationTargetException) {
+            // The compiled code threw an exception, and Java wrapped it.
+            // Pull out and report the original exception.
+            // FIXME: hide the part of the stack that isn't part of the user's code?
+            th.getCause().printStackTrace();
         } else {
             System.err.println("Unexpected internal error:");
             th.printStackTrace();
