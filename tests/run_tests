@@ -12,6 +12,7 @@ TALC_TESTS = "#{TALC_ROOT}/tests"
 $tests = 0
 $failures = 0
 $mutex = Mutex.new()
+t0 = Time.now()
 
 def fail(script_path)
     puts("\x1b[31;1mFAIL\x1b[0m #{script_path}")
@@ -129,5 +130,7 @@ Dir.glob("#{TALC_TESTS}/should-not-compile/*.talc") {
 
 threads.each() { |t| t.join() }
 
-puts("\n#{$failures} failures out of #{$tests} tests.")
+t1 = Time.now()
+
+printf("\n%i failures out of %i tests (took %.2f s).\n", $failures, $tests, (t1 - t0))
 exit(($failures > 0) ? 1 : 0)
