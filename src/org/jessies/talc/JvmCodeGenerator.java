@@ -1022,10 +1022,10 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         } else if (talcType == TalcType.T || talcType == TalcType.K || talcType == TalcType.V) {
             // We implement generics by erasure.
             return javaLangObjectType;
-        } else if (talcType.rawName().equals("list")) {
+        } else if (talcType.rawName().equals("list") || talcType.rawName().equals("empty-list")) {
             // FIXME: this is a particularly big hack.
             return listValueType;
-        } else if (talcType.rawName().equals("map")) {
+        } else if (talcType.rawName().equals("map") || talcType.rawName().equals("empty-map")) {
             // FIXME: this is a particularly big hack.
             return mapValueType;
         } else if (talcType.isUserDefined()) {

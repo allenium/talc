@@ -615,3 +615,29 @@ function int too_expensive_to_call() {
  // that this test would be unbearably slow.
  return 1000000!;
 }
+
+function void accept_anything(o:object) {}
+
+{
+ accept_anything(null);
+ nil := null;
+ accept_anything(nil);
+ accept_anything(0);
+ i := 0;
+ accept_anything(i);
+ accept_anything(0.0);
+ r := 0.0;
+ accept_anything(r);
+ accept_anything(true);
+ b := true;
+ accept_anything(b);
+ accept_anything("hello");
+ s := "hello";
+ accept_anything(s);
+ accept_anything([]);
+ empty_list := [];
+ accept_anything(empty_list);
+ accept_anything([:]);
+ empty_map := [:];
+ accept_anything(empty_map);
+}

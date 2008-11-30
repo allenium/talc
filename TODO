@@ -278,11 +278,6 @@ QUALITY OF IMPLEMENTATION
   i don't think that's such a bad idea, compared to "operator []" and the like.
   but we should still talk to the user in terms of what they wrote.
 
-* this should compile:
-    $ ./bin/talc -e 'm:=[:]; puts(m);'
-    Unexpected internal error:
-    java.lang.RuntimeException: don't know how to represent TalcType empty-map
-
 * report sensible error when global function used before definition. (or cope, as we do with methods? global variables obviously shouldn't be treated like fields in terms of usability before definition, and global functions can refer to global variables, so presumably we should treat global functions specially to avoid this kind of weirdness?)
 
 * improve Lexer.getLocation so we provide the start and end line/column rather than just the end (even just the start would be better than just the end, as we have at the moment; error messages point to the end of the problem where the start would be more natural).

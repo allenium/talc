@@ -927,6 +927,10 @@ public abstract class AstNode {
                 } else {
                     // The declaration was implicitly typed ("<name> := <value>"), so use the initializer type.
                     type = initializerType;
+                    if (type == TalcType.NULL) {
+                        // Initializing a variable with "null" implies a type of "object".
+                        type = TalcType.OBJECT;
+                    }
                     if (Talc.debugging('i')) {
                         System.err.println(location() + "note: inferred type of \"" + identifier + "\" from initializer as " + type);
                     }
