@@ -609,3 +609,9 @@ assert rectangle_f1(1, 2, 3, 4) == rectangle_f2(1, 2, 3, 4);
  }
  assert result == "hello world\n";
 }
+
+function int too_expensive_to_call() {
+ // Ensure we don't go back to computing factorials at compile time by ensuring
+ // that this test would be unbearably slow.
+ return 1000000!;
+}
