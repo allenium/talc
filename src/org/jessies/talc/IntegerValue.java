@@ -30,6 +30,9 @@ public class IntegerValue implements Comparable<IntegerValue> {
         }
     }
     
+    // Used by factorial.
+    private static final BigInteger TWO = BigInteger.valueOf(2);
+    
     // If 'bignum' is null, this IntegerValue's value is 'fixnum'. Otherwise, it's 'bignum' and 'fixnum' is ignored.
     private long fixnum;
     private BigInteger bignum;
@@ -278,16 +281,22 @@ public class IntegerValue implements Comparable<IntegerValue> {
     
     public IntegerValue factorial() {
         final BigInteger n = big();
-        if (n.signum() < 0) {
+        final int signum = n.signum();
+        if (signum < 0) {
             throw new IllegalArgumentException("factorial requires a non-negative integer argument; got " + this + " instead");
+        } else if (signum == 0) {
+            return IntegerValue.valueOf(1);
         }
-        BigInteger result = BigInteger.ONE;
-        BigInteger i = BigInteger.ONE;
-        while (i.compareTo(n) < 0) {
-            i = i.add(BigInteger.ONE);
-            result = result.multiply(i);
+        // Based on fact6 from Richard J Fateman's "Comments on Factorial Programs".
+        return IntegerValue.valueOf(factorialHelper(n, BigInteger.ONE));
+    }
+    
+    private BigInteger factorialHelper(BigInteger n, BigInteger m) {
+        if (n.compareTo(m) <= 0) {
+            return n;
         }
-        return IntegerValue.valueOf(result);
+        final BigInteger twoM = TWO.multiply(m); // This seems consistently faster than m.shiftLeft(1)!
+        return factorialHelper(n, twoM).multiply(factorialHelper(n.subtract(m), twoM));
     }
     
     public Object toNativeJavaObject() {
