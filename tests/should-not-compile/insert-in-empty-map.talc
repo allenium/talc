@@ -1,0 +1,5 @@
+// This is okay.
+good: map<int, string> = [:];
+good[1] = "one";
+// EXPECTED ERROR: no instance method "__set_item__" in class empty-map
+bad := [:]; bad[1] = "one";

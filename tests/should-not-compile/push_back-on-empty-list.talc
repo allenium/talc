@@ -1,0 +1,4 @@
+// This is okay.
+[0].push_back(1).push_back(2);
+// EXPECTED ERROR: no instance method "push_back" in class empty-list
+[].push_back(0).push_back(1).push_back(2);
