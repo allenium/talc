@@ -328,3 +328,5 @@ JVM CODE GENERATOR
 * JvmTalcConstantPool shouldn't store duplicates. (how important is that? the constant pool itself isn't a particularly convincing performance win.)
 
 * are we leaving junk on the stack? popAnythingLeftBy is a bit primitive and error-prone.
+
+* BigInteger is pretty slow for big numbers (thousands of digits up). patch OpenJDK? GMP via JNI? translate GMP into Java?
