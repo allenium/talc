@@ -1,0 +1,14 @@
+Written by:
+  Elliott Hughes
+
+Thanks to:
+  Martin Dorey
+  Phil Norman
+  Chris Reece
+  Günther Thompsen
+
+Thanks also to:
+  mozilla.org for the JVM bytecode library from Rhino
+  objectweb.org for the ASM verifier
+  Per Bothner for the gnu.bytecode "classdump" utility
+  Sun for the JVM and the on-line JVM specification
