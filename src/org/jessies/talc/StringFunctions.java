@@ -58,12 +58,23 @@ public final class StringFunctions {
     }
     
     public static MatchValue match(String s, String pattern) {
-        Pattern p = Pattern.compile(pattern);
-        Matcher m = p.matcher(s);
+        final Pattern p = Pattern.compile(pattern);
+        final Matcher m = p.matcher(s);
         if (m.find()) {
             return new MatchValue(m);
         }
         return null;
+    }
+    
+    // FIXME: it would be better to return an iterable, so we don't have to precompute everything.
+    public static ListValue match_all(String s, String pattern) {
+        final ListValue result = new ListValue();
+        final Pattern p = Pattern.compile(pattern);
+        final Matcher m = p.matcher(s);
+        while (m.find()) {
+            result.push_back(new MatchValue(m));
+        }
+        return result;
     }
     
     public static String replace(String s, String oldSubstring, String newSubstring) {

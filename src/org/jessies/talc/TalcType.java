@@ -45,6 +45,7 @@ public class TalcType {
     public static final TalcType MAP_OF_K_V = new TalcType(OBJECT, "map", K, V);
     
     // Commonly-used list types in the built-in library.
+    public static final TalcType LIST_OF_MATCH = instantiateType(LIST_OF_T, MATCH, null);
     public static final TalcType LIST_OF_OBJECT = instantiateType(LIST_OF_T, OBJECT, null);
     public static final TalcType LIST_OF_STRING = instantiateType(LIST_OF_T, STRING, null);
     public static final TalcType LIST_OF_K;
@@ -149,6 +150,7 @@ public class TalcType {
         addMemberFunction(STRING, new BuiltInFunction("lc", TalcType.STRING));
         addMemberFunction(STRING, new BuiltInFunction("lc_first", TalcType.STRING));
         addMemberFunction(STRING, new BuiltInFunction("match", Arrays.asList("pattern"), Arrays.asList(TalcType.STRING), TalcType.MATCH));
+        addMemberFunction(STRING, new BuiltInFunction("match_all", Arrays.asList("pattern"), Arrays.asList(TalcType.STRING), TalcType.LIST_OF_MATCH));
         addMemberFunction(STRING, new BuiltInFunction("replace", Arrays.asList("old", "new"), Arrays.asList(TalcType.STRING, TalcType.STRING), TalcType.STRING));
         addMemberFunction(STRING, new BuiltInFunction("size", TalcType.INT));
         addMemberFunction(STRING, new BuiltInFunction("split", Arrays.asList("pattern"), Arrays.asList(TalcType.STRING), TalcType.LIST_OF_STRING));

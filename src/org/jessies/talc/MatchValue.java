@@ -21,32 +21,32 @@ package org.jessies.talc;
 import java.util.regex.*;
 
 public class MatchValue {
-    private final Matcher matcher;
+    private final MatchResult match;
     
     public MatchValue(Matcher matcher) {
-        this.matcher = matcher;
+        this.match = matcher.toMatchResult();
     }
     
     @Override public boolean equals(Object o) {
         if (o instanceof MatchValue) {
-            return matcher.equals(((MatchValue) o).matcher);
+            return match.equals(((MatchValue) o).match);
         }
         return false;
     }
     
     public String group(IntegerValue i) {
-        return matcher.group(i.intValue());
+        return match.group(i.intValue());
     }
     
     public IntegerValue groupCount() {
-        return IntegerValue.valueOf(matcher.groupCount());
+        return IntegerValue.valueOf(match.groupCount());
     }
     
     @Override public int hashCode() {
-        return matcher.hashCode();
+        return match.hashCode();
     }
     
     public String toString() {
-        return matcher.toString();
+        return match.toString();
     }
 }
