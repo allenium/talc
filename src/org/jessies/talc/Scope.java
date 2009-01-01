@@ -112,12 +112,16 @@ public class Scope {
                     if (functionDefinition.isConstructor() != (pass == 0)) {
                         continue;
                     }
+                    String returnType = "";
+                    String rest = functionDefinition.signature();
                     if (pass == 0) {
                         ++constructorCount;
+                    } else {
+                        final int spaceIndex = rest.indexOf(' ');
+                        returnType = rest.substring(0, spaceIndex);
+                        rest = rest.substring(spaceIndex + 1);
                     }
-                    result.append("  ");
-                    result.append(functionDefinition.signature());
-                    result.append("\n");
+                    result.append(String.format("  %14s %s\n", returnType, rest));
                 }
             }
         }
