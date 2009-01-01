@@ -108,6 +108,7 @@ threads << talc_runner("#{TALC_DEMOS}/which.talc", ["bash", "make"], ["/bin/bash
     
     # Every time you add a test here, ask yourself if it couldn't just be another
     # case in the "compiler-trip.talc" script.
+    # FIXME: that's not really good advice now we run test scripts in parallel.
     "#{TALC_TESTS}/compiler-trip.talc",
     "#{TALC_TESTS}/factorial-table.talc",
     "#{TALC_TESTS}/fibonacci-table-recursive.talc",
@@ -117,6 +118,7 @@ threads << talc_runner("#{TALC_DEMOS}/which.talc", ["bash", "make"], ["/bin/bash
     "#{TALC_TESTS}/file.talc",
     "#{TALC_TESTS}/lexer-unread.talc",
     "#{TALC_TESTS}/list.talc",
+    "#{TALC_TESTS}/printf.talc",
     "#{TALC_TESTS}/timed-loop.talc",
 ].each() {
     |script|

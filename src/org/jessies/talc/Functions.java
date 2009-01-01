@@ -89,7 +89,7 @@ public class Functions {
         for (int i = 0; i < args.length; ++i) {
             args[i] = translateToNativeJavaObject(values[i + 1]);
         }
-        System.out.printf(String.format(formatString, args));
+        System.out.print(String.format(formatString, args));
     }
     
     private static Object translateToNativeJavaObject(Object o) {
