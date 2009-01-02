@@ -95,6 +95,8 @@ public final class StringFunctions {
         return result;
     }
     
+    // Why "repeat"? Most languages use operator*, but Talc's not going to.
+    // Ruby uses "dup" to mean something more like strdup(3), and "times" sounds like baby-talk for operator*.
     public static String repeat(String s, IntegerValue count) {
         final int n = count.intValue();
         final StringBuilder result = new StringBuilder(s.length() * n);
