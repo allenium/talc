@@ -31,10 +31,7 @@ for (i := 0; i < size-1; ++i) {
     if (i > 0) {
         for (j := 1; j <= i; ++j) {
             next[j] = prev[j] + prev[j-1];
-            # FIXME: we could do with some kind of "format using" here.
-            s := next[j].to_s();
-            s = ' '.repeat(6 - s.size()) + s;
-            print(s);
+            print('%6s'.format(next[j]));
         }
     }
     puts();
