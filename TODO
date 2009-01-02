@@ -230,6 +230,8 @@ list<T>.copy():list<T> # clone/copy the list. need such a method on all mutable 
 time_s() : int # like Unix time(0).
 time_ms() : int # like System.currentTimeMillis.
 time_ns() : int # like System.currentTimeNanos.
+one reason you might not want to offer all three (or at least make them more distinct) is that they don't share an epoch.
+maybe a (replaceable) global clock object, to facilitate testing time-dependent code? (given names like time.ms() and so on, it wouldn't be any extra hassle, and it's more global/static functions we can avoid.)
 some kind of class like our StopWatch.
 
 something like Basic's ability to turn function-call tracing on? generate suitable byte-code to output something on every method entry/exit, nicely lined-up and with arguments and return values?
@@ -242,10 +244,10 @@ should FILE_SEPARATOR and PATH_SEPARATOR be in class "file"?
 make sure any new *Value classes implement equals/hashCode correctly!
 
 simple input/output of CSV, TSV, XML, JSON (http://en.wikipedia.org/wiki/JSON). (anything else common?)
-encode/decode base64, uri.
+encode/decode base64, uri. string.encode(format:string) and string.decode(format:string) methods? (format enum? ability to register own encoders/decoders?)
 Perl-like pack/unpack?
 gzip compress/decompress.
-adler32/crc.
+adler32/crc/md5. general digesting.
 
 something like getopt. i've never seen a really convincing library for command-line arguments, but we should offer something.
 
@@ -305,4 +307,4 @@ JVM CODE GENERATOR
 
 * are we leaving junk on the stack? popAnythingLeftBy is a bit primitive and error-prone.
 
-* BigInteger is pretty slow for big numbers (thousands of digits up). patch OpenJDK? GMP via JNI? translate GMP into Java?
+* BigInteger is pretty slow for big numbers (thousands of digits up). patch OpenJDK? GMP via JNI? translate GMP into Java? GNU Classpath's BigInteger is much better (with the exception of toString for bases other than 16).
