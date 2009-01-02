@@ -118,7 +118,7 @@ threads << talc_runner("#{TALC_DEMOS}/which.talc", ["bash", "make"], ["/bin/bash
     "#{TALC_TESTS}/file.talc",
     "#{TALC_TESTS}/lexer-unread.talc",
     "#{TALC_TESTS}/list.talc",
-    "#{TALC_TESTS}/printf.talc",
+    "#{TALC_TESTS}/string-format.talc",
     "#{TALC_TESTS}/timed-loop.talc",
 ].each() {
     |script|
