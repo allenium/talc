@@ -41,6 +41,24 @@ public final class StringFunctions {
         return s.replace("&", "&amp;").replace("\"", "&quot;").replace(">", "&gt;").replace("<", "&lt;");
     }
     
+    private static Object translateToNativeJavaObject(Object o) {
+        if (o instanceof IntegerValue) {
+            return ((IntegerValue) o).toNativeJavaObject();
+        } else if (o instanceof RealValue) {
+            return ((RealValue) o).toNativeJavaObject();
+        }
+        return o;
+    }
+    
+    public static String format(String s, Object[] values) {
+        // We know that the 'values' array is a compiler-generated temporary.
+        // As long as Object[] isn't representable in Talc, this is safe.
+        for (int i = 0; i < values.length; ++i) {
+            values[i] = translateToNativeJavaObject(values[i]);
+        }
+        return String.format(s, values);
+    }
+    
     public static String gsub(String s, String pattern, String replacement) {
         return s.replaceAll(pattern, replacement);
     }

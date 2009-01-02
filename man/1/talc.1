@@ -420,9 +420,8 @@ to:
 .sp
 .fi
 for example.
-.TP
-.B void printf(format: string, ...)
-The "printf" function takes a format string followed by an arbitrary number of arguments of arbitrary types. It offers C-like formatting of the arguments based on format specifiers in the format string. It's useful for sophisticated formatting, but less efficient than "print" or "puts".
+
+Note also that the string.format method means that both print and puts (and any other function) can enjoy printf-like formatting.
 .TP
 .B string prompt(prompt: string)
 Prompts for input, using the given text, and returns what the user enters.
@@ -546,6 +545,7 @@ string : object
             bool contains(substring: string)
             bool ends_with(suffix: string)
           string escape_html()
+          string format(...)
           string gsub(pattern: string, replacement: string)
           string lc()
           string lc_first()

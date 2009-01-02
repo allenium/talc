@@ -588,7 +588,7 @@ public abstract class AstNode {
         
         public void fixUpTypes(TalcType containingType) {
             this.containingType = containingType;
-            if (formalParameterTypes == null) {
+            if (formalParameterTypes == null && !isVarArgs()) {
                 formalParameterTypes = new ArrayList<TalcType>();
                 for (int i = 0; i < formalParameterTypeDescriptors.size(); ++i) {
                     TalcTypeDescriptor typeDescriptor = formalParameterTypeDescriptors.get(i);

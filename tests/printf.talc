@@ -1,4 +1,3 @@
 // This throws a MissingFormatArgumentException if we accidentally interpret
-// the printf format string twice, which was an actual mistake in the first
-// implementation of Talc's printf.
-printf("%s", "%s");
+// the format string twice, which was an actual mistake once.
+assert "%c" == "%s".format("%c");

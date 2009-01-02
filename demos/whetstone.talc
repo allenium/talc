@@ -17,7 +17,7 @@ ITERATIONS : final = 10; /* 1 Million Whetstone instructions */
 POUT : final = true;
 
 function void pout(n: int, j: int, k: int, x1: real, x2: real, x3: real, x4: real) {
-    printf("%6d%6d%6d  %5e  %5e  %5e  %5e\n", n, j, k, x1, x2, x3, x4);
+    puts("%6d%6d%6d  %5e  %5e  %5e  %5e".format(n, j, k, x1, x2, x3, x4));
 }
 
 e1: list<real> = [ 0.0, 0.0, 0.0, 0.0 ];

@@ -892,6 +892,18 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         return null;
     }
     
+    private void pushObjectArray(AstNode[] arguments) {
+        cv.addPush(arguments.length);
+        cv.add(ByteCode.ANEWARRAY, javaLangObjectType);
+        for (int i = 0; i < arguments.length; ++i) {
+            cv.add(ByteCode.DUP);
+            cv.addPush(i);
+            arguments[i].accept(this);
+            cv.add(ByteCode.CHECKCAST, javaLangObjectType);
+            cv.add(ByteCode.AASTORE);
+        }
+    }
+    
     public Void visitFunctionCall(AstNode.FunctionCall functionCall) {
         AstNode.FunctionDefinition definition = functionCall.definition();
         
@@ -925,20 +937,24 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
         }
         
         if (definition.isVarArgs()) {
-            if (arguments.length == 1) {
-                arguments[0].accept(this);
-                cv.addInvoke(ByteCode.INVOKESTATIC, containingType, functionName, "(Ljava/lang/Object;)V");
+            if (proxyFirstArgumentType != null) {
+                // A varargs method on a proxy class. (Right now, that means it's string.format!)
+                functionCall.instance().accept(this);
+                cv.add(ByteCode.CHECKCAST, containingType);
+                pushObjectArray(arguments);
+                final String methodSignature = "(" + ClassFileWriter.classNameToSignature(containingType) + "[Ljava/lang/Object;)" + ClassFileWriter.classNameToSignature(typeForTalcType(definition.returnType()));
+                cv.addInvoke(ByteCode.INVOKESTATIC, proxyType, functionName, methodSignature);
             } else {
-                cv.addPush(arguments.length);
-                cv.add(ByteCode.ANEWARRAY, javaLangObjectType);
-                for (int i = 0; i < arguments.length; ++i) {
-                    cv.add(ByteCode.DUP);
-                    cv.addPush(i);
-                    arguments[i].accept(this);
-                    cv.add(ByteCode.CHECKCAST, javaLangObjectType);
-                    cv.add(ByteCode.AASTORE);
+                // A varargs method on a normal class.
+                // We have a special case for efficiency. Is it actually worthwhile?
+                if (arguments.length == 1) {
+                    // FIXME: user-defined varargs methods would require us to check for a suitable method to call here.
+                    arguments[0].accept(this);
+                    cv.addInvoke(ByteCode.INVOKESTATIC, containingType, functionName, "(Ljava/lang/Object;)V");
+                } else {
+                    pushObjectArray(arguments);
+                    cv.addInvoke(ByteCode.INVOKESTATIC, containingType, functionName, "([Ljava/lang/Object;)V");
                 }
-                cv.addInvoke(ByteCode.INVOKESTATIC, containingType, functionName, "([Ljava/lang/Object;)V");
             }
         } else {
             if (definition.isConstructor()) {
@@ -989,16 +1005,17 @@ public class JvmCodeGenerator implements AstVisitor<Void> {
                 cv.addInvoke(ByteCode.INVOKESTATIC, containingType, functionName, methodSignature);
             }
             
-            // Because we implement generics by erasure, we should "checkcast" non-void return types.
-            // FIXME: we only need to do this in a generic context.
-            TalcType resolvedReturnType = functionCall.resolvedReturnType();
-            if (resolvedReturnType != TalcType.VOID) {
-                cv.add(ByteCode.CHECKCAST, typeForTalcType(resolvedReturnType));
-            }
-            
             // FIXME: check here whether 'method' exists, and fail here rather than waiting for the verifier?
             //throw new TalcError(functionCall, "don't know how to generate code for call to \"" + definition.functionName() + "\"");
         }
+        
+        // Because we implement generics by erasure, we should "checkcast" non-void return types.
+        // FIXME: we only need to do this in a generic context.
+        TalcType resolvedReturnType = functionCall.resolvedReturnType();
+        if (resolvedReturnType != TalcType.VOID) {
+            cv.add(ByteCode.CHECKCAST, typeForTalcType(resolvedReturnType));
+        }
+        
         return null;
     }
     

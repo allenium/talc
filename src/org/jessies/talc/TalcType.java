@@ -146,6 +146,7 @@ public class TalcType {
         addMemberFunction(STRING, new BuiltInFunction("contains", Arrays.asList("substring"), Arrays.asList(TalcType.STRING), TalcType.BOOL));
         addMemberFunction(STRING, new BuiltInFunction("ends_with", Arrays.asList("suffix"), Arrays.asList(TalcType.STRING), TalcType.BOOL));
         addMemberFunction(STRING, new BuiltInFunction("escape_html", TalcType.STRING));
+        addMemberFunction(STRING, new BuiltInFunction("format", null, null, TalcType.STRING));
         addMemberFunction(STRING, new BuiltInFunction("gsub", Arrays.asList("pattern", "replacement"), Arrays.asList(TalcType.STRING, TalcType.STRING), TalcType.STRING));
         addMemberFunction(STRING, new BuiltInFunction("lc", TalcType.STRING));
         addMemberFunction(STRING, new BuiltInFunction("lc_first", TalcType.STRING));

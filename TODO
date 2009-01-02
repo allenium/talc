@@ -223,8 +223,6 @@ Perl/Python/Ruby-like tr/tr_d? sufficiently useful?
 should ARGV0 be of type "File" rather than "string"?
 access to stderr? ability to print/puts to files/sockets/pipes?
 
-should we have an "sprintf" to complement "printf"? or string.format? non-static? (i.e. "%2x".format(count) versus string.format("%2x", count).)
-
 # the need for these is demonstrated by "binomial-triangle.talc"...
 list<T>.n_copies(n:int,item:T):list<T> # returns a new list with 'n' copies of 'item'.
 list<T>.copy():list<T> # clone/copy the list. need such a method on all mutable containers.

@@ -159,7 +159,6 @@ public class Scope {
         builtInScope.addFunction(new BuiltInFunction("getenv", Arrays.asList("name"), Arrays.asList(TalcType.STRING), TalcType.STRING));
         builtInScope.addFunction(new BuiltInFunction("gets", TalcType.STRING));
         builtInScope.addFunction(new BuiltInFunction("print", null, null, TalcType.VOID));
-        builtInScope.addFunction(new BuiltInFunction("printf", null, null, TalcType.VOID));
         builtInScope.addFunction(new BuiltInFunction("prompt", Arrays.asList("prompt"), Arrays.asList(TalcType.STRING), TalcType.STRING));
         builtInScope.addFunction(new BuiltInFunction("puts", null, null, TalcType.VOID));
         builtInScope.addFunction(new BuiltInFunction("rnd", Arrays.asList("n"), Arrays.asList(TalcType.INT), TalcType.INT));
