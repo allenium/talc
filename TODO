@@ -226,8 +226,6 @@ access to stderr? ability to print/puts to files/sockets/pipes?
 # the need for these is demonstrated by "binomial-triangle.talc"...
 list<T>.n_copies(n:int,item:T):list<T> # returns a new list with 'n' copies of 'item'.
 list<T>.copy():list<T> # clone/copy the list. need such a method on all mutable containers.
-string.n_copies(n:int,s:string):string # returns a new string of 'n' concatenated copies of 's', or, better...
-string.dup(n:int):string # returns a new string of 'n' concatenated copies of 'this'
 
 time_s() : int # like Unix time(0).
 time_ms() : int # like System.currentTimeMillis.

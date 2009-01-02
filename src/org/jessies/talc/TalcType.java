@@ -152,6 +152,7 @@ public class TalcType {
         addMemberFunction(STRING, new BuiltInFunction("lc_first", TalcType.STRING));
         addMemberFunction(STRING, new BuiltInFunction("match", Arrays.asList("pattern"), Arrays.asList(TalcType.STRING), TalcType.MATCH));
         addMemberFunction(STRING, new BuiltInFunction("match_all", Arrays.asList("pattern"), Arrays.asList(TalcType.STRING), TalcType.LIST_OF_MATCH));
+        addMemberFunction(STRING, new BuiltInFunction("repeat", Arrays.asList("count"), Arrays.asList(TalcType.INT), TalcType.STRING));
         addMemberFunction(STRING, new BuiltInFunction("replace", Arrays.asList("old", "new"), Arrays.asList(TalcType.STRING, TalcType.STRING), TalcType.STRING));
         addMemberFunction(STRING, new BuiltInFunction("size", TalcType.INT));
         addMemberFunction(STRING, new BuiltInFunction("split", Arrays.asList("pattern"), Arrays.asList(TalcType.STRING), TalcType.LIST_OF_STRING));

@@ -95,6 +95,15 @@ public final class StringFunctions {
         return result;
     }
     
+    public static String repeat(String s, IntegerValue count) {
+        final int n = count.intValue();
+        final StringBuilder result = new StringBuilder(s.length() * n);
+        for (int i = 0; i < n; ++i) {
+            result.append(s);
+        }
+        return result.toString();
+    }
+    
     public static String replace(String s, String oldSubstring, String newSubstring) {
         return s.replace(oldSubstring, newSubstring);
     }

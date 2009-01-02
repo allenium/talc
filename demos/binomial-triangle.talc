@@ -23,26 +23,17 @@ function list<int> copy(l: list<int>) {
     return result;
 }
 
-# FIXME: string should have something like n_copies(n: int, s: string).
-function string n_spaces(n: int) {
-    result := '';
-    for (i := 0; i < n; ++i) {
-        result += ' ';
-    }
-    return result;
-}
-
 prev: list<int> = n_zeros(size);
 next: list<int> = n_zeros(size);
 next[0] = 1;
 for (i := 0; i < size-1; ++i) {
-    print(n_spaces((size*3)-3*i), next[0]);
+    print(' '.repeat((size*3)-3*i), next[0]);
     if (i > 0) {
         for (j := 1; j <= i; ++j) {
             next[j] = prev[j] + prev[j-1];
             # FIXME: we could do with some kind of "format using" here.
             s := next[j].to_s();
-            s = n_spaces(6 - s.size()) + s;
+            s = ' '.repeat(6 - s.size()) + s;
             print(s);
         }
     }
