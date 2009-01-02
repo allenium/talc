@@ -106,6 +106,7 @@ public class TalcType {
         addMemberFunction(LIST_OF_T, new BuiltInFunction("remove_all", Arrays.asList("others"), Arrays.asList(TalcType.LIST_OF_T), TalcType.LIST_OF_T));
         addMemberFunction(LIST_OF_T, new BuiltInFunction("remove_at", Arrays.asList("index"), Arrays.asList(TalcType.INT), TalcType.LIST_OF_T));
         addMemberFunction(LIST_OF_T, new BuiltInFunction("remove_first", Arrays.asList("value"), Arrays.asList(TalcType.T), TalcType.BOOL));
+        addMemberFunction(LIST_OF_T, new BuiltInFunction("repeat", Arrays.asList("count"), Arrays.asList(TalcType.INT), TalcType.LIST_OF_T));
         addMemberFunction(LIST_OF_T, new BuiltInFunction("reverse", TalcType.LIST_OF_T));
         addMemberFunction(LIST_OF_T, new BuiltInFunction("size", TalcType.INT));
         addMemberFunction(LIST_OF_T, new BuiltInFunction("sort", TalcType.LIST_OF_T));

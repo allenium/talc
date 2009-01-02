@@ -5,19 +5,10 @@
 
 size := 10000;
 
-# FIXME: list should have something like n_copies(n: int, item: T).
-function list<bool> n_trues(n: int) {
-    result: list<bool> = [];
-    for (i := 0; i < n; ++i) {
-        result.push_back(true);
-    }
-    return result;
-}
-
 start_time := time_ms();
 
 # FIXME: this would be more space-efficient if we had a BitSet.
-sieve : list<bool> = n_trues(size);
+sieve := [true].repeat(size);
 
 for (k := 2; k < size; ++k) {
     if (!sieve[k]) {

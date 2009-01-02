@@ -122,6 +122,16 @@ public class ListValue {
         return BooleanValue.valueOf(list.remove(v));
     }
     
+    public ListValue repeat(IntegerValue count) {
+        final int n = count.intValue();
+        final ListValue result = new ListValue();
+        result.list.ensureCapacity(n * list.size());
+        for (int i = 0; i < n; ++i) {
+            result.add_all(this);
+        }
+        return result;
+    }
+    
     public ListValue reverse() {
         ListValue result = new ListValue();
         for (int i = list.size() - 1; i >= 0; --i) {
