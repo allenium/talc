@@ -8,6 +8,7 @@ local_jdks_directory := "/usr/java/";
 # Where to look on the internet for available JDKs.
 sun_site := "http://download.java.net";
 sun_binaries_url := sun_site + "/jdk7/binaries/";
+openjdk_source_url := sun_site + "/openjdk/jdk7/";
 
 jdk_version := "jdk1.7.0";
 
@@ -35,11 +36,27 @@ function string desired_arch() {
   return desired_arch;
 }
 
-function void install_changes_html(jdk_build_number: string) {
+function void download_source_zip(jdk_build_number: string) {
   url := "http://download.java.net/jdk7/changes/jdk7" + jdk_build_number + ".html";
   if (url != null) {
     puts("Downloading " + url + "...");
     system(["wget", "--no-verbose", "--output-document=" + local_jdks_directory + "/" + jdk_version + jdk_build_number + "/changes.html", "--no-check-certificate", url]);
+  }
+}
+
+function void download_changes_html(jdk_build_number: string) {
+  zip_url: string = null;
+  for (line in backquote("wget -q -O - " + openjdk_source_url).split("\n")) {
+    m := line.match("href=\"(.*" + jdk_build_number + ".*\\.zip)\"");
+    if (m != null) {
+      zip_url = m.group(1);
+    }
+  }
+  if (zip_url != null) {
+    puts("Downloading " + zip_url + "...");
+    tmp_filename := "/tmp/" + jdk_version + "-" + jdk_build_number + "-src.zip";
+    system(["wget", "--no-verbose", "--output-document=" + tmp_filename, "--no-check-certificate", zip_url]);
+    shell("cd " + local_jdks_directory + " && unzip " + tmp_filename + " && mv openjdk " + jdk_version + jdk_build_number + "-src");
   }
 }
 
@@ -69,7 +86,8 @@ function void install_jdk(jdk_url, jdk_filename, jdk_build_number: string) {
     # Extract the supplied class library source.
     shell("cd " + local_jdks_directory + "/" + jdk_version + jdk_build_number + " && mkdir src && cd src && ../bin/jar xf ../src.zip && rm ../src.zip");
     
-    install_changes_html(jdk_build_number);
+    download_source_zip(jdk_build_number);
+    download_changes_html(jdk_build_number);
   }
 }
 
