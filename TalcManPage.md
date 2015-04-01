@@ -1,0 +1,656 @@
+﻿#labels Featured
+## NAME ##
+talc - a C-family statically-typed scripting language
+## SYNOPSIS ##
+talc `[`--dump-class class`]` `[`-f file`]` `[`-e program`]`
+## DESCRIPTION ##
+The language Talc is a scripting language for quick and easy programming. It is simple, straightforward, and aimed at aficionados of the C family, despite its Pascal-inspired declarations. Particularly notable features are static typing, mostly C-like syntax, and the all-important curly braces. (As Dennis Ritchie said, "C's intellectual influence on the semantic design of new languages has been small. On the other hand, it has influenced notation: even pseudo-code these days tends to contain curly braces.")
+
+If you want a convenient language for quick little jobs, love the C family, like static typing, dislike Perl's complexity and obscurity, dislike Python's needless breaks from tradition, have been disappointed by Ruby's irregularities, and most of all don't want to throw the baby of good compile-time error checking out with the bathwater of verbosity of simple tasks, Talc may be the language for you.
+
+Talc offers broad C, C++, and Java expression compatibility where possible, with a few little extras.
+## FEATURES ##
+Talc's features are best understood in comparison to other scripting languages:
+
+**Run-time compiled**
+
+> ` `Talc is a compiled language, but you don't have to recompile programs before executing them. From the user's perspective, it's interpreted, but behind the scenes, the interpreter works by compiling to JVM bytecode. This process is very fast, and the short time it takes is quickly made up by the performance of the compiled code, which is much faster than the old AST-walking interpreter.
+
+**Variables have types (static typing)**
+
+> ` `Variables (rather than just values) have associated types. Consequently, it has stronger compile time checking, and most errors are found earlier and quicker, and with less need for testing.
+
+**Simple syntax**
+
+> ` `Talc has simple syntax similar to other C-family languages, with the exception of declarations, which use a Pascal-inspired syntax.
+
+**No manual memory management**
+
+> ` `Talc has automatic memory management. Objects no longer referenced from anywhere are automatically collected by the garbage collector.
+
+**Everything is an object**
+
+> ` `Talc is a purely object-oriented language, and was ever so. Even "primitive" types such as integers are seen as objects.
+
+**Class, inheritance, and methods**
+
+> ` `As an object-oriented language, Talc has such basic features like classes, inheritance, and methods.
+
+**Text processing and regular expressions**
+
+> ` `Talc has a bunch of text processing features equivalent to those you'd find in post-Perl scripting languages.
+
+**Arbitrary-precision integers**
+
+> ` `All integer arithmetic is performed to arbitrary precision. For example, calculating 400! is trivial.
+
+**Direct access to the OS**
+
+> ` `Talc can access most Unix facilities. (FIXME: not yet fully implemented.)
+## OPTIONS ##
+With no arguments, interactive mode is entered. Expressions will be read from standard input, evaluated, and their results output on standard output.
+
+--**dump-class** _class_
+> ` `Dumps a synopsis of the given _class_ to standard output.
+> ` `Details include the class name, superclass, and declared member functions and member variables.
+
+--**dump-classes**
+> ` `Dumps a synopsis for every built-in class, sorted into alphabetical order.
+
+-**e** _program_
+> ` `Inline mode.
+> ` `The _program_ is evaluated.
+> ` `No special rules apply.
+> ` `No output will be produced unless the program calls an output function.
+> ` `Multiple -e arguments will be concatenated together into a single program.
+> ` `Any given invocation of talc can use -e or an explicit script filename, never both.
+
+-**I** _directory_
+> ` `Add _directory_ to the library search path used by "import".
+
+-**n**
+> ` `Adds 'while ((`_` = gets()) != null) { ... }' around the user-supplied script. Note that the variable corresponding to the current line is called `_` rather than $`_`.
+
+-**p**
+> ` `Adds 'while ((`_` = gets()) != null) { ... puts(`_`); }' around the user-supplied script. Note that the variable corresponding to the current line is called `_` rather than $`_`.
+## LEXICAL STRUCTURE ##
+### Comments ###
+Shell-like comments begin with a # and extend to the end of the line. C++-like comments begin with // and extend to the end of the line. Other than the use of # and //, shell- and C++-style comments are treated identically to one another.
+
+Block comments begin with /`*` and extend to the next `*`/. Block comments do not nest. Block comments make it possible to easily comment out large numbers of lines or comment out text within a line. Most scripting languages rely on dynamism and some kind of "if (false)" notation for the former use case and fail to support the latter.
+
+### Keywords ###
+The following are all keywords: "assert", "break", "class", "continue", "do", "else", "extends", "extern", "false", "final", "for", "function", "if", "implements", "import", "in", "new", "null", "return", "static", "true", "void", "while".
+
+In the grand tradition of the C family, not all words reserved as keywords are necessarily in use. Currently "extends", "implements", and "static" are reserved but unused.
+### Types ###
+The basic types are "bool", "int", "object", "real", "string", and "void". The type "object" is the root of the class hierarchy. All other types have "object" as an ancestor. The type "void" is used as the return type for functions that return no value.
+
+There are also two built-in non-scalar types: "list
+
+&lt;T&gt;
+
+" and "map<K,V>", representing lists whose elements are of type T and (hash) maps from key type K to value type V, respectively.
+### Null literal ###
+The null literal is "null".
+### Bool literals ###
+The bool literals are "true" and "false".
+### Numeric literals ###
+Various forms of numeric literal are supported. The default base is base 10, but the prefix "0b" can be used for binary literals, "0o" for octal, and "0x" for hexadecimal. Upper-case variants are not supported.
+
+The old-fashioned interpretation of integer literals with a leading zero as octal is deliberately not implemented.
+
+(There is currently no way to select an arbitrary base. Such a feature sounds like a nice idea, but binary is the only base most people ever need that isn't supported by traditional C-family literals, and the generality of any arbitrary-base solution is marred by the fact that it's necessary to support "0x" for the convenience of users pasting in input. Talc's scheme resembles Python, which seems the best thought-out of the existing alternatives.)
+
+Real literals are distinguished from integer literals by the presence of a decimal point (".").
+
+Integer literals are arbitrary precision. Real literals are currently machine precision. (In the current implementation, real literals are represented by Java's "double", which is an IEEE 754 64-bit binary floating point number.)
+### String literals ###
+String literals are surrounded by single quotes 'like this' or double quotes "like this". There is no difference between the two kinds of string: they are provided merely as a convenience. Use ' if your string contains ", use " if your string contains ', and use " if you've no reason to choose between the two.
+
+The common escape characters "\b", "\e", "\f", "\n", "\r", and "\t" are supported and translated into ASCII backspace, ESC, form-feed, newline, carriage return, and tab respectively. The characters ", ', and \ may also be escaped to stand for themselves. Unicode escapes of the form "\uXXXX" where each X represents a hex digit are also supported. An attempt to escape any other character is an error.
+
+Raw string literals are prefixed by a commercial at, @'like this' or @"like this". Backslash escape sequences are disabled in raw string literals, allowing convenient writing of otherwise awkward strings:
+```
+  path := @"c:\windows\paths\";
+
+  pattern := @"regular\s+expressions";
+
+  hint := @"embed double quotes like ""this""";
+  easier := 'embed double quotes like "this"';
+```
+Raw string literals are of type "string", the same as normal string literals.
+### List literals ###
+List literals are comma-separated lists of zero or more expressions enclosed in square brackets. They have a type corresponding to a list of the type furthest from object to which all expressions are assignable:
+```
+  [ 0xcafebabe, 0xdeadbeef ]  # has type list<int>
+  [ "monkey", "head" ]        # has type list<string>
+  [ 1, "infinite loop" ]      # has type list<object>
+
+  word_bag:list<string> = []; # special case, assignable to any list
+```
+As shown, the empty list is denoted `[``]`.
+### Map literals ###
+Map literals are comma-separated lists of one or more colon-separated key-value pairs, enclosed in square brackets. The inferred type is arrived at in the same manner as list literals, but treating the keys and values as two independent lists:
+```
+  [ 1:'one', 2:'two' ]     # has type map<int, string>
+  [ '1':'one', '2':'two' ] # has type map<string, string>
+  [ 1:'one', '2':'two' ]   # has type map<object, object>
+  
+  env:map<string, string> = [:]; # special case, assignable to any map
+```
+As shown, the empty map is denoted `[`:`]`.
+### Identifiers ###
+Identifiers are taken from the same set as Java identifiers.
+### Separators ###
+The following are all separators: ":", ";", ",", ".", "(", ")", "{", "}", "`[`", "`]`".
+### Operators ###
+The following are all operators: "!" (prefix logical negation, postfix factorial), "-" (unary numeric negation or binary subtraction), "++", "--", "+" (numeric addition or string concatenation), "`*`", "`*``*`" (exponentiation), "/", "%", "<", "<=", "<<", ">", ">=", ">>", "=", "==", "!=", "&", "&&", "|", "||", "`^`", "`~`" (unary bitwise negation).
+
+Binary operators require the types of both operands to be the same. The type of the result is the same as the type of the operands, except for relational operators, whose result is always bool. (So dividing a real by a real, for example, gives a real; dividing an int by an int gives an int, and it's not possible to divide a real by an int or an int by a real without explicitly converting one or the other to disambiguate.)
+
+The operators "%", "<<", ">>", "&", "`~`", "|", "`^`", and "!" (postfix factorial) only operate on type int.
+
+The operators "!" (prefix logical negation), "&&", and "||" only operate on type bool.
+
+There are also the following compound assignment operators: "+=", "-=", "`*`=", "`*``*`=", "/=", "%=", "<<=", ">>=", "&=", "|=", "`^`=", with the usual C-family interpretation where "a op= b" is equivalent to "a = a op b".
+
+There are also the array operators "`[``]`" and "`[``]`=" for array indexing and array assignment respectively. An expression such as "puts(a`[`i`]`)" is translated into "puts(a.`_``_`get`_`item`_``_`(i))", while "a`[`i`]` = f()" is translated into "a.`_``_`set`_`item`_``_`(i, f())".
+
+You can create new instances of classes with the "new" operator.
+
+FIXME: detail operator precedence.
+
+FIXME: explain equality/inequality.
+## SYNTAX ##
+### Blocks ###
+A block is a sequence of statements surrounded by braces such as:
+```
+  {
+    print("hello");
+    print(" ");
+    print("world\n");
+  }
+```
+A block is executed by executing each statement in order from first to last, though some statements may terminate the execution of the block.
+
+Many languages treat statements and blocks interchangeably. When this documentation says "block", though, a simple statement is not acceptable. Statements such as "if" and "while", for example, always require blocks.
+### Variable definitions ###
+A variable definition declares one local variable and gives it an initial value:
+```
+  n: int = 0;
+```
+If the keyword "final" appears before the type, the variable may not be reassigned:
+```
+  PI: final real = 3.14;
+  PI = 3.0; # compile-time error
+```
+Types are either simple types such as "object" or "int", or instantiated parametric types such as "list
+
+&lt;string&gt;
+
+". There is no separate array type.
+
+As a shorthand, the type may be omitted, in which case the type is taken to be the exact type of the initializer expression. For example:
+```
+  i := 0;                 # implicitly i:int
+  r := 0.0;               # implicitly r:real
+  s := "hello, world!";   # implicitly s:string
+  lines := s.split("\n"); # implicitly lines:list<string>
+  constant: final = 123;  # implicitly constant:final int
+```
+Note that although the ":" and "=" are two separate tokens, it's conventional not to add whitespace between them.
+
+The type inference seen here has nothing to do with the unsafe implicit type conversions you see in other scripting languages.
+
+Although ":=" reduces the amount of keyboarding, the program remains every bit as statically-typed as it would have been with an explicit type. It is recommended that you still use explicit types in cases where the inferred type isn't obvious, or where an explicit type seems to function as documentation. (The most important case is where the initializer is "null", but the inferred type of "object" probably wouldn't be sufficient there anyway.)
+
+As proof that this isn't unsafe, note that the usual case where you can't use the inferred type is when you actually want a **less** specific type than would be inferred, such as "o: object = 123", which would otherwise give "o" type "int".
+### Function definitions ###
+A function definition looks like this:
+```
+  function int nCr(n: int, r: int) {
+    return n!/(k! * (n-k)!);
+  }
+```
+The keyword "function" followed by the return type and function name introduces each definition. A parenthesized comma-separated list of parameter declarations follows. Finally comes a block for the function's body.
+
+Note that multiple parameters of the same type can be separated by commas:
+```
+  function void draw_line(x0, y0, x1, y1: int, c: color) {
+    // ...
+  }
+```
+Whenever you find yourself writing this, though, ask whether you'd be better served by a new type. (Here either "Point" or maybe even "Line".)
+### Function calls ###
+A function call looks like this:
+```
+    nCr(5, 6);
+```
+A call to a member function (also known as a method) looks like this:
+```
+    i.to_s();
+```
+Note that in the rare case where the variable "i" is replaced by a numeric literal, it is necessary to enclose the literal in parentheses or insert a space before the "." to avoid misinterpretation as a malformed real literal.
+### Extern function definitions ###
+An extern function definition looks like this:
+```
+  extern "Java" function real cos(a:real) = "java/lang/Math.cos:(D)D";
+```
+The string literal after extern describes the calling convention. Currently only "Java" is supported.
+
+The format of the string literal after the assignment depends on the calling convention. In the case of Java, the string is the concatenation of the JVM-format class name, '.', the method name, ':', and the method signature.
+### Class definitions ###
+A class definition looks like this:
+```
+  class Point {
+    x: int = 0;
+    y: int = 0;
+
+    function Point(x0: int, y0: int) {
+      x = x0;
+      y = y0;
+    }
+
+    function string to_s() {
+      return "(" + x.to_s() + "," + y.to_s() + ")";
+    }
+  }
+```
+The body of a class definition contains zero or more variable definitions mixed with zero or more function definitions. A function with the same name as the class (and no return type) is the constructor, invoked by the "new" operator to initialize new instances.
+### Empty statements ###
+The empty statement (";") does nothing.
+### Expression statements ###
+An expression can be converted to a statement by following it with a semicolon (";").
+### If statements ###
+An "if" statement is a sequence of guard expressions with associated blocks. The first guard expression which evaluates to true will have its associated block executed. If no guard expression evaluates to true but an "else" block is present, that block will be executed instead.
+```
+  if (n == 0) {
+    return "zero";
+  } else if (n == 1) {
+    return "one";
+  } else {
+    return "many";
+  }
+```
+All guard expressions must be of type bool or a compile-time error results.
+### While loops ###
+A "while" loop executes an expression and a block repeatedly until the expression evaluates to false. The block will not be executed if the expression is false the first time it is evaluated.
+```
+  n: int = 0;
+  while (n < 5) {
+    puts(n);
+    ++n;
+  }
+```
+The expression must be of type bool or a compile-time error results.
+### Do loops ###
+A "do" loop executes a block and an expression repeatedly until the expression evaluates to false. The block will always be executed at least once.
+```
+  n: int = 0;
+  do {
+    puts(n);
+    ++n;
+  } while (n < 5);
+```
+The expression must be of type bool or a compile-time error results.
+### For loops ###
+A "for" loop initializes a variable local to the statement before executing a continuation expression, a block, and an update expression until the continuation expression evaluates to false. The continuation expression must be of type bool or a compile-time error results. The update expression can be of any type.
+```
+  for (n: int = 0; n < 5; ++n) {
+    puts(n);
+  }
+```
+Note that Talc's for loop is slightly more restricted than in most C-family languages, because Talc has no comma operator.
+### For-each loops ###
+A for-each loop iterates over a collection, evaluating a block once for each value in the collection. For example:
+```
+  # Iterate over the values in the collection:
+  for (word in [ "hello", "world" ]) {
+    puts(word);
+  }
+
+  # Iterate over the key, value pairs in the collection:
+  for (k, v in [ 123:"hello", 456:"world" ]) {
+    puts(k, " : ", v);
+  }
+  # (For a list, the keys are the integer indexes.)
+  for (i, word in [ "hello", "world" ]) {
+    puts(i, " : ", word);
+  }
+  
+  # Iterate over the characters in a string:
+  for (c in "hello, world\n") {
+    print(c);
+  }
+```
+The expression must be of list, map, or string type. (It will be extended to user-defined types eventually, but that's not been implemented yet.) The for-each loop has one or two loop variable names declared. If it has one, it is given the value type of the collection. If it has two, the first is given the key type of the collection and the second the value type. It is not possible to specify explicit types, nor to reverse the order of declaration.
+
+A more Java-like syntax using a ":" instead of the "in" keyword isn't possible because of the ambiguity with an explicit type declaration. Talc initially used ";" (following the D language) but it looked strange, looked overly similar to the normal for loop, and was surprisingly hard to remember. A "foreach" keyword was considered (both in conjunction with ":" and "in"), but rejected as not being a real word. Though in some ways that's an ideal property for something as disruptive as a keyword.
+### Break statements ###
+A "break" statement transfers control out of the innermost enclosing "do", "for", or "while" statement.
+### Continue statements ###
+A "continue" statement transfers control to the loop-continuation test of the innermost enclosing "do", "for", or "while" statement.
+### Return statements ###
+A "return" statement returns control to the invoker of a function.
+
+If the enclosing function has return type "void", supplying a non-void expression to the "return" statement will result in a compile-time error, but an expression of void type, such as a call to a void function, is fine.
+
+For non-void functions, omitting an expression or providing an expression of an inappropriate type will result in compile-time errors.
+### Assert statements ###
+An "assert" statement consists of a boolean expression optionally followed by an explanatory expression of any type. If the boolean expression evaluates to false, an exception is thrown. If an explanatory expression was provided, it will be evaluated and used as the exception's detail message. If the boolean expression evaluates to true, the "assert" statement completes normally.
+```
+  assert list.size() == 0 : "list not empty!";
+```
+Unlike in other languages, assertions cannot be turned off at either compile-time or run-time.
+### Import statements ###
+An "import" statement causes textual inclusion of the named library. The extension ".talc" is added if not already present, and each directory in the library path is searched until a match is found.
+```
+  import "math";
+  puts(to_radians(180.0));
+```
+Imports can only be made in the global scope, but can be used anywhere in the global scope (not just at the beginning, as in Java). Any attempt to import a library that's already been imported will be silently ignored; there is no need for anything like C's include guards.
+## BUILT-IN FUNCTIONALITY ##
+Talc has a wide range of built-in functionality.
+### Built-in variables ###
+There are a few global variables:
+
+**ARGV0: final string**
+
+> ` `The name of the invoked script.
+
+**ARGS: final list**
+
+&lt;string&gt;
+
+
+
+> ` `The arguments to the script. Arguments to Talc itself aren't visible to the script.
+
+**FILE`_`SEPARATOR: final string**
+
+> ` `The underlying platform's native filename component separator. (On Unix, this is "/"; Windows uses "\".)
+
+**PATH`_`SEPARATOR: final string**
+
+> ` `The underlying platform's native PATH component separator. (On Unix, this is ":"; Windows uses ";".)
+### Built-in functions ###
+There are a handful of global functions:
+
+**string backquote(command: string)**
+
+> ` `Captures the output of the given command as a string.
+
+**void exit(status: int)**
+
+> ` `Exits the running program, reporting the given status to the parent process.
+
+**string getenv(name: string)**
+
+> ` `Returns the value of the given environment variable, or null.
+
+**string gets()**
+
+> ` `Returns the next line from stdin, or null if there's an error or no more input.
+
+**void print(...)**
+
+> ` `The "print" function is special; it takes an arbitrary number of arguments of arbitrary types, converts each one to a string and outputs it to stdout. It is not currently possible to write such functions in the language itself.
+> ` `
+> ` `Note that, although you can use string concatenation to prepare text for output, providing multiple arguments to "print" is an alternative that may be more convenient and/or more efficient. Compare:
+> ` `{{{
+> ` `  print("value" + v.to\_s());
+> ` `}}}
+> ` `to:
+> ` `{{{
+> ` `  print("value", v);
+> ` `}}}
+> ` `for example.
+> ` `
+> ` `Note also that the string.format method means that both print and puts (and any other function) can enjoy printf-like formatting.
+
+**string prompt(prompt: string)**
+
+> ` `Prompts for input, using the given text, and returns what the user enters.
+
+**void puts(...)**
+
+> ` `Like "print", but appends a newline.
+
+**int rnd(n: int)**
+
+> ` `Returns a random integer between 0 (inclusive) and n (exclusive).
+
+**int shell(command: string)**
+
+> ` `Executes the given command in a subshell. Returns the return status of the command, or -1 if it was unable to start the command.
+
+**int system(command: list**
+
+&lt;string&gt;
+
+)
+
+> ` `Executes the given command, specified as a list containing the program name and its arguments. Returns the return status of the command, or -1 if it was unable to start the command.
+
+**int time`_`ms()**
+
+> ` `Returns the time in milliseconds since the program started.
+### Built-in classes ###
+Talc has relatively few built-in classes. Few enough that we can reasonably comfortably summarize them all here.
+```
+bool : object
+
+
+file : object
+
+                 file(filename: string)
+
+            void append(content: string)
+          string basename()
+            file dirname()
+            bool exists()
+            bool is_directory()
+            bool is_executable()
+            bool mkdir()
+            bool mkdir_p()
+          string read()
+    list<string> read_lines()
+            file realpath()
+            void write(content: string)
+
+
+int : object
+
+             int abs()
+             int signum()
+          string to_base(base: int)
+          string to_char()
+             int to_i()
+            real to_r()
+
+
+list<T> : object
+
+                 list<T>()
+
+               T __get_item__(index: int)
+               T __set_item__(index: int, value: T)
+         list<T> add_all(others: list<T>)
+         list<T> clear()
+            bool contains(value: T)
+            bool is_empty()
+          string join(separator: string)
+               T peek_back()
+               T peek_front()
+               T pop_back()
+               T pop_front()
+         list<T> push_back(value: T)
+         list<T> push_front(value: T)
+         list<T> remove_all(others: list<T>)
+         list<T> remove_at(index: int)
+            bool remove_first(value: T)
+         list<T> repeat(count: int)
+         list<T> reverse()
+             int size()
+         list<T> sort()
+          string to_s()
+         list<T> uniq()
+
+
+map<K,V> : object
+
+                 map<K,V>()
+
+               V __get_item__(key: K)
+               V __set_item__(key: K, value: V)
+        map<K,V> clear()
+            bool has_key(key: K)
+            bool has_value(value: V)
+         list<K> keys()
+        map<K,V> remove(key: K)
+             int size()
+         list<V> values()
+
+
+match : object
+
+          string group(n: int)
+
+
+object
+
+          string to_s()
+
+
+real : object
+
+            real abs()
+            real cbrt()
+            real log(base: real)
+            real log10()
+            real logE()
+            real signum()
+            real sqrt()
+             int to_i()
+            real to_r()
+
+
+string : object
+
+          string __get_item__(index: int)
+            bool contains(substring: string)
+            bool ends_with(suffix: string)
+          string escape_html()
+          string format(...)
+          string gsub(pattern: string, replacement: string)
+          string lc()
+          string lc_first()
+           match match(pattern: string)
+     list<match> match_all(pattern: string)
+          string repeat(count: int)
+          string replace(old: string, new: string)
+             int size()
+    list<string> split(pattern: string)
+            bool starts_with(prefix: string)
+          string sub(pattern: string, replacement: string)
+             int to_i()
+            real to_r()
+          string trim()
+          string uc()
+          string uc_first()
+```
+This output was produced by the command "talc --dump-classes".
+## CONVENTIONS AND IDIOMS ##
+Talc scripts that are runnable as applications in their own right should have no extension.
+Talc scripts meant for inclusion in other scripts, or not for end-user consumption should use the ".talc" extension.
+
+Class and function names are all lower-case, with `_` to separate words.
+
+Two-space indentation is recommended. No space is used between the ":" and "=" in an inferred-type variable definition ("i := 0", for example). The ":" in an explicitly-typed definition or a parameter declaration has no space before it and a single space after it ("i: int", for example).
+
+In a class definition, all fields are listed first, followed by the constructor, followed by all other methods in alphabetical order.
+
+The functions "to`_`i", "to`_`r", and "to`_`s" are provided by all classes that can be converted to "int", "real", and "string" respectively.
+
+The ability to define local variables inside conditional expressions and the shorthand form of variable definition provide the line-matching idiom:
+```
+for (line:string in lines) {
+  # Most verbose (but not by much).
+  # Necessary if you need access to the match outside of the "if".
+  m:match = null;
+  if ((m = line.match(@"\s*function\s+(\S+)\s*\((.*)\)\s*")) != null) {
+    name:string = m.group(1);
+    arguments:string = m.group(2);
+  }
+
+  # Less verbose unless you have a lot of patterns to match against.
+  if ((m:match = line.match(@"\s*function\s+(\S+)\s*\((.*)\)\s*")) != null) {
+    # As before.
+  }
+
+  # Least verbose unless you have a lot of patterns to match against.
+  if ((m := line.match(@"\s*function\s+(\S+)\s*\((.*)\)\s*")) != null) {
+    # As before.
+  }
+}
+```
+None of this is enforced (or is likely to be enforced), but will to help keep your code looking like everyone else's.
+## PHILOSOPHY ##
+Talc arose out of dissatisfaction with existing scripting languages, in particular with their lack of adherence to the following principles:
+
+`*` It's better to catch errors before execution begins. (Hence, static typing is your friend.)
+
+`*` You shouldn't pay in linguistic complexity for power you don't use. (Hence, dynamism shouldn't be the default.)
+
+`*` You shouldn't pay in library complexity for power you don't use. (Hence, the core library should be more focused on making common tasks easy than on making uncommon tasks possible.)
+
+`*` A statically-typed library is a library with fewer places for gotchas to hide; you can look at a method's signature and have a good idea of how it'll behave, without worrying that some inputs will cause results of a completely different type (as in Ruby). (Hence, a library should be statically-typed and avoid special cases.)
+
+`*` A conservative language can still be a good language, because the parts are well-tested and familiar to users, even if the combination isn't. An ill-conceived feature, or unfortunate combination of features, can become a long-lived albatross. (Hence, think hard before inflicting something truly novel on people.)
+
+`*` Readability is all-important. Discouraging excessive cleverness/obscurity is helpful when we have to work together, as we often do. (Hence, aim for a small, regular grammar and a small, regular vocabulary.)
+
+`*` Working with others and collective code ownership is easier if everyone has the same style. It's hard to avoid More Than One Way To Do It, but it's helpful when a language and library favors one style over all others. (Hence, the differences between beginner and expert code should be high-level algorithmic differences, rather than superficial idiomatic differences.)
+
+`*` The reduced amount of keyboarding is more responsible for the comfortableness of scripting languages than the reduced amount of type information and compile-time checking. Not repeating yourself also improves correctness, readability, and maintainability. (Hence, language features such as ":=" and for-each loops are important in increasing comfort without sacrifice.)
+
+`*` You can't please all the people all the time. Worse, trying to do so ends up pleasing no-one. (Hence, Perl, Python, and Ruby aren't so much the competition as alternative lifestyle choices, interesting only when they provide useful precedent.)
+
+`*` A scripting language for professional programmers should assume it's not the user's primary language. This makes it important to strive for something easy to learn and easy to remember, both of which seem to imply that it should aim to be like the user's primary language: a member of the C family. It also seems to imply that it's better to offer a few general data structures than every possibility.
+
+At the same time, it would be naive to pretend that some choices don't also have negative consequences:
+
+`*` You can't avoid all syntactic confusion. No-one gets confused switching between, say, Java and Lisp. They look too different. But switching between C++ and Java, it's easy to confuse "bool" and "boolean", for example. The languages as a whole are superficially quite similar, so the little differences cause needless trouble. And since the languages of the C family already contain plenty of these little traps for those switching between them, it's impossible for a new C-family language like Talc to avoid both inheriting and adding to this confusion. Whose for-each syntax to use? Whose way of specifying superclass and interfaces? Whose names for the common types and functions? Part of being a convenient scripting language is not causing unnecessary interference with the user's primary language. The idea of "implicit void", for example, while handy in Talc, encourages people to omit "void" return types when they go back to C++ or Java, a cost that probably outweighs the benefit.
+## BUGS ##
+Talc is not yet ready for production use.
+
+It would be nice if the interactive interface saved its readline history somewhere. Also, we should offer custom tab-completion for functions and variables.
+
+See the TODO file in the repository for a detailed list.
+## REPORTING BUGS ##
+Report bugs at [http://code.google.com/p/talc/issues/list](http://code.google.com/p/talc/issues/list).
+## ACKNOWLEDGMENTS ##
+Talc uses a lightly modified version of the MPL 1.1/GPL 2 or later Rhino bytecode generator from the org.mozilla.classfile package, written by Roger Lawrence.
+
+The original Rhino source and binaries can found at [http://www.mozilla.org/rhino/download.html](http://www.mozilla.org/rhino/download.html). The Talc sources are available at <http://code.google.com/p/talc/>.
+## COPYRIGHT ##
+Copyright © 2007-2009 Elliott Hughes.
+
+
+Talc is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+Talc is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see [http://www.gnu.org/licenses/](http://www.gnu.org/licenses/).
+
+---
+
+Automatically translated from a man page by [man-to-wiki.talc](http://code.google.com/p/talc/source/browse/trunk/demos/man-to-wiki.talc).
